@@ -1,0 +1,50 @@
+---
+Title : CellChat_Tutorial_UMBIS01.rmd
+Author : Mariam H.
+Output : html_UMBIS01_Tutorial
+Last update : 14th October 2026
+---
+
+# CellChat v2 : From Ligand-Receptor interactions to Comparative Cell-Cell Communication Networks
+
+**This tutorial demonstrates how to infer and visualize cell-cell communication networks using CellChat v2.**
+
+All-along this tutorial, we use a publicly available ??? scRNA-seq dataset provided by the CellChat developers and available on GitHub.
+
+The dataset has already undergone preprocessing, normalization, clustering, and cell-type annotation.
+
+Therefore, the upstream steps are not repeated here because this tutorial is focusing specifically on CellChat.
+
+**The workflow covers the following steps :**
+
+**Part 1 - Core CellChat workflow**
+
+1.  Libraries + Dataset Loading
+2.  Creating a CellChat object
+3.  Identifying ligand-receptor interactions
+4.  Computing communication probabilities
+5.  Inferring signaling pathways
+6.  Visualizing and interpreting communication networks
+
+**Part 2 - Going further : comparative analysis between two conditions**
+
+1.  Run CellChat pipeline on nonlesional skin
+2.  Merge the lesional and nonlesional CellChat objects
+3.  Compare the number and strength of interactions
+4.  Identify altered signaling pathways
+5.  Interpret condition-specific communication patterns
+
+**Part 3 - Biological Interpretation and limitations**
+
+------------------------------------------------------------------------
+
+Before going further, please install the necessary packages if needed.
+
+```{r Install package if needed, message=FALSE, warning=FALSE}
+install.packages('devtools')
+devtools::install_github("jinworks/CellChat")
+```
+
+# Part 1 - Core CellChat workflow
+
+## Step 1 - Libraries + Dataset Loading
