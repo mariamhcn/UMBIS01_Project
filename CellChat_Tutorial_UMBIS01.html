@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Mariam H." />
+
+<meta name="date" content="2026-10-14" />
+
+<title>CellChat v2: From Ligand–Receptor Interactions to Comparative Cell–Cell Communication Networks</title>
+
+<script src="CellChat_Tutorial_UMBIS01_files/header-attrs-2.32/header-attrs.js"></script>
+<script src="CellChat_Tutorial_UMBIS01_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="CellChat_Tutorial_UMBIS01_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="CellChat_Tutorial_UMBIS01_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="CellChat_Tutorial_UMBIS01_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="CellChat_Tutorial_UMBIS01_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="CellChat_Tutorial_UMBIS01_files/navigation-1.1/tabsets.js"></script>
+<link href="CellChat_Tutorial_UMBIS01_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="CellChat_Tutorial_UMBIS01_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">CellChat v2: From Ligand–Receptor
+Interactions to Comparative Cell–Cell Communication Networks</h1>
+<h4 class="author">Mariam H.</h4>
+<h4 class="date">2026-10-14</h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a
+href="#cellchat-v2-from-ligand-receptor-interactions-to-comparative-cell-cell-communication-networks"
+id="toc-cellchat-v2-from-ligand-receptor-interactions-to-comparative-cell-cell-communication-networks"><span
+class="toc-section-number">1</span> CellChat v2 : From Ligand-Receptor
+interactions to Comparative Cell-Cell Communication Networks</a></li>
+<li><a href="#part-1---core-cellchat-workflow"
+id="toc-part-1---core-cellchat-workflow"><span
+class="toc-section-number">2</span> Part 1 - Core CellChat workflow</a>
+<ul>
+<li><a href="#step-1-libraries-dataset-loading"
+id="toc-step-1-libraries-dataset-loading"><span
+class="toc-section-number">2.1</span> Step 1 : Libraries + Dataset
+Loading</a>
+<ul>
+<li><a href="#a-libraries-import" id="toc-a-libraries-import"><span
+class="toc-section-number">2.1.1</span> (A) Libraries import</a></li>
+<li><a href="#b-create-directories-optional"
+id="toc-b-create-directories-optional"><span
+class="toc-section-number">2.1.2</span> (B) Create directories
+(optional)</a></li>
+<li><a href="#c-dataset-loading" id="toc-c-dataset-loading"><span
+class="toc-section-number">2.1.3</span> (C) Dataset Loading</a></li>
+<li><a
+href="#d-extract-normalized-expression-dataset-metadata-and-nonlesional-nl-subset"
+id="toc-d-extract-normalized-expression-dataset-metadata-and-nonlesional-nl-subset"><span
+class="toc-section-number">2.1.4</span> (D) Extract normalized
+expression dataset, metadata and nonlesional (NL) subset</a></li>
+<li><a href="#e-explore-cell-populations-and-verify-data-consistency"
+id="toc-e-explore-cell-populations-and-verify-data-consistency"><span
+class="toc-section-number">2.1.5</span> (E) Explore cell populations and
+verify data consistency</a></li>
+</ul></li>
+<li><a href="#step-2-creating-a-cellchat-object"
+id="toc-step-2-creating-a-cellchat-object"><span
+class="toc-section-number">2.2</span> Step 2 : Creating a CellChat
+object</a></li>
+<li><a href="#step-3-selecting-appropriate-cellchatdb"
+id="toc-step-3-selecting-appropriate-cellchatdb"><span
+class="toc-section-number">2.3</span> Step 3 : Selecting appropriate
+CellChatDB</a>
+<ul>
+<li><a href="#a-exploring-cellchat-human-ligand-receptor-database"
+id="toc-a-exploring-cellchat-human-ligand-receptor-database"><span
+class="toc-section-number">2.3.1</span> (A) Exploring CellChat human
+ligand-receptor database</a></li>
+<li><a href="#b-selecting-the-appropriate-database-for-analysis"
+id="toc-b-selecting-the-appropriate-database-for-analysis"><span
+class="toc-section-number">2.3.2</span> (B) Selecting the appropriate
+database for analysis</a></li>
+</ul></li>
+<li><a
+href="#step-4-identifying-overexpressed-signaling-genes-and-interactions"
+id="toc-step-4-identifying-overexpressed-signaling-genes-and-interactions"><span
+class="toc-section-number">2.4</span> Step 4 : Identifying overexpressed
+signaling genes and interactions</a>
+<ul>
+<li><a href="#a-selecting-signaling-genes-from-expression-matrix"
+id="toc-a-selecting-signaling-genes-from-expression-matrix"><span
+class="toc-section-number">2.4.1</span> (A) Selecting signaling genes
+from expression matrix</a></li>
+<li><a href="#b-identifying-overexpressed-signaling-genes"
+id="toc-b-identifying-overexpressed-signaling-genes"><span
+class="toc-section-number">2.4.2</span> (B) Identifying overexpressed
+signaling genes</a></li>
+<li><a href="#c-identifying-oversexpressed-ligand-receptor-interaction"
+id="toc-c-identifying-oversexpressed-ligand-receptor-interaction"><span
+class="toc-section-number">2.4.3</span> (C) Identifying oversexpressed
+ligand-receptor interaction</a></li>
+</ul></li>
+<li><a href="#step-5-computing-cell-cell-communication-probabilities"
+id="toc-step-5-computing-cell-cell-communication-probabilities"><span
+class="toc-section-number">2.5</span> Step 5 : Computing cell-cell
+communication probabilities</a>
+<ul>
+<li><a href="#a-selecting-inference-parameters"
+id="toc-a-selecting-inference-parameters"><span
+class="toc-section-number">2.5.1</span> (A) Selecting inference
+parameters</a></li>
+<li><a href="#b-computing-communication-probalities"
+id="toc-b-computing-communication-probalities"><span
+class="toc-section-number">2.5.2</span> (B) Computing communication
+probalities</a></li>
+<li><a href="#c-filtering-and-inspecting-inferred-communications"
+id="toc-c-filtering-and-inspecting-inferred-communications"><span
+class="toc-section-number">2.5.3</span> (C) Filtering and inspecting
+inferred communications</a></li>
+<li><a href="#d-compare-gene-expression-estimators-optional"
+id="toc-d-compare-gene-expression-estimators-optional"><span
+class="toc-section-number">2.5.4</span> (D) Compare gene expression
+estimators (OPTIONAL)</a></li>
+</ul></li>
+<li><a
+href="#step-6---inferring-signaling-pathways-and-aggregating-communication-networks"
+id="toc-step-6---inferring-signaling-pathways-and-aggregating-communication-networks"><span
+class="toc-section-number">2.6</span> Step 6 - Inferring signaling
+pathways and aggregating communication networks</a>
+<ul>
+<li><a href="#a-inferring-communication-at-signaling-pathway-level"
+id="toc-a-inferring-communication-at-signaling-pathway-level"><span
+class="toc-section-number">2.6.1</span> (A) Inferring communication at
+signaling pathway level</a></li>
+<li><a href="#b-aggreating-the-cell-cell-communication-network"
+id="toc-b-aggreating-the-cell-cell-communication-network"><span
+class="toc-section-number">2.6.2</span> (B) Aggreating the cell-cell
+communication network</a></li>
+<li><a href="#c-exploring-aggregated-results"
+id="toc-c-exploring-aggregated-results"><span
+class="toc-section-number">2.6.3</span> (C) Exploring aggregated
+results</a></li>
+</ul></li>
+<li><a
+href="#step-7-visualizing-and-interpreting-communication-networks"
+id="toc-step-7-visualizing-and-interpreting-communication-networks"><span
+class="toc-section-number">2.7</span> Step 7 : Visualizing and
+interpreting communication networks</a>
+<ul>
+<li><a href="#a-global-circle-plots"
+id="toc-a-global-circle-plots"><span
+class="toc-section-number">2.7.1</span> (A) Global circle plots</a></li>
+<li><a href="#b-communication-heatmaps"
+id="toc-b-communication-heatmaps"><span
+class="toc-section-number">2.7.2</span> (B) Communication
+heatmaps</a></li>
+<li><a href="#c-pathway-specific-communication-networks"
+id="toc-c-pathway-specific-communication-networks"><span
+class="toc-section-number">2.7.3</span> (C) Pathway-specific
+communication networks</a></li>
+<li><a href="#d-ligand-receptors-bubble-plot"
+id="toc-d-ligand-receptors-bubble-plot"><span
+class="toc-section-number">2.7.4</span> (D) Ligand-receptors bubble
+plot</a></li>
+<li><a href="#a-computing-network-centrality"
+id="toc-a-computing-network-centrality"><span
+class="toc-section-number">2.7.5</span> (A) Computing network
+centrality</a></li>
+<li><a href="#b-visualizing-sender-and-receiver-roles"
+id="toc-b-visualizing-sender-and-receiver-roles"><span
+class="toc-section-number">2.7.6</span> (B) Visualizing sender and
+receiver roles</a></li>
+<li><a href="#c-saving-results-and-ensuring-reproducibility"
+id="toc-c-saving-results-and-ensuring-reproducibility"><span
+class="toc-section-number">2.7.7</span> (C) Saving results and ensuring
+reproducibility</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#part-2--" id="toc-part-2--"><span
+class="toc-section-number">3</span> Part 2 - …</a>
+<ul>
+<li><a href="#step-1-cellchat-analysis-of-lesional-skin"
+id="toc-step-1-cellchat-analysis-of-lesional-skin"><span
+class="toc-section-number">3.1</span> Step 1 : CellChat analysis of
+lesional skin</a>
+<ul>
+<li><a href="#a-selecting-and-initinializing-the-lesional-dataset"
+id="toc-a-selecting-and-initinializing-the-lesional-dataset"><span
+class="toc-section-number">3.1.1</span> (A) Selecting and Initinializing
+the lesional dataset</a></li>
+<li><a href="#b-inferring-cell-cell-communication-in-lesional-skin"
+id="toc-b-inferring-cell-cell-communication-in-lesional-skin"><span
+class="toc-section-number">3.1.2</span> (B) Inferring cell-cell
+communication in lesional skin</a></li>
+<li><a href="#c-visualization-on-lesional-skin"
+id="toc-c-visualization-on-lesional-skin"><span
+class="toc-section-number">3.1.3</span> (C) Visualization on lesional
+skin</a></li>
+<li><a href="#d-summarize-and-save-results-for-lesional-skin"
+id="toc-d-summarize-and-save-results-for-lesional-skin"><span
+class="toc-section-number">3.1.4</span> (D) Summarize and save results
+for lesional skin</a></li>
+</ul></li>
+<li><a href="#step-2" id="toc-step-2"><span
+class="toc-section-number">3.2</span> Step 2 : …</a></li>
+</ul></li>
+</ul>
+</div>
+
+<pre class="r"><code>#global settings for figures
+knitr::opts_chunk$set(echo = TRUE, dev = &quot;png&quot;, dpi = 300, fig.keep = &quot;all&quot;, fig.path =&quot;./03_FIGURES/&quot;)</code></pre>
+<div
+id="cellchat-v2-from-ligand-receptor-interactions-to-comparative-cell-cell-communication-networks"
+class="section level1" number="1">
+<h1><span class="header-section-number">1</span> CellChat v2 : From
+Ligand-Receptor interactions to Comparative Cell-Cell Communication
+Networks</h1>
+<p><strong>This tutorial aims to provide a step by step introduction to
+CellChat v2 (an R package) designed to infer and visualize cell-cell
+communication networks form scRNA-seq data.</strong></p>
+<ul>
+<li><strong>Link to CellChat Git repository :</strong> <a
+href="https://github.com/jinworks/CellChat/tree/main"
+class="uri">https://github.com/jinworks/CellChat/tree/main</a></li>
+<li><strong>Link to the dataset used in this tutorial :</strong> <a
+href="https://ndownloader.figshare.com/files/25950872"
+class="uri">https://ndownloader.figshare.com/files/25950872</a></li>
+<li><strong>CellChat v2 bibliography :</strong> Jin, S., Plikus, M. V.,
+&amp; Nie, Q. (2025). CellChat for systematic analysis of cell–cell
+communication from single-cell transcriptomics. Nature Protocols, 20(1),
+180‑219. <a href="https://doi.org/10.1038/s41596-024-01045-4"
+class="uri">https://doi.org/10.1038/s41596-024-01045-4</a></li>
+<li><strong>CellChat v1 bibliography :</strong> Jin, S.,
+Guerrero-Juarez, C. F., Zhang, L., Chang, I., Ramos, R., Kuan, C.-H.,
+Myung, P., Plikus, M. V., &amp; Nie, Q. (2021). Inference and analysis
+of cell-cell communication using CellChat. Nature Communications, 12(1),
+1088. <a href="https://doi.org/10.1038/s41467-021-21246-9"
+class="uri">https://doi.org/10.1038/s41467-021-21246-9</a></li>
+</ul>
+<p>All-along this tutorial, we use a publicly available human skin
+scRNA-seq dataset provided by the CellChat developers and referenced in
+the official CellChat GitHub repository. The dataset includes two
+conditions : non-lesional (NL) and lesional (LS) skin, allowing us to
+investigate how inferred communication networks may differ between
+biological conditions.</p>
+<p>The dataset has already undergone preprocessing, normalization,
+clustering, and cell-type annotation. Therefore, the upstream steps are
+not repeated here because this tutorial is focusing specifically on
+CellChat.</p>
+<p>NB : CellChat infers potential interactions based on gene expression
+and prior knowledge of ligand-receptor relationships. Any prediction
+does not constitute direct evidence of cell-cell communication.</p>
+<p><strong>The workflow is divided into two main parts :</strong></p>
+<p><strong>Part 1 - Core CellChat workflow</strong></p>
+<p>Using the nonlesional (NL) skin sub-dataset, we will :</p>
+<ol style="list-style-type: decimal">
+<li>Loading Libraries + Dataset</li>
+<li>Creating a CellChat object</li>
+<li>Selecting appropriate CellChatDB</li>
+<li>Identifying overexpressed signaling genes and interactions</li>
+<li>Computing cell-cell communication probabilities</li>
+<li>Inferring signaling pathways and aggregating communication
+networks</li>
+</ol>
+<p><strong>Part 2 - Going further : comparative analysis between two
+conditions</strong></p>
+<p>Using the lesion (LS) skin sub-dataset, we will extend our analysis
+:</p>
+<ol style="list-style-type: decimal">
+<li>Run CellChat pipeline on lesional skin</li>
+<li>Merge the lesional and nonlesional CellChat objects</li>
+<li>Compare the number and strength of interactions</li>
+<li>Identify altered signaling pathways</li>
+<li>Interpret condition-specific communication patterns</li>
+</ol>
+<p><strong>Part 3 - Biological Interpretation and
+limitations</strong></p>
+<hr />
+<p>Before going any further, please install the necessary packages if
+needed.</p>
+<pre class="r"><code>#install.packages(&#39;devtools&#39;)
+#devtools::install_github(&quot;jinworks/CellChat&quot;)</code></pre>
+</div>
+<div id="part-1---core-cellchat-workflow" class="section level1"
+number="2">
+<h1><span class="header-section-number">2</span> Part 1 - Core CellChat
+workflow</h1>
+<div id="step-1-libraries-dataset-loading" class="section level2"
+number="2.1">
+<h2><span class="header-section-number">2.1</span> Step 1 : Libraries +
+Dataset Loading</h2>
+<div id="a-libraries-import" class="section level3" number="2.1.1">
+<h3><span class="header-section-number">2.1.1</span> (A) Libraries
+import</h3>
+<pre class="r"><code>#Import the required libraries
+library(CellChat)
+library(ggplot2)
+library(patchwork)
+options(stringsAsFactors = FALSE)</code></pre>
+</div>
+<div id="b-create-directories-optional" class="section level3"
+number="2.1.2">
+<h3><span class="header-section-number">2.1.2</span> (B) Create
+directories (optional)</h3>
+<p>To keep the analysis reproductible and organized, we create separate
+directory and use relative paths.</p>
+<pre class="r"><code>#Create directories if they do not exist
+dir.create(&quot;01_DATA&quot;)
+dir.create(&quot;02_RESULTS&quot;)
+dir.create(&quot;03_FIGURES&quot;)</code></pre>
+</div>
+<div id="c-dataset-loading" class="section level3" number="2.1.3">
+<h3><span class="header-section-number">2.1.3</span> (C) Dataset
+Loading</h3>
+<p>The human skin scRNA-seq dataset is provided as an R data file
+(.rda). For reproducibility concerns, the dataset is download from its
+original source if the file is not previously available locally.</p>
+<pre class="r"><code>#Official CellChat human skin dataset
+data_url &lt;- paste(&quot;https://ndownloader.figshare.com/files/25950872&quot;)
+data_file &lt;- &quot;./01_DATA/data_humanSkin_CellChat.rda&quot;
+
+#Download if dataset not available locally
+if (!file.exists(data_file))
+  download.file(url = data_url, destfile = data_file, mode = &quot;wb&quot;)
+
+#Load dataset into R
+load(data_file)
+
+#Inspect dataset
+names(data_humanSkin)</code></pre>
+<pre><code>## [1] &quot;data&quot; &quot;meta&quot;</code></pre>
+<p>NB : CellChat can also be initialized from other single-cell data
+structures such as Seurat object, SingleCellExperiment objects and
+AnnData object. The input format does not change the main objective of
+the analysis. For further details, please refer to the official CellChat
+GitHub repository and documentary (tutorials / QNA).</p>
+</div>
+<div
+id="d-extract-normalized-expression-dataset-metadata-and-nonlesional-nl-subset"
+class="section level3" number="2.1.4">
+<h3><span class="header-section-number">2.1.4</span> (D) Extract
+normalized expression dataset, metadata and nonlesional (NL) subset</h3>
+<p>CellChat requires two main inputs :</p>
+<ol style="list-style-type: decimal">
+<li>Normalized gene expression matrix</li>
+</ol>
+<p>This matrix contains genes in rows and cells in columns. Each value
+represents the normalized expression level of a gene in a specific
+cell.</p>
+<ol start="2" style="list-style-type: decimal">
+<li>Cell metadata</li>
+</ol>
+<p>It contains information associated with each cell such as annotated
+cell population and biological condition. In this dataset, there are two
+important metadata columns : condition (NL or LS) and labels (indicates
+the annotated cell population).</p>
+<p>NB : The expression matrix and metadate must refer to the same cells,
+in the same order. We use the
+<code>stopifnot(identical(..))</code>function to assess this before
+going further.</p>
+<pre class="r"><code>#Extract normalized expression dataset and metadata
+data.input = data_humanSkin$data
+meta = data_humanSkin$meta
+
+#Inspect biological conditions : NL and LS
+table(meta$condition)</code></pre>
+<pre><code>## 
+##   LS   NL 
+## 5011 2552</code></pre>
+<pre class="r"><code>#Select subset with nonlesional cells for CellChat analysis
+cell.use = rownames(meta)[meta$condition == &quot;NL&quot;]
+
+#Subset expression matrix and metadata
+data.input.NL = data.input[, cell.use]
+meta.NL = meta[cell.use, ]
+
+#Verifying matching cell identifier
+stopifnot(identical(colnames(data.input.NL), rownames(meta.NL)))</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>As we can see, the whole dataset contains 5011 cells form lesional
+skin (LS) and 2552 cells from nonlesional skin (NL).</p>
+</div>
+<div id="e-explore-cell-populations-and-verify-data-consistency"
+class="section level3" number="2.1.5">
+<h3><span class="header-section-number">2.1.5</span> (E) Explore cell
+populations and verify data consistency</h3>
+<p>Here, we examine the number of cells contained in each
+population.</p>
+<pre class="r"><code>#Inspect dimensionality and cell populations
+dim(data.input.NL) #matrix dimensions</code></pre>
+<pre><code>## [1] 17328  2552</code></pre>
+<pre class="r"><code>table(meta.NL$labels) #cell population sizes</code></pre>
+<pre><code>## 
+##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##         1215          548          196           69            7           38 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##           20            1          212           44          166           36</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>The NL subset expression matrix contains 17 328 genes (rows) and 2
+552 cells (columns).</p>
+<p>The NL cells are assigned to 12 annotated populations such as
+fibroblasts, T cells, dendritic cells and other immune populations.</p>
+<p>The cell populations are not equally represented : APOE+ fibroblasts
+account for 1 215 cells while the inflammatory dendritic cell population
+only account for one cell and cDC1 account for 7 cells.</p>
+<p>This is important as CellChat estimates communication at the cell
+group level. Therefore, groups containing very small amount of cells may
+provide unreliable estimates of ligand and receptor expression. The
+<code>filterCommunication()</code> function will later allow us apply a
+minimum cell number threshold.</p>
+<p><strong>End of Step 1</strong></p>
+<p>At this stage, we have :</p>
+<ul>
+<li><p>Loaded the official human skin scRNA-seq dataset,</p></li>
+<li><p>Identified the available biological conditions (NL/LS),</p></li>
+<li><p>Extracted the NL cells,</p></li>
+<li><p>Checked the expression data and cell metadata.</p></li>
+</ul>
+<p>Now, we can move to Step 2 : Creating a CellChat object.</p>
+</div>
+</div>
+<div id="step-2-creating-a-cellchat-object" class="section level2"
+number="2.2">
+<h2><span class="header-section-number">2.2</span> Step 2 : Creating a
+CellChat object</h2>
+<p>We initialize a CellChat object using the normalized gene expression
+matrix and corresponding cell metadata.</p>
+<p>The <code>createCellChat()</code> function organizes the input data
+into an object that will store information about cell-cell
+communication.</p>
+<p>Three arguments are important :</p>
+<ul>
+<li><p><code>object</code> : the normalized expression matrix,</p></li>
+<li><p><code>meta</code> : the cell metadata,</p></li>
+<li><p><code>group.by</code> : the metadata columns defining the cell
+populations. We use here <code>group.by = "labels"</code> so that
+individual cells are grouped according to their annotated cell
+types.</p></li>
+</ul>
+<pre class="r"><code>#Initialization of CellChat object for NL skin
+cellchat.NL &lt;- createCellChat(object = data.input.NL, meta = meta.NL, group.by = &quot;labels&quot;)</code></pre>
+<pre><code>## [1] &quot;Create a CellChat object from a data matrix&quot;</code></pre>
+<pre><code>## Warning in createCellChat(object = data.input.NL, meta = meta.NL, group.by = &quot;labels&quot;): The &#39;meta&#39; data does not have a column named `samples`. We now add this column and all cells are assumed to belong to `sample1`!</code></pre>
+<pre><code>## Set cell identities for the new CellChat object 
+## The cell groups used for CellChat analysis are  APOE+ FIB, FBN1+ FIB, COL11A1+ FIB, Inflam. FIB, cDC1, cDC2, LC, Inflam. DC, TC, Inflam. TC, CD40LG+ TC, NKT</code></pre>
+<pre class="r"><code>#Inspect initialized CellChat object
+cellchat.NL</code></pre>
+<pre><code>## An object of class CellChat created from a single dataset 
+##  17328 genes.
+##  2552 cells. 
+## CellChat analysis of single cell RNA-seq data!</code></pre>
+<pre class="r"><code>#Check annotated populations
+table(cellchat.NL@idents)</code></pre>
+<pre><code>## 
+##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##         1215          548          196           69            7           38 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##           20            1          212           44          166           36</code></pre>
+<pre class="r"><code>#Verify total number of cells
+stopifnot(ncol(cellchat.NL@data) == 2552)</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>NB : If the metadata do not contain a <code>samples</code> column,
+CellChat will automatically assign all cells to a default sample called
+<code>sample1</code>. In this case, this warning does not prevent the
+analysis from running as we perform the analysis within a single
+condition.</p>
+<p><strong>End of Step 2</strong></p>
+<p>At this stage, no cell-cell communication has been infered. We only
+initialized the data structure (CellChat object) required for further
+analysis.</p>
+</div>
+<div id="step-3-selecting-appropriate-cellchatdb" class="section level2"
+number="2.3">
+<h2><span class="header-section-number">2.3</span> Step 3 : Selecting
+appropriate CellChatDB</h2>
+<p>CellChat relies on a curated database “CellChatDB”, composed of
+already-known molecular interactions involved in cell-cell signaling.
+CellChatDB includes ligands, receptors, multimeric complexes and
+regulatory cofactors. It allows CellChat to identify biologically
+plausible interactions between cell population based on their gene
+expression profiles. Interaction can also be organized into signaling
+pathways, providing another level of analysis.</p>
+<p>CellChatDB have specific databases for several species :
+<code>CellChatDB.human</code>, <code>CellChatDB.mouse</code> and
+<code>CellChatDB.zebrafish</code> As our dataset is based on human skin
+cells, we use <code>CellChatDB.human</code>.</p>
+<div id="a-exploring-cellchat-human-ligand-receptor-database"
+class="section level3" number="2.3.1">
+<h3><span class="header-section-number">2.3.1</span> (A) Exploring
+CellChat human ligand-receptor database</h3>
+<pre class="r"><code>CellChatDB &lt;- CellChatDB.human #loading human DB
+
+#Database structure
+names(CellChatDB)</code></pre>
+<pre><code>## [1] &quot;interaction&quot; &quot;complex&quot;     &quot;cofactor&quot;    &quot;geneInfo&quot;</code></pre>
+<pre class="r"><code>nrow(CellChatDB$interaction)</code></pre>
+<pre><code>## [1] 3233</code></pre>
+<pre class="r"><code>head(CellChatDB$interaction)</code></pre>
+<pre><code>##                        interaction_name pathway_name ligand      receptor
+## TGFB1_TGFBR1_TGFBR2 TGFB1_TGFBR1_TGFBR2         TGFb  TGFB1     TGFbR1_R2
+## TGFB2_TGFBR1_TGFBR2 TGFB2_TGFBR1_TGFBR2         TGFb  TGFB2     TGFbR1_R2
+## TGFB3_TGFBR1_TGFBR2 TGFB3_TGFBR1_TGFBR2         TGFb  TGFB3     TGFbR1_R2
+## TGFB1_ACVR1B_TGFBR2 TGFB1_ACVR1B_TGFBR2         TGFb  TGFB1 ACVR1B_TGFbR2
+## TGFB1_ACVR1C_TGFBR2 TGFB1_ACVR1C_TGFBR2         TGFb  TGFB1 ACVR1C_TGFbR2
+## TGFB2_ACVR1B_TGFBR2 TGFB2_ACVR1B_TGFBR2         TGFb  TGFB2 ACVR1B_TGFbR2
+##                          agonist      antagonist co_A_receptor
+## TGFB1_TGFBR1_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB2_TGFBR1_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB3_TGFBR1_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB1_ACVR1B_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB1_ACVR1C_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB2_ACVR1B_TGFBR2 TGFb agonist TGFb antagonist              
+##                                co_I_receptor         annotation
+## TGFB1_TGFBR1_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB2_TGFBR1_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB3_TGFBR1_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB1_ACVR1B_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB1_ACVR1C_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB2_ACVR1B_TGFBR2 TGFb inhibition receptor Secreted Signaling
+##                          interaction_name_2       evidence is_neurotransmitter
+## TGFB1_TGFBR1_TGFBR2 TGFB1 - (TGFBR1+TGFBR2) KEGG: hsa04350               FALSE
+## TGFB2_TGFBR1_TGFBR2 TGFB2 - (TGFBR1+TGFBR2) KEGG: hsa04350               FALSE
+## TGFB3_TGFBR1_TGFBR2 TGFB3 - (TGFBR1+TGFBR2) KEGG: hsa04350               FALSE
+## TGFB1_ACVR1B_TGFBR2 TGFB1 - (ACVR1B+TGFBR2) PMID: 27449815               FALSE
+## TGFB1_ACVR1C_TGFBR2 TGFB1 - (ACVR1C+TGFBR2) PMID: 27449815               FALSE
+## TGFB2_ACVR1B_TGFBR2 TGFB2 - (ACVR1B+TGFBR2) PMID: 27449815               FALSE
+##                     ligand.symbol ligand.family
+## TGFB1_TGFBR1_TGFBR2         TGFB1      TGF-beta
+## TGFB2_TGFBR1_TGFBR2         TGFB2      TGF-beta
+## TGFB3_TGFBR1_TGFBR2         TGFB3      TGF-beta
+## TGFB1_ACVR1B_TGFBR2         TGFB1      TGF-beta
+## TGFB1_ACVR1C_TGFBR2         TGFB1      TGF-beta
+## TGFB2_ACVR1B_TGFBR2         TGFB2      TGF-beta
+##                                                         ligand.location
+## TGFB1_TGFBR1_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB2_TGFBR1_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB3_TGFBR1_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB1_ACVR1B_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB1_ACVR1C_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB2_ACVR1B_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+##                                                                                                                                                                                                                                                                                       ligand.keyword
+## TGFB1_TGFBR1_TGFBR2                                                                   Disease variant, Signal, Reference proteome, Extracellular matrix, Disulfide bond, Secreted, Mitogen, Growth factor, Direct protein sequencing, Cleavage on pair of basic residues, 3D-structure, Glycoprotein
+## TGFB2_TGFBR1_TGFBR2 Disease variant, Chromosomal rearrangement, Signal, Reference proteome, Disulfide bond, Secreted, Extracellular matrix, Mitogen, Growth factor, Direct protein sequencing, 3D-structure, Cleavage on pair of basic residues, Alternative splicing, Aortic aneurysm, Glycoprotein
+## TGFB3_TGFBR1_TGFBR2                                           Disease variant, Signal, Reference proteome, Extracellular matrix, Disulfide bond, Secreted, Mitogen, Cardiomyopathy, Growth factor, Cleavage on pair of basic residues, Alternative splicing, 3D-structure, Methylation, Glycoprotein
+## TGFB1_ACVR1B_TGFBR2                                                                   Disease variant, Signal, Reference proteome, Extracellular matrix, Disulfide bond, Secreted, Mitogen, Growth factor, Direct protein sequencing, Cleavage on pair of basic residues, 3D-structure, Glycoprotein
+## TGFB1_ACVR1C_TGFBR2                                                                   Disease variant, Signal, Reference proteome, Extracellular matrix, Disulfide bond, Secreted, Mitogen, Growth factor, Direct protein sequencing, Cleavage on pair of basic residues, 3D-structure, Glycoprotein
+## TGFB2_ACVR1B_TGFBR2 Disease variant, Chromosomal rearrangement, Signal, Reference proteome, Disulfide bond, Secreted, Extracellular matrix, Mitogen, Growth factor, Direct protein sequencing, 3D-structure, Cleavage on pair of basic residues, Alternative splicing, Aortic aneurysm, Glycoprotein
+##                       ligand.secreted_type ligand.transmembrane receptor.symbol
+## TGFB1_TGFBR1_TGFBR2          growth factor                FALSE  TGFBR2, TGFBR1
+## TGFB2_TGFBR1_TGFBR2          growth factor                FALSE  TGFBR2, TGFBR1
+## TGFB3_TGFBR1_TGFBR2 cytokine;growth factor                 TRUE  TGFBR2, TGFBR1
+## TGFB1_ACVR1B_TGFBR2          growth factor                FALSE  TGFBR2, ACVR1B
+## TGFB1_ACVR1C_TGFBR2          growth factor                FALSE  TGFBR2, ACVR1C
+## TGFB2_ACVR1B_TGFBR2          growth factor                FALSE  TGFBR2, ACVR1B
+##                                                            receptor.family
+## TGFB1_TGFBR1_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB2_TGFBR1_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB3_TGFBR1_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB1_ACVR1B_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB1_ACVR1C_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB2_ACVR1B_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+##                                                                                       receptor.location
+## TGFB1_TGFBR1_TGFBR2 Cell membrane, Secreted, Membrane raft, Cell surface, Cell junction, Tight junction
+## TGFB2_TGFBR1_TGFBR2 Cell membrane, Secreted, Membrane raft, Cell surface, Cell junction, Tight junction
+## TGFB3_TGFBR1_TGFBR2 Cell membrane, Secreted, Membrane raft, Cell surface, Cell junction, Tight junction
+## TGFB1_ACVR1B_TGFBR2                                              Cell membrane, Secreted, Membrane raft
+## TGFB1_ACVR1C_TGFBR2                                    Cell membrane, Secreted, Membrane raft, Membrane
+## TGFB2_ACVR1B_TGFBR2                                              Cell membrane, Secreted, Membrane raft
+##                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        receptor.keyword
+## TGFB1_TGFBR1_TGFBR2 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Tight junction, Isopeptide bond, Cell junction, Ubl conjugation
+## TGFB2_TGFBR1_TGFBR2 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Tight junction, Isopeptide bond, Cell junction, Ubl conjugation
+## TGFB3_TGFBR1_TGFBR2 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Tight junction, Isopeptide bond, Cell junction, Ubl conjugation
+## TGFB1_ACVR1B_TGFBR2                                                 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Ubl conjugation
+## TGFB1_ACVR1C_TGFBR2                                                                  Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium
+## TGFB2_ACVR1B_TGFBR2                                                 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Ubl conjugation
+##                     receptor.surfaceome_main receptor.surfaceome_sub
+## TGFB1_TGFBR1_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB2_TGFBR1_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB3_TGFBR1_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB1_ACVR1B_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB1_ACVR1C_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB2_ACVR1B_TGFBR2                Receptors         Act.TGFB;Kinase
+##                     receptor.adhesome receptor.secreted_type
+## TGFB1_TGFBR1_TGFBR2                                         
+## TGFB2_TGFBR1_TGFBR2                                         
+## TGFB3_TGFBR1_TGFBR2                                         
+## TGFB1_ACVR1B_TGFBR2                                         
+## TGFB1_ACVR1C_TGFBR2                                         
+## TGFB2_ACVR1B_TGFBR2                                         
+##                     receptor.transmembrane       version
+## TGFB1_TGFBR1_TGFBR2                   TRUE CellChatDB v1
+## TGFB2_TGFBR1_TGFBR2                   TRUE CellChatDB v1
+## TGFB3_TGFBR1_TGFBR2                   TRUE CellChatDB v1
+## TGFB1_ACVR1B_TGFBR2                   TRUE CellChatDB v1
+## TGFB1_ACVR1C_TGFBR2                   TRUE CellChatDB v1
+## TGFB2_ACVR1B_TGFBR2                   TRUE CellChatDB v1</code></pre>
+<pre class="r"><code>dplyr::glimpse(CellChatDB$interaction)</code></pre>
+<pre><code>## Rows: 3,233
+## Columns: 28
+## $ interaction_name         &lt;chr&gt; &quot;TGFB1_TGFBR1_TGFBR2&quot;, &quot;TGFB2_TGFBR1_TGFBR2&quot;,…
+## $ pathway_name             &lt;chr&gt; &quot;TGFb&quot;, &quot;TGFb&quot;, &quot;TGFb&quot;, &quot;TGFb&quot;, &quot;TGFb&quot;, &quot;TGFb…
+## $ ligand                   &lt;chr&gt; &quot;TGFB1&quot;, &quot;TGFB2&quot;, &quot;TGFB3&quot;, &quot;TGFB1&quot;, &quot;TGFB1&quot;, …
+## $ receptor                 &lt;chr&gt; &quot;TGFbR1_R2&quot;, &quot;TGFbR1_R2&quot;, &quot;TGFbR1_R2&quot;, &quot;ACVR1…
+## $ agonist                  &lt;chr&gt; &quot;TGFb agonist&quot;, &quot;TGFb agonist&quot;, &quot;TGFb agonist…
+## $ antagonist               &lt;chr&gt; &quot;TGFb antagonist&quot;, &quot;TGFb antagonist&quot;, &quot;TGFb a…
+## $ co_A_receptor            &lt;chr&gt; &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;…
+## $ co_I_receptor            &lt;chr&gt; &quot;TGFb inhibition receptor&quot;, &quot;TGFb inhibition …
+## $ annotation               &lt;chr&gt; &quot;Secreted Signaling&quot;, &quot;Secreted Signaling&quot;, &quot;…
+## $ interaction_name_2       &lt;chr&gt; &quot;TGFB1 - (TGFBR1+TGFBR2)&quot;, &quot;TGFB2 - (TGFBR1+T…
+## $ evidence                 &lt;chr&gt; &quot;KEGG: hsa04350&quot;, &quot;KEGG: hsa04350&quot;, &quot;KEGG: hs…
+## $ is_neurotransmitter      &lt;chr&gt; &quot;FALSE&quot;, &quot;FALSE&quot;, &quot;FALSE&quot;, &quot;FALSE&quot;, &quot;FALSE&quot;, …
+## $ ligand.symbol            &lt;chr&gt; &quot;TGFB1&quot;, &quot;TGFB2&quot;, &quot;TGFB3&quot;, &quot;TGFB1&quot;, &quot;TGFB1&quot;, …
+## $ ligand.family            &lt;chr&gt; &quot;TGF-beta&quot;, &quot;TGF-beta&quot;, &quot;TGF-beta&quot;, &quot;TGF-beta…
+## $ ligand.location          &lt;chr&gt; &quot;Extracellular matrix, Secreted, Extracellula…
+## $ ligand.keyword           &lt;chr&gt; &quot;Disease variant, Signal, Reference proteome,…
+## $ ligand.secreted_type     &lt;chr&gt; &quot;growth factor&quot;, &quot;growth factor&quot;, &quot;cytokine;g…
+## $ ligand.transmembrane     &lt;chr&gt; &quot;FALSE&quot;, &quot;FALSE&quot;, &quot;TRUE&quot;, &quot;FALSE&quot;, &quot;FALSE&quot;, &quot;…
+## $ receptor.symbol          &lt;chr&gt; &quot;TGFBR2, TGFBR1&quot;, &quot;TGFBR2, TGFBR1&quot;, &quot;TGFBR2, …
+## $ receptor.family          &lt;chr&gt; &quot;Protein kinase superfamily, TKL Ser/Thr prot…
+## $ receptor.location        &lt;chr&gt; &quot;Cell membrane, Secreted, Membrane raft, Cell…
+## $ receptor.keyword         &lt;chr&gt; &quot;Membrane, Secreted, Disulfide bond, Kinase, …
+## $ receptor.surfaceome_main &lt;chr&gt; &quot;Receptors&quot;, &quot;Receptors&quot;, &quot;Receptors&quot;, &quot;Recep…
+## $ receptor.surfaceome_sub  &lt;chr&gt; &quot;Act.TGFB;Kinase&quot;, &quot;Act.TGFB;Kinase&quot;, &quot;Act.TG…
+## $ receptor.adhesome        &lt;chr&gt; &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;…
+## $ receptor.secreted_type   &lt;chr&gt; &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;…
+## $ receptor.transmembrane   &lt;chr&gt; &quot;TRUE&quot;, &quot;TRUE&quot;, &quot;TRUE&quot;, &quot;TRUE&quot;, &quot;TRUE&quot;, &quot;TRUE…
+## $ version                  &lt;chr&gt; &quot;CellChatDB v1&quot;, &quot;CellChatDB v1&quot;, &quot;CellChatDB…</code></pre>
+<pre class="r"><code>showDatabaseCategory(CellChatDB) #interaction catagories</code></pre>
+<p><img src="03_FIGURES/unnamed-chunk-8-1.png" /><!-- --></p>
+<p><strong><em>Output Interpration</em></strong></p>
+<p>sThe <code>interaction</code> table provides a list of known
+molecular interaction and associated signaling pathways.</p>
+<p>The <code>interaction</code> dataframe provides a description of
+cofactors, gene information, receptor information.</p>
+<p>The <code>showDatabaseCategory()</code> function provides an overview
+of the interaction categories represented in the database.</p>
+<p>NB : Interaction absent from the database can not be inferred through
+this workflow !</p>
+</div>
+<div id="b-selecting-the-appropriate-database-for-analysis"
+class="section level3" number="2.3.2">
+<h3><span class="header-section-number">2.3.2</span> (B) Selecting the
+appropriate database for analysis</h3>
+<pre class="r"><code>cellchat.NL@DB &lt;- CellChatDB.human #assign human database to CellChat object using @DB</code></pre>
+<p>We use the whole human interaction database to investigate a broad
+range of signaling mechanisms/pathways. Analysis can be restricted to
+selected categories of interactions such as Cell-Cell contact for
+example, depend on the biological question investigated using
+<code>CellChatDB.use &lt;- subsetDB(CellChatDB, search = "Cell-Cell Contact")</code>.</p>
+<p><strong>End of Step 3</strong></p>
+<p>At this stage we have :</p>
+<ul>
+<li><p>Explored the CellChat human ligand-receptor database,</p></li>
+<li><p>Selected the appropriate database.</p></li>
+</ul>
+<p>We can now move on with Step 4.</p>
+</div>
+</div>
+<div
+id="step-4-identifying-overexpressed-signaling-genes-and-interactions"
+class="section level2" number="2.4">
+<h2><span class="header-section-number">2.4</span> Step 4 : Identifying
+overexpressed signaling genes and interactions</h2>
+<div id="a-selecting-signaling-genes-from-expression-matrix"
+class="section level3" number="2.4.1">
+<h3><span class="header-section-number">2.4.1</span> (A) Selecting
+signaling genes from expression matrix</h3>
+<p>Before going on with inferration of cell-cell communication, we have
+to identify which genes in our selected dataset are involved in
+intercellular signaling.</p>
+<p>The expression matrix contains several thousands of gene, not all of
+them encode ligands, receptors or other molecules involved in cell-cell
+communication.</p>
+<p>The <code>subsetData()</code> function selects genes associated with
+signaling interactions documented in our previously selected CellChatDB
+database. This reduces the number of genes considered in further
+analysis, reduce computational cost while focusing the workflow only on
+relevant signaling molecules.</p>
+<p>NB : This step does not yet infer interactions but only extracts
+relevant data.</p>
+<pre class="r"><code># use a subset of CellChatDB for cell-cell communication analysis
+cellchat.NL &lt;- subsetData(cellchat.NL) #necessary step even if using the whole database
+dim(cellchat.NL@data.signaling) #dimension of signaling exp matrix</code></pre>
+<pre><code>## [1] 1093 2552</code></pre>
+<pre class="r"><code>dim(cellchat.NL@data) #compare with original exp matrix</code></pre>
+<pre><code>## [1] 17328  2552</code></pre>
+<p><strong><em>Output interpratation</em></strong></p>
+<p>The <code>cellchat.NL@data</code> contains 17 328 genes.</p>
+<p>The <code>cellchat.NL@data.signaling</code> contains 1 093 genes that
+are identified as relevant for intercellular signaling by the CellChat
+human database. The number of cells must remain similar : 2 552 NL
+cells.</p>
+<p>Here, reduction of analyzed genes have been performed without
+modifying cellular population.</p>
+</div>
+<div id="b-identifying-overexpressed-signaling-genes"
+class="section level3" number="2.4.2">
+<h3><span class="header-section-number">2.4.2</span> (B) Identifying
+overexpressed signaling genes</h3>
+<p>Now, we identify signaling genes that are overexpressed in particular
+cell populations.</p>
+<p>The <code>identifyOverExpressedGenes()</code> function compares gene
+expression across annotated cell groups in order to identify signaling
+genes that are significally enriched in one or more population. It is
+useful here as CellChat aims to detect communication patterns within
+specific cell populations.</p>
+<pre class="r"><code>#future::plan(&quot;multisession&quot;, workers = 4) optional - use this to do parallel computing if needed for big dataset
+cellchat.NL &lt;- identifyOverExpressedGenes(cellchat.NL)</code></pre>
+<p>CellChat uses statistical comparisons between cell groups to select
+preferentially expressed genes.</p>
+</div>
+<div id="c-identifying-oversexpressed-ligand-receptor-interaction"
+class="section level3" number="2.4.3">
+<h3><span class="header-section-number">2.4.3</span> (C) Identifying
+oversexpressed ligand-receptor interaction</h3>
+<p>Once overexpressed signaling genes have been identified, we can use
+them to select candidate ligand-receptor interactions.</p>
+<p>The <code>identifyOverExpressedInteractions()</code> function
+identifies interactions from CellChatDB supported by overexpressed
+signaling genes detected.</p>
+<p>This step reduces the set of interactions to those who are the most
+relevant to the observed gene expression patterns.</p>
+<p>The <code>cellchat.NL@LR$LRsig</code> table contains candidate
+ligand-receptor interactions selected for subsequent analysis with many
+informations such as ligand and receptor identities, associated
+signaling pathways, regulatory cofactors and even biological evidence
+refering to literature.</p>
+<p>NB : This table does not indicate which populations are communicating
+with each other, it only presents molecular interactions retained prior
+to network calculation.</p>
+<pre class="r"><code>cellchat.NL &lt;- identifyOverExpressedInteractions(cellchat.NL)</code></pre>
+<pre><code>## The number of highly variable ligand-receptor pairs used for signaling inference is 1351</code></pre>
+<pre class="r"><code>nrow(cellchat.NL@LR$LRsig)</code></pre>
+<pre><code>## [1] 1351</code></pre>
+<pre class="r"><code>head(cellchat.NL@LR$LRsig)</code></pre>
+<pre><code>##                        interaction_name pathway_name ligand      receptor
+## TGFB1_TGFBR1_TGFBR2 TGFB1_TGFBR1_TGFBR2         TGFb  TGFB1     TGFbR1_R2
+## TGFB2_TGFBR1_TGFBR2 TGFB2_TGFBR1_TGFBR2         TGFb  TGFB2     TGFbR1_R2
+## TGFB3_TGFBR1_TGFBR2 TGFB3_TGFBR1_TGFBR2         TGFb  TGFB3     TGFbR1_R2
+## TGFB1_ACVR1B_TGFBR2 TGFB1_ACVR1B_TGFBR2         TGFb  TGFB1 ACVR1B_TGFbR2
+## TGFB1_ACVR1C_TGFBR2 TGFB1_ACVR1C_TGFBR2         TGFb  TGFB1 ACVR1C_TGFbR2
+## TGFB2_ACVR1B_TGFBR2 TGFB2_ACVR1B_TGFBR2         TGFb  TGFB2 ACVR1B_TGFbR2
+##                          agonist      antagonist co_A_receptor
+## TGFB1_TGFBR1_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB2_TGFBR1_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB3_TGFBR1_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB1_ACVR1B_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB1_ACVR1C_TGFBR2 TGFb agonist TGFb antagonist              
+## TGFB2_ACVR1B_TGFBR2 TGFb agonist TGFb antagonist              
+##                                co_I_receptor         annotation
+## TGFB1_TGFBR1_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB2_TGFBR1_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB3_TGFBR1_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB1_ACVR1B_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB1_ACVR1C_TGFBR2 TGFb inhibition receptor Secreted Signaling
+## TGFB2_ACVR1B_TGFBR2 TGFb inhibition receptor Secreted Signaling
+##                          interaction_name_2       evidence is_neurotransmitter
+## TGFB1_TGFBR1_TGFBR2 TGFB1 - (TGFBR1+TGFBR2) KEGG: hsa04350               FALSE
+## TGFB2_TGFBR1_TGFBR2 TGFB2 - (TGFBR1+TGFBR2) KEGG: hsa04350               FALSE
+## TGFB3_TGFBR1_TGFBR2 TGFB3 - (TGFBR1+TGFBR2) KEGG: hsa04350               FALSE
+## TGFB1_ACVR1B_TGFBR2 TGFB1 - (ACVR1B+TGFBR2) PMID: 27449815               FALSE
+## TGFB1_ACVR1C_TGFBR2 TGFB1 - (ACVR1C+TGFBR2) PMID: 27449815               FALSE
+## TGFB2_ACVR1B_TGFBR2 TGFB2 - (ACVR1B+TGFBR2) PMID: 27449815               FALSE
+##                     ligand.symbol ligand.family
+## TGFB1_TGFBR1_TGFBR2         TGFB1      TGF-beta
+## TGFB2_TGFBR1_TGFBR2         TGFB2      TGF-beta
+## TGFB3_TGFBR1_TGFBR2         TGFB3      TGF-beta
+## TGFB1_ACVR1B_TGFBR2         TGFB1      TGF-beta
+## TGFB1_ACVR1C_TGFBR2         TGFB1      TGF-beta
+## TGFB2_ACVR1B_TGFBR2         TGFB2      TGF-beta
+##                                                         ligand.location
+## TGFB1_TGFBR1_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB2_TGFBR1_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB3_TGFBR1_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB1_ACVR1B_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB1_ACVR1C_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+## TGFB2_ACVR1B_TGFBR2 Extracellular matrix, Secreted, Extracellular space
+##                                                                                                                                                                                                                                                                                       ligand.keyword
+## TGFB1_TGFBR1_TGFBR2                                                                   Disease variant, Signal, Reference proteome, Extracellular matrix, Disulfide bond, Secreted, Mitogen, Growth factor, Direct protein sequencing, Cleavage on pair of basic residues, 3D-structure, Glycoprotein
+## TGFB2_TGFBR1_TGFBR2 Disease variant, Chromosomal rearrangement, Signal, Reference proteome, Disulfide bond, Secreted, Extracellular matrix, Mitogen, Growth factor, Direct protein sequencing, 3D-structure, Cleavage on pair of basic residues, Alternative splicing, Aortic aneurysm, Glycoprotein
+## TGFB3_TGFBR1_TGFBR2                                           Disease variant, Signal, Reference proteome, Extracellular matrix, Disulfide bond, Secreted, Mitogen, Cardiomyopathy, Growth factor, Cleavage on pair of basic residues, Alternative splicing, 3D-structure, Methylation, Glycoprotein
+## TGFB1_ACVR1B_TGFBR2                                                                   Disease variant, Signal, Reference proteome, Extracellular matrix, Disulfide bond, Secreted, Mitogen, Growth factor, Direct protein sequencing, Cleavage on pair of basic residues, 3D-structure, Glycoprotein
+## TGFB1_ACVR1C_TGFBR2                                                                   Disease variant, Signal, Reference proteome, Extracellular matrix, Disulfide bond, Secreted, Mitogen, Growth factor, Direct protein sequencing, Cleavage on pair of basic residues, 3D-structure, Glycoprotein
+## TGFB2_ACVR1B_TGFBR2 Disease variant, Chromosomal rearrangement, Signal, Reference proteome, Disulfide bond, Secreted, Extracellular matrix, Mitogen, Growth factor, Direct protein sequencing, 3D-structure, Cleavage on pair of basic residues, Alternative splicing, Aortic aneurysm, Glycoprotein
+##                       ligand.secreted_type ligand.transmembrane receptor.symbol
+## TGFB1_TGFBR1_TGFBR2          growth factor                FALSE  TGFBR2, TGFBR1
+## TGFB2_TGFBR1_TGFBR2          growth factor                FALSE  TGFBR2, TGFBR1
+## TGFB3_TGFBR1_TGFBR2 cytokine;growth factor                 TRUE  TGFBR2, TGFBR1
+## TGFB1_ACVR1B_TGFBR2          growth factor                FALSE  TGFBR2, ACVR1B
+## TGFB1_ACVR1C_TGFBR2          growth factor                FALSE  TGFBR2, ACVR1C
+## TGFB2_ACVR1B_TGFBR2          growth factor                FALSE  TGFBR2, ACVR1B
+##                                                            receptor.family
+## TGFB1_TGFBR1_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB2_TGFBR1_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB3_TGFBR1_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB1_ACVR1B_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB1_ACVR1C_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+## TGFB2_ACVR1B_TGFBR2 Protein kinase superfamily, TKL Ser/Thr protein kinase
+##                                                                                       receptor.location
+## TGFB1_TGFBR1_TGFBR2 Cell membrane, Secreted, Membrane raft, Cell surface, Cell junction, Tight junction
+## TGFB2_TGFBR1_TGFBR2 Cell membrane, Secreted, Membrane raft, Cell surface, Cell junction, Tight junction
+## TGFB3_TGFBR1_TGFBR2 Cell membrane, Secreted, Membrane raft, Cell surface, Cell junction, Tight junction
+## TGFB1_ACVR1B_TGFBR2                                              Cell membrane, Secreted, Membrane raft
+## TGFB1_ACVR1C_TGFBR2                                    Cell membrane, Secreted, Membrane raft, Membrane
+## TGFB2_ACVR1B_TGFBR2                                              Cell membrane, Secreted, Membrane raft
+##                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        receptor.keyword
+## TGFB1_TGFBR1_TGFBR2 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Tight junction, Isopeptide bond, Cell junction, Ubl conjugation
+## TGFB2_TGFBR1_TGFBR2 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Tight junction, Isopeptide bond, Cell junction, Ubl conjugation
+## TGFB3_TGFBR1_TGFBR2 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Tight junction, Isopeptide bond, Cell junction, Ubl conjugation
+## TGFB1_ACVR1B_TGFBR2                                                 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Ubl conjugation
+## TGFB1_ACVR1C_TGFBR2                                                                  Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium
+## TGFB2_ACVR1B_TGFBR2                                                 Membrane, Secreted, Disulfide bond, Kinase, Transmembrane, Differentiation, ATP-binding, Receptor, Alternative splicing, Aortic aneurysm, Transferase, Glycoprotein, Manganese, Disease variant, Growth regulation, Signal, Reference proteome, Metal-binding, Transmembrane helix, Hereditary nonpolyposis colorectal cancer, Cell membrane, Phosphoprotein, Direct protein sequencing, Apoptosis, Craniosynostosis, Serine/threonine-protein kinase, 3D-structure, Nucleotide-binding, Magnesium, Ubl conjugation
+##                     receptor.surfaceome_main receptor.surfaceome_sub
+## TGFB1_TGFBR1_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB2_TGFBR1_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB3_TGFBR1_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB1_ACVR1B_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB1_ACVR1C_TGFBR2                Receptors         Act.TGFB;Kinase
+## TGFB2_ACVR1B_TGFBR2                Receptors         Act.TGFB;Kinase
+##                     receptor.adhesome receptor.secreted_type
+## TGFB1_TGFBR1_TGFBR2                                         
+## TGFB2_TGFBR1_TGFBR2                                         
+## TGFB3_TGFBR1_TGFBR2                                         
+## TGFB1_ACVR1B_TGFBR2                                         
+## TGFB1_ACVR1C_TGFBR2                                         
+## TGFB2_ACVR1B_TGFBR2                                         
+##                     receptor.transmembrane       version
+## TGFB1_TGFBR1_TGFBR2                   TRUE CellChatDB v1
+## TGFB2_TGFBR1_TGFBR2                   TRUE CellChatDB v1
+## TGFB3_TGFBR1_TGFBR2                   TRUE CellChatDB v1
+## TGFB1_ACVR1B_TGFBR2                   TRUE CellChatDB v1
+## TGFB1_ACVR1C_TGFBR2                   TRUE CellChatDB v1
+## TGFB2_ACVR1B_TGFBR2                   TRUE CellChatDB v1</code></pre>
+<pre class="r"><code>#Verify that analysis include NL cells only
+ncol(cellchat.NL@data) #expected number = 2552</code></pre>
+<pre><code>## [1] 2552</code></pre>
+<pre class="r"><code>stopifnot(ncol(cellchat.NL@data) == 2552)</code></pre>
+<p><strong><em>Output interpratation</em></strong></p>
+<p>CellChat identified 1 351 candidates ligand-receptor interactions for
+downstream communication inference.</p>
+<p>The first entries of <code>cellchat.NL@LR$LRsig</code> table
+correspond to TGFB signaling pathway and involve TGFB-1, 2 and 3 ligands
+and other multimeric receptor complexes.</p>
+<p>This is illustrating 2 important features of CellChat :</p>
+<ul>
+<li><p>A single signaling pathway can involve several ligand-receptor
+interactions,</p></li>
+<li><p>Some receptors consists of multiple protein subunits.</p></li>
+</ul>
+<p><strong>End of Step 4</strong></p>
+<p>We narrowed down our analysis from the whole transcriptomic dataset
+to only a set of signaling-related genes and candidate ligand-receptor
+interactions.</p>
+<p>The potential involvement of these candidates in intercellular
+signaling will be assessed in the next step.</p>
+</div>
+</div>
+<div id="step-5-computing-cell-cell-communication-probabilities"
+class="section level2" number="2.5">
+<h2><span class="header-section-number">2.5</span> Step 5 : Computing
+cell-cell communication probabilities</h2>
+<p>Our main objective is now to investigate which cell populations may
+communicate, how strong their potential communication is and if the
+interaction is statistically relevant.</p>
+<p>To do this, CellChat uses a probabilistic model based on law of mass
+action (by using Hill function and several corrections linked to cell
+group size, cofactors and other).</p>
+<p>To simplify, the underlying assumption is that communication between
+a sender population (the one expressing a ligand) and a receiver
+population (expressing receptor) depends on the expression levels of
+both partners.</p>
+<p>For each candidate L-R interaction, CellChat estimates a
+communication score between pairs of cell populations using their
+aggregated gene expression profiles, while accouting for molecular
+complexity (multimeric receptor complexes, regulatory cofactors).</p>
+<p>Then, it evaluates the statistical relevance for inferred interaction
+though a permutation-based procedure in which each cell group labels are
+shuffled randomly.</p>
+<div id="a-selecting-inference-parameters" class="section level3"
+number="2.5.1">
+<h3><span class="header-section-number">2.5.1</span> (A) Selecting
+inference parameters</h3>
+<p>Before going on with computation of communication propabilities,
+several parameters must be considered. These parameters influence how
+CellChat will estimate potential signaling strength and evaluates
+statistical support.</p>
+<p>For this tutorial, we retain the following settings :</p>
+<ul>
+<li><p><code>type = "triMean"</code> : estimates gene expression at the
+cell-population level using the trimean. This is the default option and
+produces fewer but stronger inferred interactions.</p></li>
+<li><p><code>population.size = FALSE</code> : does not weight
+communication strength by relative abundance of each cell population.
+The primary focus will be on ligand-receptor expression rather than
+population size. In our dataset, this choice is interesting because the
+NL populations are highly imbalanced.</p></li>
+<li><p><code>nboot = 100</code> : performs 100 random permutations of
+cell-group labels to assess statistical support for the inferred
+interactions.</p></li>
+<li><p><code>seed.use = 28</code> : set a random seed for
+reproducibility purposes.</p></li>
+</ul>
+<p>The same settings will be apply for the lesional dataset in Part 2 of
+tutorial.</p>
+<p>NB : An alternative choice to <code>type = "triMean"</code> is the
+truncated mean <code>type = "trucatedMean"</code> that can detect more
+interaction depending on the selected trimming population. The choice
+between those two methods illustrate the trade-off between more
+conservation and more permissive communication inference.</p>
+</div>
+<div id="b-computing-communication-probalities" class="section level3"
+number="2.5.2">
+<h3><span class="header-section-number">2.5.2</span> (B) Computing
+communication probalities</h3>
+<p>We use now the function <code>computeCommunProb()</code> to estimate
+the strength of potential communication between the annotated cell
+populations.</p>
+<p>For each candidate L-R interaction, CellChat evaluates possible
+sender-receiver pairs using the expression of signaling molecules.</p>
+<p>Statistical support is assessed though random permutations of
+cell-group labels.</p>
+<p>NB : Please note that computation time may take several minutes
+depending on dataset size and number of permutation. For the dataset
+used in this tutorial it takes about 1/2 minutes as the dataset size is
+small.</p>
+<pre class="r"><code>stopifnot(ncol(cellchat.NL@data) == 2552) #check if all NL cells are included
+cellchat.NL &lt;- computeCommunProb(cellchat.NL, type = &quot;triMean&quot;, population.size = FALSE, nboot = 100, seed.use = 28)</code></pre>
+<pre><code>## triMean is used for calculating the average gene expression per cell group. 
+## [1] &quot;&gt;&gt;&gt; Run CellChat on sc/snRNA-seq data &lt;&lt;&lt; [2026-10-15 14:05:29.860948]&quot;
+## [1] &quot;&gt;&gt;&gt; CellChat inference is done. Parameter values are stored in `object@options$parameter` &lt;&lt;&lt; [2026-10-15 14:06:04.231374]&quot;</code></pre>
+<p>After execution, CellChat stores two objects within
+<code>cellchat.NL@net</code> : <code>@net$prob</code> containing
+inferred communication scores and <code>@net$pval</code> containing
+p-values calculated using n permutations.</p>
+<pre class="r"><code>#Check dimension of 3D array : we expect 12 (sender population) x 12 (receiver population) x 1351 (candidates interaction)
+dim(cellchat.NL@net$prob)</code></pre>
+<pre><code>## [1]   12   12 1351</code></pre>
+<pre class="r"><code>dim(cellchat.NL@net$pval)</code></pre>
+<pre><code>## [1]   12   12 1351</code></pre>
+<pre class="r"><code>#Check the parameters stored by CellChat for computation
+cellchat.NL@options$parameter</code></pre>
+<pre><code>## $type.mean
+## [1] &quot;triMean&quot;
+## 
+## $trim
+## [1] 0.1
+## 
+## $raw.use
+## [1] TRUE
+## 
+## $population.size
+## [1] FALSE
+## 
+## $nboot
+## [1] 100
+## 
+## $seed.use
+## [1] 28
+## 
+## $Kh
+## [1] 0.5
+## 
+## $n
+## [1] 1
+## 
+## $distance.use
+## NULL
+## 
+## $interaction.range
+## NULL
+## 
+## $ratio
+## NULL
+## 
+## $tol
+## NULL
+## 
+## $k.min
+## NULL
+## 
+## $contact.dependent
+## [1] FALSE
+## 
+## $contact.range
+## NULL
+## 
+## $contact.knn.k
+## NULL
+## 
+## $contact.dependent.forced
+## [1] FALSE</code></pre>
+</div>
+<div id="c-filtering-and-inspecting-inferred-communications"
+class="section level3" number="2.5.3">
+<h3><span class="header-section-number">2.5.3</span> (C) Filtering and
+inspecting inferred communications</h3>
+<p>Some cell populations in our dataset contains very few cells. For
+exemple the cDC1 population (7 cells) and the inflammatory dendritic
+cell population (1 cell). Such small groups may provide unreliable
+estimates of average gene expression and therefore affect inferred
+communication scores.</p>
+<p>To adress this, we use the <code>filterCommunication()</code>
+function to exclude inferred communication with cell populations that
+have a few number of cells.</p>
+<p>We select <code>min.cells = 10</code> which is the default value.</p>
+<p>NB : <code>filterCommunication()</code> preserves the structure of
+the array and sets the probabilities for the excluded populations to
+zero, rather than physically removing them from our dataset.</p>
+<pre class="r"><code>table(cellchat.NL@idents) #display cell counts</code></pre>
+<pre><code>## 
+##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##         1215          548          196           69            7           38 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##           20            1          212           44          166           36</code></pre>
+<pre class="r"><code>cellchat.NL &lt;- filterCommunication(cellchat.NL, min.cells = 10) #apply the filter</code></pre>
+<pre><code>## The cell-cell communication related with the following cell groups are excluded due to the few number of cells:  cDC1, Inflam. DC !  39.6% interactions are removed!</code></pre>
+<pre class="r"><code>dim(cellchat.NL@net$prob) #check filter communication probability array</code></pre>
+<pre><code>## [1]   12   12 1351</code></pre>
+<p>CellChat indicates that 39.6% of interactions are removed when
+filtering out cDC1 and Inflam.DC.</p>
+<p>After filtering, we can extract the inferred communications using the
+<code>subsetCommunication()</code> function that converts the results
+into a table that shows sender/receiver populations, L-R interactions,
+communication scores and statistical significance. Allowing us to do an
+exploratory analysis and biological interpretation.</p>
+<p><code>thresh = 0.05</code> is the default value for significance
+threshold.</p>
+<pre class="r"><code>#extract inferred communications
+df.net.NL &lt;- subsetCommunication(cellchat.NL, thresh = 0.05)
+nrow(df.net.NL)</code></pre>
+<pre><code>## [1] 605</code></pre>
+<pre class="r"><code>head(df.net.NL)</code></pre>
+<pre><code>##        source       target ligand receptor        prob pval interaction_name
+## 1   APOE+ FIB    APOE+ FIB   FGF7    FGFR1 0.007916143 0.00       FGF7_FGFR1
+## 2 Inflam. FIB    APOE+ FIB   FGF7    FGFR1 0.007424840 0.00       FGF7_FGFR1
+## 3   APOE+ FIB    FBN1+ FIB   FGF7    FGFR1 0.009222256 0.00       FGF7_FGFR1
+## 4 Inflam. FIB    FBN1+ FIB   FGF7    FGFR1 0.008650598 0.00       FGF7_FGFR1
+## 5   APOE+ FIB COL11A1+ FIB   FGF7    FGFR1 0.008360141 0.00       FGF7_FGFR1
+## 6 Inflam. FIB COL11A1+ FIB   FGF7    FGFR1 0.007841500 0.02       FGF7_FGFR1
+##   interaction_name_2 pathway_name         annotation     evidence
+## 1       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 2       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 3       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 4       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 5       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 6       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>We obtain 605 inferred communication records. Each record corresponds
+to a unique combinaison of a sender population, a receiver population
+and a L-R interaction.</p>
+<p>For example, the FGF7-FGFR1 interaction, which is associated with the
+FGF signaling pathway, is inferred between fibroblast populations. Some
+interactions are predicted within the same cell population (APOE+
+fibroblasts) suggesting autocrine signaling.</p>
+<p>These results indicate that fibroblast subpopulations may participate
+in FGF-mediated communication in nonlesional skin. However, as these
+interactions are inferred from transcriptomic data, actual signaling
+activity must be confirmed though experimental validation.</p>
+</div>
+<div id="d-compare-gene-expression-estimators-optional"
+class="section level3" number="2.5.4">
+<h3><span class="header-section-number">2.5.4</span> (D) Compare gene
+expression estimators (OPTIONAL)</h3>
+<p>The results obtained from a CellChat analysis depend on
+methodological choices, even if we use the same data.</p>
+<p>To illustrate this, we choose to use the <code>truncatedMean</code>
+option with <code>trim = 0.1</code> as it is documented in the official
+CellChat vignette.</p>
+<pre class="r"><code>#Creation of a separate copy for alternative analysis
+cellchat.NL.truncated &lt;- cellchat.NL 
+
+cellchat.NL.truncated &lt;- computeCommunProb(cellchat.NL.truncated, type = &quot;truncatedMean&quot;, trim = 0.1, population.size = FALSE, nboot = 100, seed.use = 28)</code></pre>
+<pre><code>## truncatedMean is used for calculating the average gene expression per cell group. 
+## [1] &quot;&gt;&gt;&gt; Run CellChat on sc/snRNA-seq data &lt;&lt;&lt; [2026-10-15 14:06:04.818231]&quot;
+## [1] &quot;&gt;&gt;&gt; CellChat inference is done. Parameter values are stored in `object@options$parameter` &lt;&lt;&lt; [2026-10-15 14:06:54.389001]&quot;</code></pre>
+<pre class="r"><code>cellchat.NL.truncated &lt;- filterCommunication(cellchat.NL.truncated, min.cells = 10)</code></pre>
+<pre><code>## The cell-cell communication related with the following cell groups are excluded due to the few number of cells:  cDC1, Inflam. DC !  31.5% interactions are removed!</code></pre>
+<pre class="r"><code>df.net.NL.truncated &lt;- subsetCommunication(cellchat.NL.truncated, thresh = 0.05)
+nrow(df.net.NL.truncated)</code></pre>
+<pre><code>## [1] 2017</code></pre>
+<pre class="r"><code>head(df.net.NL.truncated)</code></pre>
+<pre><code>##       source    target ligand  receptor         prob pval    interaction_name
+## 1       cDC2       NKT  TGFB1 TGFbR1_R2 0.0028799249    0 TGFB1_TGFBR1_TGFBR2
+## 2         LC       NKT  TGFB1 TGFbR1_R2 0.0013267924    0 TGFB1_TGFBR1_TGFBR2
+## 3 Inflam. TC       NKT  TGFB1 TGFbR1_R2 0.0008104401    0 TGFB1_TGFBR1_TGFBR2
+## 4 CD40LG+ TC       NKT  TGFB1 TGFbR1_R2 0.0008906976    0 TGFB1_TGFBR1_TGFBR2
+## 5        NKT       NKT  TGFB1 TGFbR1_R2 0.0010600315    0 TGFB1_TGFBR1_TGFBR2
+## 6       cDC2 FBN1+ FIB   AREG      EGFR 0.0002383963    0           AREG_EGFR
+##        interaction_name_2 pathway_name         annotation       evidence
+## 1 TGFB1 - (TGFBR1+TGFBR2)         TGFb Secreted Signaling KEGG: hsa04350
+## 2 TGFB1 - (TGFBR1+TGFBR2)         TGFb Secreted Signaling KEGG: hsa04350
+## 3 TGFB1 - (TGFBR1+TGFBR2)         TGFb Secreted Signaling KEGG: hsa04350
+## 4 TGFB1 - (TGFBR1+TGFBR2)         TGFb Secreted Signaling KEGG: hsa04350
+## 5 TGFB1 - (TGFBR1+TGFBR2)         TGFb Secreted Signaling KEGG: hsa04350
+## 6             AREG - EGFR          EGF Secreted Signaling KEGG: hsa04012</code></pre>
+<pre class="r"><code>cat(&quot;triMean&quot;, nrow(df.net.NL), &quot;communications&quot;)</code></pre>
+<pre><code>## triMean 605 communications</code></pre>
+<pre class="r"><code>cat(&quot;truncatedMean&quot;, nrow(df.net.NL.truncated), &quot;communications&quot;)</code></pre>
+<pre><code>## truncatedMean 2017 communications</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>The choice of expression estimator heavily influences CellChat
+results.</p>
+<p>Using <code>truncatedMean, trim = 0.1</code> we obtained 2 017
+inferred communication, corresponding to approximately 3 times more
+interactions than using <code>triMean</code>.</p>
+<p>This illustrates that <code>truncatedMean</code> is less conservative
+and can detect additional potential signaling interactions that are not
+retained with <code>triMean</code>.</p>
+<p>However, this does not mean that using <code>truncatedMean</code>
+provides more biologically accurate results.</p>
+<p><strong>End of Step 5</strong></p>
+<p>We inferred potential cell-cell communication from the candidates L-R
+interactions extracted in the previous step.</p>
+<p>We applied a minimum cell population size threshold to reduce the
+influence of extremely small cell groups.</p>
+<p>Results (communication probability and p-values) was explored using
+<code>subsetCommunication()</code>.</p>
+<p>NB : Statistical significance does not equal to biological relevance
+as communication score are model-based estimates, so our selected
+parameters heavily influence the inferred interactions here. Plus, the
+inferred communication network is condition-specific.</p>
+</div>
+</div>
+<div
+id="step-6---inferring-signaling-pathways-and-aggregating-communication-networks"
+class="section level2" number="2.6">
+<h2><span class="header-section-number">2.6</span> Step 6 - Inferring
+signaling pathways and aggregating communication networks</h2>
+<p>In the previous step, we inferred potential cell-cell communications
+at individual L-R level. But, multiple L-R interaction can belong to the
+same signaling pathway. CellChat can summarize communication
+probabilities at the signaling pathway level.</p>
+<div id="a-inferring-communication-at-signaling-pathway-level"
+class="section level3" number="2.6.1">
+<h3><span class="header-section-number">2.6.1</span> (A) Inferring
+communication at signaling pathway level</h3>
+<p>The <code>computeCommunProbPathway()</code> function aggregates the
+communication probabilities of statistically supported L-R interactions
+associated with each signaling pathway.</p>
+<p>This allows us to investigate which signaling pathways potentially
+mediate communication between specific cell populations, rather than
+focusing only on individual molecular interactions.</p>
+<pre class="r"><code>cellchat.NL &lt;- computeCommunProbPathway(cellchat.NL)
+
+cellchat.NL@netP$pathways #inferred signaling pathways</code></pre>
+<pre><code>##  [1] &quot;COLLAGEN&quot;      &quot;MIF&quot;           &quot;CD45&quot;          &quot;LAMININ&quot;      
+##  [5] &quot;FN1&quot;           &quot;APP&quot;           &quot;CypA&quot;          &quot;ANNEXIN&quot;      
+##  [9] &quot;CXCL&quot;          &quot;Prostaglandin&quot; &quot;GALECTIN&quot;      &quot;CLDN&quot;         
+## [13] &quot;THBS&quot;          &quot;THY1&quot;          &quot;COMPLEMENT&quot;    &quot;CLEC&quot;         
+## [17] &quot;MHC-II&quot;        &quot;PTN&quot;           &quot;CD40&quot;          &quot;Cholesterol&quot;  
+## [21] &quot;FGF&quot;           &quot;PDGF&quot;          &quot;ICAM&quot;          &quot;PLAU&quot;         
+## [25] &quot;GAS&quot;           &quot;VCAM&quot;          &quot;ADGRE&quot;         &quot;CD80&quot;         
+## [29] &quot;GAP&quot;           &quot;VEGF&quot;          &quot;LIGHT&quot;         &quot;JAM&quot;          
+## [33] &quot;CSF&quot;           &quot;CysLTs&quot;</code></pre>
+<pre class="r"><code>length(cellchat.NL@netP$pathways) #count them</code></pre>
+<pre><code>## [1] 34</code></pre>
+<pre class="r"><code>dim(cellchat.NL@netP$prob) #pathway communication array</code></pre>
+<pre><code>## [1] 12 12 34</code></pre>
+<p><code>cellchat.NL@net$pathways</code> contains the names of the
+signaling pathways identified by CellChat.</p>
+<p><code>cellchat.NL@net$prob</code> is a 3D array containing : sender
+population, receiver population and signaling pathway.</p>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>CellChat identified 34 signaling pathways potentially involved in
+cell-cell communication such as COLLAGEN, LAMININ, VEGF, FGF or CXCL.
+Those pathways are involved in growth factor signaling, immune
+communication and extracellular matrix interactions.</p>
+<p>The pathway communication array has dimensions of 12 x 12 x 34, so 12
+sender populations, 12 receiver populations and 34 inferred signaling
+pathways.</p>
+<p>These results illustrates how CellChat summarizes individual L-R
+interatcions into signaling pathways. Further analysis is needed to
+compare pathway communication strength.</p>
+</div>
+<div id="b-aggreating-the-cell-cell-communication-network"
+class="section level3" number="2.6.2">
+<h3><span class="header-section-number">2.6.2</span> (B) Aggreating the
+cell-cell communication network</h3>
+<p>Now, we will use CellChat to construct a global communication network
+summarizing the interactions between cell populations.</p>
+<p>The <code>aggregateNet()</code> function generates 2 complementary
+representations :</p>
+<ul>
+<li><p>Interaction count (<code>net$count</code>) : the number of
+statistically supported L-R interactions inferred between
+sender-receiver pair,</p></li>
+<li><p>Interaction weight (<code>net$weight</code>) : the total inferred
+communication strength between each population pair obtained by
+aggregation of individual communication scores.</p></li>
+</ul>
+<p>A cell population may participate in many predicted interactions
+without having the highest total communication strength (and
+vice-versa).</p>
+<p>Those mesures will be useful for interpreting and visualizing global
+communication network in Step 7.</p>
+<pre class="r"><code>cellchat.NL &lt;- aggregateNet(cellchat.NL)
+
+dim(cellchat.NL@net$count)</code></pre>
+<pre><code>## [1] 12 12</code></pre>
+<pre class="r"><code>dim(cellchat.NL@net$weight)</code></pre>
+<pre><code>## [1] 12 12</code></pre>
+<pre class="r"><code>cellchat.NL@net$count</code></pre>
+<pre><code>##              APOE+ FIB FBN1+ FIB COL11A1+ FIB Inflam. FIB cDC1 cDC2 LC
+## APOE+ FIB            2        11            2           7    0   10 15
+## FBN1+ FIB            7        16            4           9    0   17 25
+## COL11A1+ FIB         6        16            4           9    0   16 21
+## Inflam. FIB         10        19            4          10    0   17 24
+## cDC1                 0         0            0           0    0    0  0
+## cDC2                 0         3            1           2    0    7 23
+## LC                   3         7            2           5    0   15 36
+## Inflam. DC           0         0            0           0    0    0  0
+## TC                   0         1            0           0    0    3  4
+## Inflam. TC           0         2            1           0    0    4  8
+## CD40LG+ TC           0         2            1           1    0    6  7
+## NKT                  0         2            1           1    0    4  6
+##              Inflam. DC TC Inflam. TC CD40LG+ TC NKT
+## APOE+ FIB             0  6          2          7   2
+## FBN1+ FIB             0  8         10         10   6
+## COL11A1+ FIB          0  8         10          9   7
+## Inflam. FIB           0  9         12         11   7
+## cDC1                  0  0          0          0   0
+## cDC2                  0  0          4          2   1
+## LC                    0  2          7          4   5
+## Inflam. DC            0  0          0          0   0
+## TC                    0  0          1          0   3
+## Inflam. TC            0  0          2          1   2
+## CD40LG+ TC            0  0          1          0   3
+## NKT                   0  0          1          0   3</code></pre>
+<pre class="r"><code>cellchat.NL@net$weight</code></pre>
+<pre><code>##               APOE+ FIB   FBN1+ FIB COL11A1+ FIB Inflam. FIB cDC1      cDC2
+## APOE+ FIB    0.01640649 0.242430802  0.009859715  0.40388967    0 0.7838693
+## FBN1+ FIB    0.26563223 0.553301839  0.014179740  0.67394087    0 1.3079038
+## COL11A1+ FIB 0.22956092 0.659442570  0.018243841  0.77311102    0 1.5381954
+## Inflam. FIB  0.30785348 0.638629976  0.031898028  0.72889060    0 1.3285801
+## cDC1         0.00000000 0.000000000  0.000000000  0.00000000    0 0.0000000
+## cDC2         0.00000000 0.062529065  0.031005785  0.03117756    0 0.4182300
+## LC           0.02939273 0.098453405  0.032506727  0.05944191    0 0.6315436
+## Inflam. DC   0.00000000 0.000000000  0.000000000  0.00000000    0 0.0000000
+## TC           0.00000000 0.009569664  0.000000000  0.00000000    0 0.2672634
+## Inflam. TC   0.00000000 0.040201359  0.012118272  0.00000000    0 0.3998164
+## CD40LG+ TC   0.00000000 0.054373364  0.029469690  0.02487556    0 0.4631253
+## NKT          0.00000000 0.046117368  0.028937289  0.02442407    0 0.3385025
+##                     LC Inflam. DC        TC  Inflam. TC  CD40LG+ TC        NKT
+## APOE+ FIB    1.0904335          0 0.2643661 0.029510512 0.664992652 0.03618794
+## FBN1+ FIB    1.5873588          0 0.4454693 0.644737540 1.000252085 0.15552101
+## COL11A1+ FIB 1.8607694          0 0.5149804 0.671063811 1.127228697 0.27576735
+## Inflam. FIB  1.7317538          0 0.4841216 0.734920087 1.126187041 0.17100902
+## cDC1         0.0000000          0 0.0000000 0.000000000 0.000000000 0.00000000
+## cDC2         0.8169183          0 0.0000000 0.068947738 0.021128377 0.08634714
+## LC           1.1681238          0 0.0471513 0.137550597 0.069214909 0.17549392
+## Inflam. DC   0.0000000          0 0.0000000 0.000000000 0.000000000 0.00000000
+## TC           0.3354177          0 0.0000000 0.009326516 0.000000000 0.05884630
+## Inflam. TC   0.6527934          0 0.0000000 0.035064165 0.006973065 0.10648592
+## CD40LG+ TC   0.6986863          0 0.0000000 0.025828819 0.000000000 0.14667290
+## NKT          0.5021706          0 0.0000000 0.018267398 0.000000000 0.08335333</code></pre>
+<p><strong><em>Output interpratation</em></strong></p>
+<p><code>aggregateNet()</code> function generated two 12x12 matrices
+summarizing inferred communication network between the 12 cell
+populations.</p>
+<p><code>net$count</code> matrix represents the number of inferred L-R
+interactions between each sender and receiver pair.</p>
+<p><code>net$weight</code> matrix represents their aggregated
+communication strength.</p>
+<p>For example, Langerhans cells (LC) receive 24 interactions from
+inflammatory fibroblasts with a total communication weight of 1.73. In
+comparaison, FBN1+ fibroblasts send 25 interactions to LC, with an
+aggregated weight of approximatively 1.59.</p>
+<p>These results illustrate that the number of inferred interactions and
+their total communication strength provide complementary information and
+do not necessarily follow the same ranking.</p>
+</div>
+<div id="c-exploring-aggregated-results" class="section level3"
+number="2.6.3">
+<h3><span class="header-section-number">2.6.3</span> (C) Exploring
+aggregated results</h3>
+<p>We can now explore global communication patterns across cell
+populations.</p>
+<p>For each population, we calculate :</p>
+<ul>
+<li><p>Outgoing interactions : the total inferred communication
+originating from that cell population,</p></li>
+<li><p>Incoming interactions : the total number of inferred interactions
+received by that cell population.</p></li>
+</ul>
+<p>This provides an initial overview of which populations may act as
+major signaling senders or receivers.</p>
+<pre class="r"><code>outgoing.NL &lt;- rowSums(cellchat.NL@net$count)
+incoming.NL &lt;- colSums(cellchat.NL@net$count)
+
+#Create table
+network.table.NL &lt;- data.frame(cell_population = names(outgoing.NL), outgoing = as.numeric(outgoing.NL), incoming = as.numeric(incoming.NL))
+network.table.NL &lt;- network.table.NL[order(-network.table.NL$outgoing) , ] #sort by outgoing interaction count
+network.table.NL</code></pre>
+<pre><code>##    cell_population outgoing incoming
+## 4      Inflam. FIB      123       44
+## 2        FBN1+ FIB      112       79
+## 3     COL11A1+ FIB      106       20
+## 7               LC       86      169
+## 1        APOE+ FIB       64       28
+## 6             cDC2       43       99
+## 11      CD40LG+ TC       21       44
+## 10      Inflam. TC       20       50
+## 12             NKT       18       39
+## 9               TC       12       33
+## 5             cDC1        0        0
+## 8       Inflam. DC        0        0</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>The table shows diffrences in the number of inferred incoming and
+outgoing interactions across cell populations.</p>
+<p>Inflammatory fibroblasts show the highest number of outgoing
+interactions (123), followed by FBN1+ fibroblasts and COL11A1+
+fibroblasts. This suggests that fibroblast subpopulations may act as
+major signaling senders in nonlesional skin.</p>
+<p>Langerhans cells receive the highest number of incoming interaction,
+followed by cDC2 and FBN1+ fibroblasts suggesting that these populations
+may represent important signaling targets.</p>
+<p>LC exhibit both high number of outgoing and incoming interactions,
+suggesting an important role in the overall communication network.</p>
+<p>NB : Interaction counts alone do not establish biological importance
+or signaling activity. More detailed network analysis are needed to
+characterize functional roles of those cell populations.</p>
+<p><strong>End of Step 7</strong></p>
+<p>Our results highlights a distinction between the three levels of
+analysis :</p>
+<ul>
+<li><p>Pathway level : which signaling pathways are involved ? -&gt; 34
+pathways.</p></li>
+<li><p>Network level : how many interatcions are there, what is the
+total strength between each pair of cell populations ? -&gt; two 12x12
+matrices.</p></li>
+<li><p>Cell population level : which population appears to be the
+primary senders and receivers of signals ? -&gt; Fibroblasts as major
+senders and LC population as major receiver.</p></li>
+</ul>
+<p>This step provides a more comprehensive overview of potential
+cell-cell communication in non lesional skin. By examining incoming and
+outgoing interactions, we can begin to identify which cell populations
+may play important roles in intercellular signaling.</p>
+</div>
+</div>
+<div id="step-7-visualizing-and-interpreting-communication-networks"
+class="section level2" number="2.7">
+<h2><span class="header-section-number">2.7</span> Step 7 : Visualizing
+and interpreting communication networks</h2>
+<div id="a-global-circle-plots" class="section level3" number="2.7.1">
+<h3><span class="header-section-number">2.7.1</span> (A) Global circle
+plots</h3>
+<p>Circle plots provide an intuitive representation of the inferred
+communication network between cell populations.</p>
+<ul>
+<li><p>Nodes represent an annotated cell population, size represent the
+number of cell in each population</p></li>
+<li><p>Edges represent potential communication from a sender population
+to a receiver population, thickness reflects corresponding interaction
+count or strength</p></li>
+</ul>
+<p>We will visualize two network properties :</p>
+<ul>
+<li><p>Number of L-R interactions between cell populations,</p></li>
+<li><p>Interaction strength : aggregated communication scores between
+cell populations.</p></li>
+</ul>
+<pre class="r"><code>groupSize.NL &lt;- as.numeric(table(cellchat.NL@idents)) #number of cells in each population
+
+par(mfrow = c(1,2), xpd = TRUE) #display the 2 circle plots side by side
+
+#Plot number of inferred interactions
+netVisual_circle(cellchat.NL@net$count, vertex.weight = groupSize.NL, weight.scale = TRUE, label.edge = FALSE, title.name = &quot;Number of interactions&quot;)
+
+#Plot total inferred communication strength
+netVisual_circle(cellchat.NL@net$weight, vertex.weight = groupSize.NL, weight.scale = TRUE, label.edge = FALSE, title.name = &quot;Interaction strength&quot;)</code></pre>
+<p><img
+src="03_FIGURES/NL_circle_unnamed-chunk-21-1.png" /><!-- --></p>
+<pre class="r"><code>par(mfrow = c(1,1))</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+</div>
+<div id="b-communication-heatmaps" class="section level3"
+number="2.7.2">
+<h3><span class="header-section-number">2.7.2</span> (B) Communication
+heatmaps</h3>
+<p>Heatmaps provide a complementary representation by displaying cell
+population as rows (senders) and columns (receivers). Each matrix cell
+summarizes inferred communication between sender-receiver pair.</p>
+<p>We will generate two heatmaps to compare the number of interaction
+with their aggregated communication strength.</p>
+<p>This visualization makes it easier to identify strongly connected
+cell population pairs and detect differences between interaction count
+and communication strength.</p>
+<pre class="r"><code>netVisual_heatmap(cellchat.NL, measure = &quot;count&quot;, color.heatmap = &quot;Blues&quot;) #interaction count</code></pre>
+<pre><code>## Do heatmap based on a single object</code></pre>
+<p><img
+src="03_FIGURES/NL_heatmap_unnamed-chunk-22-1.png" /><!-- --></p>
+<pre class="r"><code>netVisual_heatmap(cellchat.NL, measure = &quot;weight&quot;, color.heatmap = &quot;Reds&quot;) #aggregated interaction strengths</code></pre>
+<pre><code>## Do heatmap based on a single object</code></pre>
+<p><img
+src="03_FIGURES/NL_heatmap_unnamed-chunk-22-2.png" /><!-- --></p>
+<p><strong><em>Output interpretation</em></strong></p>
+</div>
+<div id="c-pathway-specific-communication-networks"
+class="section level3" number="2.7.3">
+<h3><span class="header-section-number">2.7.3</span> (C)
+Pathway-specific communication networks</h3>
+<p>The <code>netVisual_aggregate()</code> function allows us to
+visualize communication mediated by a selected signaling pathway. We
+choose to focus on CXCL signaling, involved in immune cell migration and
+inflammatory responses.</p>
+<p>This visualization helps connect the computational results to a more
+precise biological mechanism.</p>
+<pre class="r"><code>#Select a specific pathway 
+pathways.show &lt;- &quot;CXCL&quot;
+
+stopifnot((pathways.show %in% cellchat.NL@netP$pathways)) #verify if pathway is inferred
+
+netVisual_aggregate(cellchat.NL, signaling = pathways.show, layout = &quot;circle&quot;) #CXCL as circle plot</code></pre>
+<p><img src="03_FIGURES/NL_CXCL_unnamed-chunk-23-1.png" /><!-- --></p>
+<pre class="r"><code>netVisual_heatmap(cellchat.NL, signaling = pathways.show, color.heatmap = &quot;Reds&quot;) #CXCL as heatmap</code></pre>
+<pre><code>## Do heatmap based on a single object</code></pre>
+<p><img src="03_FIGURES/NL_CXCL_unnamed-chunk-23-2.png" /><!-- --></p>
+<p><strong><em>Output interpretation</em></strong></p>
+</div>
+<div id="d-ligand-receptors-bubble-plot" class="section level3"
+number="2.7.4">
+<h3><span class="header-section-number">2.7.4</span> (D)
+Ligand-receptors bubble plot</h3>
+<p>The <code>netVisual_bubble()</code> function allows us to explore
+these interactions between selected sender and receiver population.
+Here, we focus on signaling coming from fibroblast subpopulations toward
+immune cell population such as Langerhans cells and cDC2.</p>
+<ul>
+<li><p>X-axis : sender-receiver cell population pairs</p></li>
+<li><p>Y-axis : individual L-R interactions</p></li>
+<li><p>Bubble color : inferred communication probability</p></li>
+<li><p>Bubble size : statistical significance of the inferred
+interaction.</p></li>
+</ul>
+<p>This visualization helps in identifying specific molecular
+interactions that may contribute to communication between selected cell
+population.</p>
+<pre class="r"><code>sources.use &lt;- c(&quot;APOE+ FIB&quot;, &quot;FBN1+ FIB&quot;, &quot;COL11A1+ FIB&quot;, &quot;Inflam. FIB&quot;) #select fibroblast populations as senders
+targets.use &lt;- c(&quot;LC&quot;, &quot;cDC2&quot;) #select immune cell populations as receivers
+
+netVisual_bubble(cellchat.NL, sources.use = sources.use, targets.use = targets.use, remove.isolate = TRUE)</code></pre>
+<pre><code>## Comparing communications on a single object</code></pre>
+<p><img
+src="03_FIGURES/NL_bubble_unnamed-chunk-24-1.png" /><!-- --></p>
+<p><strong><em>Output interpretation</em></strong></p>
+<p><strong>End of Step 7</strong></p>
+<p>During this step, we explored cell-cell communication at three
+different levels :</p>
+<ul>
+<li><p>Global network level : circle plots and heatmaps,</p></li>
+<li><p>Signaling pathway level,</p></li>
+<li><p>Molecular level : bubble plots.</p></li>
+</ul>
+<p>All together, these visualizations provide a multi-level
+interpretation of cell-cell communication network in nonlesional
+skin.</p>
+<p>##Step 8</p>
+</div>
+<div id="a-computing-network-centrality" class="section level3"
+number="2.7.5">
+<h3><span class="header-section-number">2.7.5</span> (A) Computing
+network centrality</h3>
+<pre class="r"><code>cellchat.NL &lt;- netAnalysis_computeCentrality(cellchat.NL, slot.name = &quot;netP&quot;)
+
+names(cellchat.NL@netP$centr)</code></pre>
+<pre><code>##  [1] &quot;COLLAGEN&quot;      &quot;MIF&quot;           &quot;CD45&quot;          &quot;LAMININ&quot;      
+##  [5] &quot;FN1&quot;           &quot;APP&quot;           &quot;CypA&quot;          &quot;ANNEXIN&quot;      
+##  [9] &quot;CXCL&quot;          &quot;Prostaglandin&quot; &quot;GALECTIN&quot;      &quot;CLDN&quot;         
+## [13] &quot;THBS&quot;          &quot;THY1&quot;          &quot;COMPLEMENT&quot;    &quot;CLEC&quot;         
+## [17] &quot;MHC-II&quot;        &quot;PTN&quot;           &quot;CD40&quot;          &quot;Cholesterol&quot;  
+## [21] &quot;FGF&quot;           &quot;PDGF&quot;          &quot;ICAM&quot;          &quot;PLAU&quot;         
+## [25] &quot;GAS&quot;           &quot;VCAM&quot;          &quot;ADGRE&quot;         &quot;CD80&quot;         
+## [29] &quot;GAP&quot;           &quot;VEGF&quot;          &quot;LIGHT&quot;         &quot;JAM&quot;          
+## [33] &quot;CSF&quot;           &quot;CysLTs&quot;</code></pre>
+<pre class="r"><code>head(cellchat.NL@netP$centr$outdeg)</code></pre>
+<pre><code>## NULL</code></pre>
+</div>
+<div id="b-visualizing-sender-and-receiver-roles" class="section level3"
+number="2.7.6">
+<h3><span class="header-section-number">2.7.6</span> (B) Visualizing
+sender and receiver roles</h3>
+<pre class="r"><code>netAnalysis_signalingRole_scatter(cellchat.NL, title = &quot;Signaling roles in non-lesional skin&quot;)</code></pre>
+<pre><code>## Signaling role analysis on the aggregated cell-cell communication network from all signaling pathways</code></pre>
+<p><img src="03_FIGURES/unnamed-chunk-26-1.png" /><!-- --></p>
+</div>
+<div id="c-saving-results-and-ensuring-reproducibility"
+class="section level3" number="2.7.7">
+<h3><span class="header-section-number">2.7.7</span> (C) Saving results
+and ensuring reproducibility</h3>
+<pre class="r"><code>saveRDS(cellchat.NL, file = &quot;./02_RESULTS/cellchat_NL.rds&quot;) #complete analyzed cellchat object
+write.csv(df.net.NL, file = &quot;./02_RESULTS/CellChat_NL_interactions.csv&quot;, row.names = FALSE) #export inferred l-r communications
+write.csv(network.table.NL, file = &quot;./02_RESULTS/CellChat_NL_network_summary.csv&quot;, row.names = FALSE) #export summary of outgoing/incoming interactions
+writeLines(capture.output(sessionInfo()), con = &quot;./02_RESULTS/session_info.txt&quot;) #export R and packages versions
+list.files(&quot;02_RESULTS&quot;)</code></pre>
+<pre><code>## [1] &quot;CellChat_LS_interactions.csv&quot;    &quot;CellChat_LS_network_summary.csv&quot;
+## [3] &quot;cellchat_LS.rds&quot;                 &quot;CellChat_NL_interactions.csv&quot;   
+## [5] &quot;CellChat_NL_network_summary.csv&quot; &quot;cellchat_NL.rds&quot;                
+## [7] &quot;session_info.txt&quot;</code></pre>
+</div>
+</div>
+</div>
+<div id="part-2--" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Part 2 - …</h1>
+<div id="step-1-cellchat-analysis-of-lesional-skin"
+class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Step 1 : CellChat
+analysis of lesional skin</h2>
+<div id="a-selecting-and-initinializing-the-lesional-dataset"
+class="section level3" number="3.1.1">
+<h3><span class="header-section-number">3.1.1</span> (A) Selecting and
+Initinializing the lesional dataset</h3>
+<pre class="r"><code>cell.use.LS &lt;- rownames(meta)[meta$condition == &quot;LS&quot;]
+data.input.LS &lt;- data.input[  , cell.use.LS, drop = FALSE]
+meta.LS &lt;- meta[cell.use.LS, , drop = FALSE]
+
+stopifnot(identical(colnames(data.input.LS), rownames(meta.LS)))
+
+dim(data.input.LS)</code></pre>
+<pre><code>## [1] 17328  5011</code></pre>
+<pre class="r"><code>table(meta.LS$labels)</code></pre>
+<pre><code>## 
+##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##         1228          813          181          484          121          294 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##           67           81          765          266          630           81</code></pre>
+<pre class="r"><code>cellchat.LS &lt;- createCellChat(object = data.input.LS, meta = meta.LS, group.by = &quot;labels&quot;)</code></pre>
+<pre><code>## [1] &quot;Create a CellChat object from a data matrix&quot;
+## Set cell identities for the new CellChat object 
+## The cell groups used for CellChat analysis are  APOE+ FIB, FBN1+ FIB, COL11A1+ FIB, Inflam. FIB, cDC1, cDC2, LC, Inflam. DC, TC, Inflam. TC, CD40LG+ TC, NKT</code></pre>
+<pre class="r"><code>stopifnot(ncol(cellchat.LS@data) == 5011)
+
+cellchat.LS</code></pre>
+<pre><code>## An object of class CellChat created from a single dataset 
+##  17328 genes.
+##  5011 cells. 
+## CellChat analysis of single cell RNA-seq data!</code></pre>
+</div>
+<div id="b-inferring-cell-cell-communication-in-lesional-skin"
+class="section level3" number="3.1.2">
+<h3><span class="header-section-number">3.1.2</span> (B) Inferring
+cell-cell communication in lesional skin</h3>
+<pre class="r"><code>cellchat.LS@DB &lt;- CellChatDB
+cellchat.LS &lt;- subsetData(cellchat.LS)
+
+cellchat.LS &lt;- identifyOverExpressedGenes(cellchat.LS)
+cellchat.LS &lt;- identifyOverExpressedInteractions(cellchat.LS)</code></pre>
+<pre><code>## The number of highly variable ligand-receptor pairs used for signaling inference is 1645</code></pre>
+<pre class="r"><code>cellchat.LS &lt;- computeCommunProb(cellchat.LS, type = &quot;triMean&quot;, population.size = FALSE, nboot = 100, seed.use = 28)</code></pre>
+<pre><code>## triMean is used for calculating the average gene expression per cell group. 
+## [1] &quot;&gt;&gt;&gt; Run CellChat on sc/snRNA-seq data &lt;&lt;&lt; [2026-10-15 14:07:00.568787]&quot;
+## [1] &quot;&gt;&gt;&gt; CellChat inference is done. Parameter values are stored in `object@options$parameter` &lt;&lt;&lt; [2026-10-15 14:07:43.678343]&quot;</code></pre>
+<pre class="r"><code>cellchat.LS &lt;- filterCommunication(cellchat.LS, min.cells = 10)
+
+cellchat.LS &lt;- computeCommunProbPathway(cellchat.LS)
+
+cellchat.LS &lt;- aggregateNet(cellchat.LS)
+
+cellchat.LS &lt;- netAnalysis_computeCentrality(cellchat.LS, slot.name = &quot;netP&quot;)
+
+
+length(cellchat.LS@netP$pathways)</code></pre>
+<pre><code>## [1] 33</code></pre>
+<pre class="r"><code>dim(cellchat.LS@net$count)</code></pre>
+<pre><code>## [1] 12 12</code></pre>
+<pre class="r"><code>dim(cellchat.LS@net$weight)</code></pre>
+<pre><code>## [1] 12 12</code></pre>
+<pre class="r"><code>df.net.LS &lt;- subsetCommunication(cellchat.LS, thresh = 0.05)
+
+nrow(df.net.LS)</code></pre>
+<pre><code>## [1] 993</code></pre>
+<pre class="r"><code>head(df.net.LS)</code></pre>
+<pre><code>##         source    target ligand receptor        prob pval interaction_name
+## 1    APOE+ FIB APOE+ FIB   FGF7    FGFR1 0.006276293    0       FGF7_FGFR1
+## 2    FBN1+ FIB APOE+ FIB   FGF7    FGFR1 0.004854738    0       FGF7_FGFR1
+## 3 COL11A1+ FIB APOE+ FIB   FGF7    FGFR1 0.003575889    0       FGF7_FGFR1
+## 4    APOE+ FIB FBN1+ FIB   FGF7    FGFR1 0.009362611    0       FGF7_FGFR1
+## 5    FBN1+ FIB FBN1+ FIB   FGF7    FGFR1 0.007247115    0       FGF7_FGFR1
+## 6 COL11A1+ FIB FBN1+ FIB   FGF7    FGFR1 0.005341442    0       FGF7_FGFR1
+##   interaction_name_2 pathway_name         annotation     evidence
+## 1       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 2       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 3       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 4       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 5       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
+## 6       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358</code></pre>
+</div>
+<div id="c-visualization-on-lesional-skin" class="section level3"
+number="3.1.3">
+<h3><span class="header-section-number">3.1.3</span> (C) Visualization
+on lesional skin</h3>
+<p><strong>Global circle plot</strong></p>
+<pre class="r"><code>groupSize.LS &lt;- as.numeric(table(cellchat.LS@idents)) #number of cells in each population
+
+par(mfrow = c(1,2), xpd = TRUE) #display the 2 circle plots side by side
+
+#Plot number of inferred interactions
+netVisual_circle(cellchat.LS@net$count, vertex.weight = groupSize.LS, weight.scale = TRUE, label.edge = FALSE, title.name = &quot;Number of interactions&quot;)
+
+#Plot total inferred communication strength
+netVisual_circle(cellchat.LS@net$weight, vertex.weight = groupSize.LS, weight.scale = TRUE, label.edge = FALSE, title.name = &quot;Interaction strength&quot;)</code></pre>
+<p><img src="03_FIGURES/LS_circle_unnamed-chunk-30-1.png" /><!-- --></p>
+<pre class="r"><code>par(mfrow = c(1,1))</code></pre>
+<p><strong>Heatmaps</strong></p>
+<pre class="r"><code>netVisual_heatmap(cellchat.LS, measure = &quot;count&quot;, color.heatmap = &quot;Blues&quot;) #interaction count</code></pre>
+<pre><code>## Do heatmap based on a single object</code></pre>
+<p><img
+src="03_FIGURES/LS_heatmap_unnamed-chunk-31-1.png" /><!-- --></p>
+<pre class="r"><code>netVisual_heatmap(cellchat.LS, measure = &quot;weight&quot;, color.heatmap = &quot;Reds&quot;) #aggregated interaction strengths</code></pre>
+<pre><code>## Do heatmap based on a single object</code></pre>
+<p><img
+src="03_FIGURES/LS_heatmap_unnamed-chunk-31-2.png" /><!-- --></p>
+<p><strong>Pathway specific communication network</strong></p>
+<pre class="r"><code>#Select a specific pathway 
+pathways.show &lt;- &quot;CXCL&quot;
+
+stopifnot((pathways.show %in% cellchat.LS@netP$pathways)) #verify if pathway is inferred
+
+netVisual_aggregate(cellchat.LS, signaling = pathways.show, layout = &quot;circle&quot;) #CXCL as circle plot</code></pre>
+<p><img src="03_FIGURES/LS_CXCL_unnamed-chunk-32-1.png" /><!-- --></p>
+<pre class="r"><code>netVisual_heatmap(cellchat.LS, signaling = pathways.show, color.heatmap = &quot;Reds&quot;) #CXCL as heatmap</code></pre>
+<pre><code>## Do heatmap based on a single object</code></pre>
+<p><img src="03_FIGURES/LS_CXCL_unnamed-chunk-32-2.png" /><!-- --></p>
+<p><strong>Bubble plot</strong></p>
+<pre class="r"><code>sources.use &lt;- c(&quot;APOE+ FIB&quot;, &quot;FBN1+ FIB&quot;, &quot;COL11A1+ FIB&quot;, &quot;Inflam. FIB&quot;) #select fibroblast populations as senders
+targets.use &lt;- c(&quot;LC&quot;, &quot;cDC2&quot;) #select immune cell populations as receivers
+
+netVisual_bubble(cellchat.LS, sources.use = sources.use, targets.use = targets.use, remove.isolate = TRUE)</code></pre>
+<pre><code>## Comparing communications on a single object</code></pre>
+<p><img src="figures/LS_bubble_unnamed-chunk-33-1.png" /><!-- --></p>
+</div>
+<div id="d-summarize-and-save-results-for-lesional-skin"
+class="section level3" number="3.1.4">
+<h3><span class="header-section-number">3.1.4</span> (D) Summarize and
+save results for lesional skin</h3>
+<pre class="r"><code>outgoing.LS &lt;- rowSums(cellchat.LS@net$count)
+incoming.LS &lt;- colSums(cellchat.LS@net$count)
+
+network.table.LS &lt;- data.frame(cell_population = names(outgoing.LS), outgoing = as.numeric(outgoing.LS), incoming = as.numeric(incoming.LS))
+network.table.LS &lt;- network.table.LS[order(-network.table.LS$outgoing), ]
+network.table.LS</code></pre>
+<pre><code>##    cell_population outgoing incoming
+## 4      Inflam. FIB      187       70
+## 2        FBN1+ FIB      166       81
+## 7               LC      110      207
+## 3     COL11A1+ FIB       94        3
+## 6             cDC2       92      182
+## 1        APOE+ FIB       90       36
+## 8       Inflam. DC       77       94
+## 5             cDC1       60       86
+## 10      Inflam. TC       38       64
+## 12             NKT       31       58
+## 11      CD40LG+ TC       27       77
+## 9               TC       21       35</code></pre>
+<pre class="r"><code>saveRDS(cellchat.LS, file = &quot;./02_RESULTS/cellchat_LS.rds&quot;)
+
+write.csv(df.net.LS, file = &quot;./02_RESULTS/CellChat_LS_interactions.csv&quot;, row.names = FALSE)
+
+write.csv(network.table.LS, file = &quot;./02_RESULTS/CellChat_LS_network_summary.csv&quot;, row.names = FALSE)</code></pre>
+</div>
+</div>
+<div id="step-2" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Step 2 : …</h2>
+<pre class="r"><code># Verify that both conditions are available
+stopifnot(ncol(cellchat.NL@data) == 2552, ncol(cellchat.LS@data) == 5011)
+# Compare annotated cell populations
+table(cellchat.NL@idents)</code></pre>
+<pre><code>## 
+##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##         1215          548          196           69            7           38 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##           20            1          212           44          166           36</code></pre>
+<pre class="r"><code>table(cellchat.LS@idents)</code></pre>
+<pre><code>## 
+##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##         1228          813          181          484          121          294 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##           67           81          765          266          630           81</code></pre>
+<pre class="r"><code># Check whether cell population names are identical
+setequal(levels(cellchat.NL@idents), levels(cellchat.LS@idents))</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
