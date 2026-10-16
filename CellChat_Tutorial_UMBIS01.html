@@ -11,7 +11,7 @@
 
 <meta name="author" content="Mariam H." />
 
-<meta name="date" content="2026-10-14" />
+<meta name="date" content="2026-10-16" />
 
 <title>CellChat v2: From Ligand–Receptor Interactions to Comparative Cell–Cell Communication Networks</title>
 
@@ -165,7 +165,7 @@ pre code {
 <h1 class="title toc-ignore">CellChat v2: From Ligand–Receptor
 Interactions to Comparative Cell–Cell Communication Networks</h1>
 <h4 class="author">Mariam H.</h4>
-<h4 class="date">2026-10-14</h4>
+<h4 class="date">2026-10-16</h4>
 
 </div>
 
@@ -302,22 +302,31 @@ communication networks</a></li>
 id="toc-d-ligand-receptors-bubble-plot"><span
 class="toc-section-number">2.7.4</span> (D) Ligand-receptors bubble
 plot</a></li>
+</ul></li>
+<li><a href="#step-8-exploring-signaling-roles-and-saving-results"
+id="toc-step-8-exploring-signaling-roles-and-saving-results"><span
+class="toc-section-number">2.8</span> Step 8 : Exploring Signaling Roles
+and Saving Results</a>
+<ul>
 <li><a href="#a-computing-network-centrality"
 id="toc-a-computing-network-centrality"><span
-class="toc-section-number">2.7.5</span> (A) Computing network
+class="toc-section-number">2.8.1</span> (A) Computing network
 centrality</a></li>
 <li><a href="#b-visualizing-sender-and-receiver-roles"
 id="toc-b-visualizing-sender-and-receiver-roles"><span
-class="toc-section-number">2.7.6</span> (B) Visualizing sender and
+class="toc-section-number">2.8.2</span> (B) Visualizing sender and
 receiver roles</a></li>
 <li><a href="#c-saving-results-and-ensuring-reproducibility"
 id="toc-c-saving-results-and-ensuring-reproducibility"><span
-class="toc-section-number">2.7.7</span> (C) Saving results and ensuring
+class="toc-section-number">2.8.3</span> (C) Saving results and ensuring
 reproducibility</a></li>
 </ul></li>
 </ul></li>
-<li><a href="#part-2--" id="toc-part-2--"><span
-class="toc-section-number">3</span> Part 2 - …</a>
+<li><a
+href="#part-2---going-further-comparative-analysis-between-two-conditions"
+id="toc-part-2---going-further-comparative-analysis-between-two-conditions"><span
+class="toc-section-number">3</span> Part 2 - Going further : comparative
+analysis between two conditions</a>
 <ul>
 <li><a href="#step-1-cellchat-analysis-of-lesional-skin"
 id="toc-step-1-cellchat-analysis-of-lesional-skin"><span
@@ -341,8 +350,77 @@ id="toc-d-summarize-and-save-results-for-lesional-skin"><span
 class="toc-section-number">3.1.4</span> (D) Summarize and save results
 for lesional skin</a></li>
 </ul></li>
-<li><a href="#step-2" id="toc-step-2"><span
-class="toc-section-number">3.2</span> Step 2 : …</a></li>
+<li><a
+href="#step-2-merging-the-lesional-and-nonlesional-cellchat-objects"
+id="toc-step-2-merging-the-lesional-and-nonlesional-cellchat-objects"><span
+class="toc-section-number">3.2</span> Step 2 : Merging the lesional and
+nonlesional CellChat objects</a>
+<ul>
+<li><a href="#a-verifying-dataset-compatibility"
+id="toc-a-verifying-dataset-compatibility"><span
+class="toc-section-number">3.2.1</span> (A) Verifying dataset
+compatibility</a></li>
+<li><a href="#b-merging-the-cellchat-objects"
+id="toc-b-merging-the-cellchat-objects"><span
+class="toc-section-number">3.2.2</span> (B) Merging the CellChat
+objects</a></li>
+<li><a href="#c-save-the-merged-cellchat-object"
+id="toc-c-save-the-merged-cellchat-object"><span
+class="toc-section-number">3.2.3</span> (C) Save the merged CellChat
+object</a></li>
+</ul></li>
+<li><a href="#step-3-comparing-the-number-and-strength-of-interactions"
+id="toc-step-3-comparing-the-number-and-strength-of-interactions"><span
+class="toc-section-number">3.3</span> Step 3 : Comparing the number and
+strength of interactions</a>
+<ul>
+<li><a href="#a-comparing-the-total-number-of-inferred-interactions"
+id="toc-a-comparing-the-total-number-of-inferred-interactions"><span
+class="toc-section-number">3.3.1</span> (A) Comparing the total number
+of inferred interactions</a></li>
+<li><a href="#b-comparing-overall-communication-strength"
+id="toc-b-comparing-overall-communication-strength"><span
+class="toc-section-number">3.3.2</span> (B) Comparing overall
+communication strength</a></li>
+<li><a href="#c-visualizing-differential-communication-networks"
+id="toc-c-visualizing-differential-communication-networks"><span
+class="toc-section-number">3.3.3</span> (C) Visualizing differential
+communication networks</a></li>
+</ul></li>
+<li><a
+href="#step-4-identifying-differences-in-signaling-pathways-between-conditions"
+id="toc-step-4-identifying-differences-in-signaling-pathways-between-conditions"><span
+class="toc-section-number">3.4</span> Step 4 : Identifying differences
+in signaling pathways between conditions</a>
+<ul>
+<li><a href="#a-comparing-signaling-pathway-activity-between-conditions"
+id="toc-a-comparing-signaling-pathway-activity-between-conditions"><span
+class="toc-section-number">3.4.1</span> (A) Comparing signaling pathway
+activity between conditions</a></li>
+<li><a href="#b-focusing-on-cxcl-signaling-pathway"
+id="toc-b-focusing-on-cxcl-signaling-pathway"><span
+class="toc-section-number">3.4.2</span> (B) Focusing on CXCL signaling
+pathway</a></li>
+</ul></li>
+<li><a
+href="#step-5-interpreting-condition-specific-communication-patterns-and-discuss-limitations"
+id="toc-step-5-interpreting-condition-specific-communication-patterns-and-discuss-limitations"><span
+class="toc-section-number">3.5</span> Step 5 : Interpreting
+condition-specific communication patterns and discuss limitations</a>
+<ul>
+<li><a href="#a-summary-of-nl-vs-ls-communication-differences"
+id="toc-a-summary-of-nl-vs-ls-communication-differences"><span
+class="toc-section-number">3.5.1</span> (A) Summary of NL vs LS
+communication differences</a></li>
+<li><a href="#b-limitations-of-the-comparative-analysis"
+id="toc-b-limitations-of-the-comparative-analysis"><span
+class="toc-section-number">3.5.2</span> (B) Limitations of the
+comparative analysis</a></li>
+<li><a href="#c-final-tutorial-conclusion"
+id="toc-c-final-tutorial-conclusion"><span
+class="toc-section-number">3.5.3</span> (C) Final tutorial
+conclusion</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </div>
@@ -401,20 +479,22 @@ does not constitute direct evidence of cell-cell communication.</p>
 <li>Computing cell-cell communication probabilities</li>
 <li>Inferring signaling pathways and aggregating communication
 networks</li>
+<li>Visualizing and interpreting communication networks</li>
+<li>Exploring Signaling Roles and Saving Results</li>
 </ol>
 <p><strong>Part 2 - Going further : comparative analysis between two
 conditions</strong></p>
 <p>Using the lesion (LS) skin sub-dataset, we will extend our analysis
 :</p>
 <ol style="list-style-type: decimal">
-<li>Run CellChat pipeline on lesional skin</li>
-<li>Merge the lesional and nonlesional CellChat objects</li>
-<li>Compare the number and strength of interactions</li>
-<li>Identify altered signaling pathways</li>
-<li>Interpret condition-specific communication patterns</li>
+<li>CellChat analysis of lesional skin</li>
+<li>Merging the lesional and nonlesional CellChat objects</li>
+<li>Comparing the number and strength of interactions</li>
+<li>Identifying differences in signaling pathways between
+conditions</li>
+<li>Interpret condition-specific communication patterns and discuss
+limitations</li>
 </ol>
-<p><strong>Part 3 - Biological Interpretation and
-limitations</strong></p>
 <hr />
 <p>Before going any further, please install the necessary packages if
 needed.</p>
@@ -971,7 +1051,7 @@ to network calculation.</p>
 ## TGFB1_ACVR1B_TGFBR2                   TRUE CellChatDB v1
 ## TGFB1_ACVR1C_TGFBR2                   TRUE CellChatDB v1
 ## TGFB2_ACVR1B_TGFBR2                   TRUE CellChatDB v1</code></pre>
-<pre class="r"><code>#Verify that analysis include NL cells only
+<pre class="r"><code>#verify that analysis include NL cells only
 ncol(cellchat.NL@data) #expected number = 2552</code></pre>
 <pre><code>## [1] 2552</code></pre>
 <pre class="r"><code>stopifnot(ncol(cellchat.NL@data) == 2552)</code></pre>
@@ -1066,8 +1146,8 @@ small.</p>
 <pre class="r"><code>stopifnot(ncol(cellchat.NL@data) == 2552) #check if all NL cells are included
 cellchat.NL &lt;- computeCommunProb(cellchat.NL, type = &quot;triMean&quot;, population.size = FALSE, nboot = 100, seed.use = 28)</code></pre>
 <pre><code>## triMean is used for calculating the average gene expression per cell group. 
-## [1] &quot;&gt;&gt;&gt; Run CellChat on sc/snRNA-seq data &lt;&lt;&lt; [2026-10-15 14:05:29.860948]&quot;
-## [1] &quot;&gt;&gt;&gt; CellChat inference is done. Parameter values are stored in `object@options$parameter` &lt;&lt;&lt; [2026-10-15 14:06:04.231374]&quot;</code></pre>
+## [1] &quot;&gt;&gt;&gt; Run CellChat on sc/snRNA-seq data &lt;&lt;&lt; [2026-10-16 03:24:30.923737]&quot;
+## [1] &quot;&gt;&gt;&gt; CellChat inference is done. Parameter values are stored in `object@options$parameter` &lt;&lt;&lt; [2026-10-16 03:25:06.90721]&quot;</code></pre>
 <p>After execution, CellChat stores two objects within
 <code>cellchat.NL@net</code> : <code>@net$prob</code> containing
 inferred communication scores and <code>@net$pval</code> containing
@@ -1211,8 +1291,8 @@ cellchat.NL.truncated &lt;- cellchat.NL
 
 cellchat.NL.truncated &lt;- computeCommunProb(cellchat.NL.truncated, type = &quot;truncatedMean&quot;, trim = 0.1, population.size = FALSE, nboot = 100, seed.use = 28)</code></pre>
 <pre><code>## truncatedMean is used for calculating the average gene expression per cell group. 
-## [1] &quot;&gt;&gt;&gt; Run CellChat on sc/snRNA-seq data &lt;&lt;&lt; [2026-10-15 14:06:04.818231]&quot;
-## [1] &quot;&gt;&gt;&gt; CellChat inference is done. Parameter values are stored in `object@options$parameter` &lt;&lt;&lt; [2026-10-15 14:06:54.389001]&quot;</code></pre>
+## [1] &quot;&gt;&gt;&gt; Run CellChat on sc/snRNA-seq data &lt;&lt;&lt; [2026-10-16 03:25:07.519234]&quot;
+## [1] &quot;&gt;&gt;&gt; CellChat inference is done. Parameter values are stored in `object@options$parameter` &lt;&lt;&lt; [2026-10-16 03:26:05.459666]&quot;</code></pre>
 <pre class="r"><code>cellchat.NL.truncated &lt;- filterCommunication(cellchat.NL.truncated, min.cells = 10)</code></pre>
 <pre><code>## The cell-cell communication related with the following cell groups are excluded due to the few number of cells:  cDC1, Inflam. DC !  31.5% interactions are removed!</code></pre>
 <pre class="r"><code>df.net.NL.truncated &lt;- subsetCommunication(cellchat.NL.truncated, thresh = 0.05)
@@ -1459,7 +1539,7 @@ suggesting an important role in the overall communication network.</p>
 <p>NB : Interaction counts alone do not establish biological importance
 or signaling activity. More detailed network analysis are needed to
 characterize functional roles of those cell populations.</p>
-<p><strong>End of Step 7</strong></p>
+<p><strong>End of Step 6</strong></p>
 <p>Our results highlights a distinction between the three levels of
 analysis :</p>
 <ul>
@@ -1513,6 +1593,16 @@ netVisual_circle(cellchat.NL@net$weight, vertex.weight = groupSize.NL, weight.sc
 src="03_FIGURES/NL_circle_unnamed-chunk-21-1.png" /><!-- --></p>
 <pre class="r"><code>par(mfrow = c(1,1))</code></pre>
 <p><strong><em>Output interpretation</em></strong></p>
+<p>The global circle plot reveals an extensive network of inferred
+cell-cell communication in nonlesional skin. There are prominent
+connection involving Langerhans cells and fibroblasts populations.</p>
+<p>The interaction count network hightlights many predicted connections
+originating form fibroblasts (inflammatory, FBN1+, COL11A1+), same for
+interaction strength network.</p>
+<p>Both networks suggests an important role of fibroblast populations to
+outgoing signaling, while LC seems to be a major receiver.</p>
+<p>Some populations display self directed interactions, suggesting
+autocrine signaling.</p>
 </div>
 <div id="b-communication-heatmaps" class="section level3"
 number="2.7.2">
@@ -1535,6 +1625,17 @@ src="03_FIGURES/NL_heatmap_unnamed-chunk-22-1.png" /><!-- --></p>
 <p><img
 src="03_FIGURES/NL_heatmap_unnamed-chunk-22-2.png" /><!-- --></p>
 <p><strong><em>Output interpretation</em></strong></p>
+<p>In the interaction count heatmat, fibroblast populations display many
+outgoing interactions, Langerhans cells show the highest number of
+incoming interactions.</p>
+<p>The interaction strength heatmap reveals particularly strong inferred
+communication from fibroblast populations toward LC and cDC2.</p>
+<p>As an example, COL11A1+ fibroblasts exhibit a high aggregated
+communication strength toward Langerhans cells (between 1.5 and 2.0).
+This is consistent with the results obtained in Step 6.</p>
+<p>These visualizations support the prominent contribution of fibroblast
+populations to the inferred communication network toward Langerhans
+cells who may be an important signaling target.</p>
 </div>
 <div id="c-pathway-specific-communication-networks"
 class="section level3" number="2.7.3">
@@ -1557,6 +1658,16 @@ netVisual_aggregate(cellchat.NL, signaling = pathways.show, layout = &quot;circl
 <pre><code>## Do heatmap based on a single object</code></pre>
 <p><img src="03_FIGURES/NL_CXCL_unnamed-chunk-23-2.png" /><!-- --></p>
 <p><strong><em>Output interpretation</em></strong></p>
+<p>The pathway-specific circle plot suggests that fibroblast populations
+(particularly APOE+ and Inflammatory FIB) act as potential CXCL signal
+senders, with Langerhans cells, FBN1+ fibroblasts and CD40LG+ T cells as
+receivers.</p>
+<p>The heatmap supports this observation, highlighting strong
+CXCL-mediated communication toward LC and LC and CD40+ T cells coming
+from APOE+ and inflammatory fibroblasts.</p>
+<p>These results suggests that fibroblast signaling may contribute to
+interactions between stromal and immune cell populations in nonlesional
+skin.</p>
 </div>
 <div id="d-ligand-receptors-bubble-plot" class="section level3"
 number="2.7.4">
@@ -1584,6 +1695,18 @@ netVisual_bubble(cellchat.NL, sources.use = sources.use, targets.use = targets.u
 <p><img
 src="03_FIGURES/NL_bubble_unnamed-chunk-24-1.png" /><!-- --></p>
 <p><strong><em>Output interpretation</em></strong></p>
+<p>This bubble plot provides a molecular-level view of inferred
+communication between fibroblast populations toward Langerhans cells and
+cDC2.</p>
+<p>Many predicted interactions involve extracellular matrix components
+(collagen CD44 and laminin CD44). These interactions are detected across
+multiple fibroblast-immune cell pairs, suggetsing that extracellular
+matrix-associated signaling may contribute to communication between
+stromal and immune cell populations in nonlesional skin.</p>
+<p>This visualization illustrates how CellChat links global
+communication patterns to specific ligand-receptor pairs that allow us
+to make hypotheses about molecular mechanisms underlying intercellular
+signaling.</p>
 <p><strong>End of Step 7</strong></p>
 <p>During this step, we explored cell-cell communication at three
 different levels :</p>
@@ -1595,12 +1718,39 @@ different levels :</p>
 <p>All together, these visualizations provide a multi-level
 interpretation of cell-cell communication network in nonlesional
 skin.</p>
-<p>##Step 8</p>
 </div>
+</div>
+<div id="step-8-exploring-signaling-roles-and-saving-results"
+class="section level2" number="2.8">
+<h2><span class="header-section-number">2.8</span> Step 8 : Exploring
+Signaling Roles and Saving Results</h2>
+<p>In the previous steps, we inferred and visualized cell-cell
+communication networks in nonlesional skin. CellChat can also
+characterize the functional roles of cell populations within signaling
+networks using concepts from graph theory.</p>
 <div id="a-computing-network-centrality" class="section level3"
-number="2.7.5">
-<h3><span class="header-section-number">2.7.5</span> (A) Computing
+number="2.8.1">
+<h3><span class="header-section-number">2.8.1</span> (A) Computing
 network centrality</h3>
+<p>For each inferred signaling pathway, CellChat computes network
+centrality measures to nvestigate how different populations contribute
+to the organization of communication.</p>
+<p>These measures include :</p>
+<ul>
+<li><p>Outgoing strength (total modeled signaling strength sent by a
+cellular population),</p></li>
+<li><p>Incoming strength (total modeled signaling strength received by a
+cellular population),</p></li>
+<li><p>Mediator role : the potential importance of a popualtion in
+connecting other populations within a signaling network,</p></li>
+<li><p>Influence role : the influence of a population on network
+connectivity according to graph measures.</p></li>
+</ul>
+<p>These roles describe the structure of inferred communication network,
+experimental results are needed to confirm possible biological
+function.</p>
+<p>We use <code>slot.name = "netP"</code> because we aim to compute
+network centrality measures at the signaling pathway level.</p>
 <pre class="r"><code>cellchat.NL &lt;- netAnalysis_computeCentrality(cellchat.NL, slot.name = &quot;netP&quot;)
 
 names(cellchat.NL@netP$centr)</code></pre>
@@ -1613,39 +1763,147 @@ names(cellchat.NL@netP$centr)</code></pre>
 ## [25] &quot;GAS&quot;           &quot;VCAM&quot;          &quot;ADGRE&quot;         &quot;CD80&quot;         
 ## [29] &quot;GAP&quot;           &quot;VEGF&quot;          &quot;LIGHT&quot;         &quot;JAM&quot;          
 ## [33] &quot;CSF&quot;           &quot;CysLTs&quot;</code></pre>
-<pre class="r"><code>head(cellchat.NL@netP$centr$outdeg)</code></pre>
-<pre><code>## NULL</code></pre>
+<pre class="r"><code>#head(cellchat.NL@netP$centr$outdeg)
+
+#centrality measures for the CXCL pathway
+names(cellchat.NL@netP$centr[[&quot;CXCL&quot;]]) #display centrality metrics available for CXCL pathway</code></pre>
+<pre><code>##  [1] &quot;outdeg_unweighted&quot; &quot;indeg_unweighted&quot;  &quot;outdeg&quot;           
+##  [4] &quot;indeg&quot;             &quot;hub&quot;               &quot;authority&quot;        
+##  [7] &quot;eigen&quot;             &quot;page_rank&quot;         &quot;betweenness&quot;      
+## [10] &quot;flowbet&quot;           &quot;info&quot;</code></pre>
+<pre class="r"><code>cellchat.NL@netP$centr[[&quot;CXCL&quot;]]$outdeg #display outgoing signaling strength for CXCL pathway</code></pre>
+<pre><code>##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##   0.23143444   0.05461192   0.00000000   0.22749369   0.00000000   0.00000000 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##   0.00000000   0.00000000   0.00000000   0.00000000   0.00000000   0.00000000</code></pre>
+<pre class="r"><code>cellchat.NL@netP$centr[[&quot;CXCL&quot;]]$indeg #incoming signaling strength for CXCL</code></pre>
+<pre><code>##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##   0.00000000   0.06433728   0.00000000   0.00000000   0.00000000   0.00000000 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##   0.30903113   0.00000000   0.00000000   0.00000000   0.14017164   0.00000000</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>The computed network centrality measures are stored in the
+<code>cellchat.NL@netP$centr</code> list organized by signaling pathway.
+Each pathway contains several centrality metrics such as outgoing and
+incoming signaling strength. These measures allow us to characterize
+potential role of cell population within inferred signaling
+pathways.</p>
+<p>The pathway specific centrality shows that CXCL signaling network is
+driven by a limited subset of cell populations in nonlesional skin.
+APOE+ and inflammatory fibroblasts display the highest outgoing
+signaling strengths, indicating that they are the main predicted senders
+of CXCL-mediated communication. FBN1+ fibroblasts also contributes but
+to a smaller amount. Langerhans cells show the highest incoming
+signaling strength, suggesting that they are the main predicted
+receivers in CXCL signaling. CD40LG+ T cells also seems to be an
+important receiver. FBN1+ fibroblasts show both sending and receiving
+activity.</p>
+<p>These results suggest that fibroblast-derived CXCL signaling may
+target immune populations such as LC and CD40LG+ T cells in nonlesional
+skin.</p>
 </div>
 <div id="b-visualizing-sender-and-receiver-roles" class="section level3"
-number="2.7.6">
-<h3><span class="header-section-number">2.7.6</span> (B) Visualizing
+number="2.8.2">
+<h3><span class="header-section-number">2.8.2</span> (B) Visualizing
 sender and receiver roles</h3>
+<p>We can now visualize the overall signaling roles of the annotated
+cell populations.</p>
+<p>The <code>netAnalysis_signalingRole_scatter()</code>function
+summarizes outgoing and incoming communication strengths across the
+inferred signaling pathways.</p>
+<p>In this representation :</p>
+<ul>
+<li><p>the X-axis represents the overall outgoing signaling
+strength,</p></li>
+<li><p>the Y-axis represents the overall incoming signaling
+strength.</p></li>
+</ul>
+<p>Cell populations positioned toward the right exhibit stronger
+predicted outgoing signaling and populations positioned toward the top
+receive stronger incoming signaling. Populations with high values on
+both axes may participate in both sending and receiving signals.</p>
+<p>This analysis complements the interaction counts obtained in Step 6
+by focusing on communication strength rather than the number of
+interactions alone.</p>
 <pre class="r"><code>netAnalysis_signalingRole_scatter(cellchat.NL, title = &quot;Signaling roles in non-lesional skin&quot;)</code></pre>
 <pre><code>## Signaling role analysis on the aggregated cell-cell communication network from all signaling pathways</code></pre>
-<p><img src="03_FIGURES/unnamed-chunk-26-1.png" /><!-- --></p>
+<p><img
+src="03_FIGURES/Signaling_roles_unnamed-chunk-26-1.png" /><!-- --></p>
+<pre class="r"><code>#signaling roles specifically for CXCL
+pathways.show &lt;- &quot;CXCL&quot;
+netAnalysis_signalingRole_scatter(cellchat.NL, signaling = pathways.show, title = &quot;CXCL signaling roles in non-lesional skin&quot;)</code></pre>
+<pre><code>## Signaling role analysis on the cell-cell communication network from user&#39;s input</code></pre>
+<p><img
+src="03_FIGURES/Signaling_roles_unnamed-chunk-26-2.png" /><!-- --></p>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>Fibroblast populations such as COL11A1+, Inflammatory and FBN1+ show
+high outgoing signaling strengths, suggesting that they may act as major
+signal senders within the inferred communication network.</p>
+<p>COL11A1+ fibroblasts exhibits the highest outgoing signaling strength
+despite having fewer outgoing interaction than inflammatory fibroblasts
+in Step 6.</p>
+<p>Langerhans cells exhibits the highest incoming signaling strength,
+followed by cDC2. This suggets that these populations may as major
+receivers of predicted signals.</p>
+<p>Compared with the golbal signaling role analysis, the CXCL specific
+scatter plot highlights a more restricted communication structure. This
+shows that the signaling roles of cell populations can vary depending on
+the pathway considered.</p>
+<p>All these results suggest that fibroblasts act as major senders and
+antigen-presenting immune cells act as major receivers. Experimental
+results are still needed to assess this.</p>
 </div>
 <div id="c-saving-results-and-ensuring-reproducibility"
-class="section level3" number="2.7.7">
-<h3><span class="header-section-number">2.7.7</span> (C) Saving results
+class="section level3" number="2.8.3">
+<h3><span class="header-section-number">2.8.3</span> (C) Saving results
 and ensuring reproducibility</h3>
+<p>To ensure reproducibility and facilitate downstream analysis, we save
+the processed CellChat object and the inferred communication
+results.</p>
+<p>The .rds format preserves the complete R object (including expression
+data, inferred communication probabilites, signaling pathways involved
+and network analysis results). Saving this object is strongly adviced as
+communication inference can be computationally intensive.</p>
+<p>We also choose to export inferred L-R interactions as a .csv file for
+easier inspection. We also save the R session information and packages
+versions used here.</p>
+<p>The saved object will be reused in Part 2 - Comparative Analysis.</p>
 <pre class="r"><code>saveRDS(cellchat.NL, file = &quot;./02_RESULTS/cellchat_NL.rds&quot;) #complete analyzed cellchat object
 write.csv(df.net.NL, file = &quot;./02_RESULTS/CellChat_NL_interactions.csv&quot;, row.names = FALSE) #export inferred l-r communications
 write.csv(network.table.NL, file = &quot;./02_RESULTS/CellChat_NL_network_summary.csv&quot;, row.names = FALSE) #export summary of outgoing/incoming interactions
 writeLines(capture.output(sessionInfo()), con = &quot;./02_RESULTS/session_info.txt&quot;) #export R and packages versions
-list.files(&quot;02_RESULTS&quot;)</code></pre>
+list.files(&quot;02_RESULTS&quot;) #check is saving is OK</code></pre>
 <pre><code>## [1] &quot;CellChat_LS_interactions.csv&quot;    &quot;CellChat_LS_network_summary.csv&quot;
 ## [3] &quot;cellchat_LS.rds&quot;                 &quot;CellChat_NL_interactions.csv&quot;   
-## [5] &quot;CellChat_NL_network_summary.csv&quot; &quot;cellchat_NL.rds&quot;                
-## [7] &quot;session_info.txt&quot;</code></pre>
+## [5] &quot;cellchat_NL_LS_merged.rds&quot;       &quot;CellChat_NL_LS_summary.csv&quot;     
+## [7] &quot;CellChat_NL_network_summary.csv&quot; &quot;cellchat_NL.rds&quot;                
+## [9] &quot;session_info.txt&quot;</code></pre>
+<p><strong>End of Step 8</strong></p>
+<p>Network centrality analysis allowed us to identify the main predicted
+signal senders and receivers in nonlesional skin.</p>
+<p>While fibroblasts populations contribute to outgoing signaling,
+Langerhans cells act as major receivers. The CXCL specific analysis
+desmonstrate that signaling roles vary depending on the pathway
+considered.</p>
+<p><strong>END OF PART 1</strong></p>
+<p>In this first part, we successfully applied the complete CellChat
+workflow to nonlesional human skin, from data preparation to the
+inference and visualization of cell-cell communication networks.</p>
+<p>In Part 2, we will extend this analysis to lesional skin and compare
+both conditions to explore changes in cell-cell communication.</p>
 </div>
 </div>
 </div>
-<div id="part-2--" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> Part 2 - …</h1>
+<div
+id="part-2---going-further-comparative-analysis-between-two-conditions"
+class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Part 2 - Going further
+: comparative analysis between two conditions</h1>
 <div id="step-1-cellchat-analysis-of-lesional-skin"
 class="section level2" number="3.1">
 <h2><span class="header-section-number">3.1</span> Step 1 : CellChat
 analysis of lesional skin</h2>
+<p>The whole pipeline ran in Part 1 is done on lesional skin.</p>
 <div id="a-selecting-and-initinializing-the-lesional-dataset"
 class="section level3" number="3.1.1">
 <h3><span class="header-section-number">3.1.1</span> (A) Selecting and
@@ -1675,6 +1933,11 @@ cellchat.LS</code></pre>
 ##  17328 genes.
 ##  5011 cells. 
 ## CellChat analysis of single cell RNA-seq data!</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>The lesional skin dataset contains 17 328 genes and 5 011 cells
+distributed across 12 annotated cell populations.</p>
+<p>Unlike the NL dataset, all cell population contain at least 10
+cells.</p>
 </div>
 <div id="b-inferring-cell-cell-communication-in-lesional-skin"
 class="section level3" number="3.1.2">
@@ -1688,8 +1951,8 @@ cellchat.LS &lt;- identifyOverExpressedInteractions(cellchat.LS)</code></pre>
 <pre><code>## The number of highly variable ligand-receptor pairs used for signaling inference is 1645</code></pre>
 <pre class="r"><code>cellchat.LS &lt;- computeCommunProb(cellchat.LS, type = &quot;triMean&quot;, population.size = FALSE, nboot = 100, seed.use = 28)</code></pre>
 <pre><code>## triMean is used for calculating the average gene expression per cell group. 
-## [1] &quot;&gt;&gt;&gt; Run CellChat on sc/snRNA-seq data &lt;&lt;&lt; [2026-10-15 14:07:00.568787]&quot;
-## [1] &quot;&gt;&gt;&gt; CellChat inference is done. Parameter values are stored in `object@options$parameter` &lt;&lt;&lt; [2026-10-15 14:07:43.678343]&quot;</code></pre>
+## [1] &quot;&gt;&gt;&gt; Run CellChat on sc/snRNA-seq data &lt;&lt;&lt; [2026-10-16 03:26:12.080836]&quot;
+## [1] &quot;&gt;&gt;&gt; CellChat inference is done. Parameter values are stored in `object@options$parameter` &lt;&lt;&lt; [2026-10-16 03:27:04.821994]&quot;</code></pre>
 <pre class="r"><code>cellchat.LS &lt;- filterCommunication(cellchat.LS, min.cells = 10)
 
 cellchat.LS &lt;- computeCommunProbPathway(cellchat.LS)
@@ -1724,6 +1987,16 @@ nrow(df.net.LS)</code></pre>
 ## 4       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
 ## 5       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358
 ## 6       FGF7 - FGFR1          FGF Secreted Signaling PMC: 4393358</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>CellChat identified 1 645 candidate L-R interactions in lesional
+skin, resulting in 993 inferred communications after statistical
+filtering.</p>
+<p>These interactions are aggregated in 33 signaling pathways and global
+communication network is represented by two 12x12 matrices summarizing
+interaction counts and strengths.</p>
+<p>The first extracted interactions involve FGF7-FGFR1 signaling between
+fibroblast populations showing potential autocrine and paracrine
+communication.</p>
 </div>
 <div id="c-visualization-on-lesional-skin" class="section level3"
 number="3.1.3">
@@ -1739,8 +2012,15 @@ netVisual_circle(cellchat.LS@net$count, vertex.weight = groupSize.LS, weight.sca
 
 #Plot total inferred communication strength
 netVisual_circle(cellchat.LS@net$weight, vertex.weight = groupSize.LS, weight.scale = TRUE, label.edge = FALSE, title.name = &quot;Interaction strength&quot;)</code></pre>
-<p><img src="03_FIGURES/LS_circle_unnamed-chunk-30-1.png" /><!-- --></p>
+<p><img
+src="03_FIGURES/LS_circle_unnamed-chunk-30-1.png" /><!-- --></p>
 <pre class="r"><code>par(mfrow = c(1,1))</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>The circle plots reveal a particular dense network of predicted
+cell-cell communications in lesional skin.</p>
+<p>Fibroblast subpopulations display prominent outgoing interactions
+while Langerhans cells and cDC2 appear to be major receiving
+populations.</p>
 <p><strong>Heatmaps</strong></p>
 <pre class="r"><code>netVisual_heatmap(cellchat.LS, measure = &quot;count&quot;, color.heatmap = &quot;Blues&quot;) #interaction count</code></pre>
 <pre><code>## Do heatmap based on a single object</code></pre>
@@ -1750,6 +2030,13 @@ src="03_FIGURES/LS_heatmap_unnamed-chunk-31-1.png" /><!-- --></p>
 <pre><code>## Do heatmap based on a single object</code></pre>
 <p><img
 src="03_FIGURES/LS_heatmap_unnamed-chunk-31-2.png" /><!-- --></p>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>The heatmaps show strong predicted communication from fibroblast
+populations toward LC and cDC2, both in terms of interaction number and
+aggregated strength. Inflammatory and FBN1+ fibroblasts show prominent
+outgoing signaling.</p>
+<p>Unlike the NL analysis, communications involving cDC1 and
+inflammatory dendritic cells are retained.</p>
 <p><strong>Pathway specific communication network</strong></p>
 <pre class="r"><code>#Select a specific pathway 
 pathways.show &lt;- &quot;CXCL&quot;
@@ -1761,13 +2048,82 @@ netVisual_aggregate(cellchat.LS, signaling = pathways.show, layout = &quot;circl
 <pre class="r"><code>netVisual_heatmap(cellchat.LS, signaling = pathways.show, color.heatmap = &quot;Reds&quot;) #CXCL as heatmap</code></pre>
 <pre><code>## Do heatmap based on a single object</code></pre>
 <p><img src="03_FIGURES/LS_CXCL_unnamed-chunk-32-2.png" /><!-- --></p>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>The CXCL specific network reveals communication originating from
+APOE+, FBN1+ and inflammatory fibroblasts.</p>
+<p>Langerhans cells and inflammatory dendritic cells emerge as an
+important predicted receivers with addional signaling toward CD40LG+ T
+cells and cDC2.</p>
+<p>This suggests potential fibroblast-mediated chemokine signaling
+toward immune cell populations in lesional skin.</p>
 <p><strong>Bubble plot</strong></p>
 <pre class="r"><code>sources.use &lt;- c(&quot;APOE+ FIB&quot;, &quot;FBN1+ FIB&quot;, &quot;COL11A1+ FIB&quot;, &quot;Inflam. FIB&quot;) #select fibroblast populations as senders
 targets.use &lt;- c(&quot;LC&quot;, &quot;cDC2&quot;) #select immune cell populations as receivers
 
 netVisual_bubble(cellchat.LS, sources.use = sources.use, targets.use = targets.use, remove.isolate = TRUE)</code></pre>
 <pre><code>## Comparing communications on a single object</code></pre>
-<p><img src="figures/LS_bubble_unnamed-chunk-33-1.png" /><!-- --></p>
+<p><img
+src="03_FIGURES/LS_bubble_unnamed-chunk-33-1.png" /><!-- --></p>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>The bubble plot reveal predicted interactions between fibroblast
+populations and immune cells involving collagen-CD44, laminin-CD44,
+MIF-CD74 and CXCL12-CXCR4.</p>
+<p>Extracellular matrix associated interactions are prominent across
+fibroblast-immune cell pairs.</p>
+<p>These results provide molecular candidates that may contribute to
+stromal-immune communication in lesional skin.</p>
+<p><strong>Network centrality and signaling roles</strong></p>
+<pre class="r"><code>cellchat.LS &lt;- netAnalysis_computeCentrality(cellchat.LS, slot.name = &quot;netP&quot;)
+
+names(cellchat.LS@netP$centr)</code></pre>
+<pre><code>##  [1] &quot;COLLAGEN&quot;      &quot;MIF&quot;           &quot;LAMININ&quot;       &quot;FN1&quot;          
+##  [5] &quot;MHC-II&quot;        &quot;ANNEXIN&quot;       &quot;CypA&quot;          &quot;GALECTIN&quot;     
+##  [9] &quot;APP&quot;           &quot;CXCL&quot;          &quot;CD45&quot;          &quot;COMPLEMENT&quot;   
+## [13] &quot;THBS&quot;          &quot;Prostaglandin&quot; &quot;CLDN&quot;          &quot;THY1&quot;         
+## [17] &quot;CLEC&quot;          &quot;ICAM&quot;          &quot;FGF&quot;           &quot;CD40&quot;         
+## [21] &quot;TNF&quot;           &quot;CCL&quot;           &quot;GAS&quot;           &quot;IL4&quot;          
+## [25] &quot;IGFBP&quot;         &quot;JAM&quot;           &quot;VCAM&quot;          &quot;CD80&quot;         
+## [29] &quot;LIGHT&quot;         &quot;CADM&quot;          &quot;CSF&quot;           &quot;VEGF&quot;         
+## [33] &quot;GAP&quot;</code></pre>
+<pre class="r"><code>#head(cellchat.LS@netP$centr$outdeg)
+
+#centrality measures for the CXCL pathway
+names(cellchat.LS@netP$centr[[&quot;CXCL&quot;]]) #display centrality metrics available for CXCL pathway</code></pre>
+<pre><code>##  [1] &quot;outdeg_unweighted&quot; &quot;indeg_unweighted&quot;  &quot;outdeg&quot;           
+##  [4] &quot;indeg&quot;             &quot;hub&quot;               &quot;authority&quot;        
+##  [7] &quot;eigen&quot;             &quot;page_rank&quot;         &quot;betweenness&quot;      
+## [10] &quot;flowbet&quot;           &quot;info&quot;</code></pre>
+<pre class="r"><code>cellchat.LS@netP$centr[[&quot;CXCL&quot;]]$outdeg #display outgoing signaling strength for CXCL pathway</code></pre>
+<pre><code>##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##    0.3220750    0.2281327    0.0000000    0.1000529    0.0000000    0.0000000 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##    0.0000000    0.0000000    0.0000000    0.0000000    0.0000000    0.0000000</code></pre>
+<pre class="r"><code>cellchat.LS@netP$centr[[&quot;CXCL&quot;]]$indeg #incoming signaling strength for CXCL</code></pre>
+<pre><code>##    APOE+ FIB    FBN1+ FIB COL11A1+ FIB  Inflam. FIB         cDC1         cDC2 
+##   0.00000000   0.07512456   0.00000000   0.00000000   0.00000000   0.04203888 
+##           LC   Inflam. DC           TC   Inflam. TC   CD40LG+ TC          NKT 
+##   0.24663931   0.18750849   0.00000000   0.00000000   0.09894938   0.00000000</code></pre>
+<pre class="r"><code>netAnalysis_signalingRole_scatter(cellchat.LS, title = &quot;Signaling roles in lesional skin&quot;)</code></pre>
+<pre><code>## Signaling role analysis on the aggregated cell-cell communication network from all signaling pathways</code></pre>
+<p><img
+src="03_FIGURES/LS_CXCL_SignalingRole_unnamed-chunk-35-1.png" /><!-- --></p>
+<pre class="r"><code>#signaling roles specifically for CXCL
+pathways.show &lt;- &quot;CXCL&quot;
+netAnalysis_signalingRole_scatter(cellchat.LS, signaling = pathways.show, title = &quot;CXCL signaling roles in lesional skin&quot;)</code></pre>
+<pre><code>## Signaling role analysis on the cell-cell communication network from user&#39;s input</code></pre>
+<p><img
+src="03_FIGURES/LS_CXCL_SignalingRole_unnamed-chunk-35-2.png" /><!-- --></p>
+<p><strong><em>Output interpretation</em></strong></p>
+<p>Global signaling role analysis identifies inflammatory and FBN1+
+fibroblasts as major predicted signal senders in lesional skin.</p>
+<p>Langerhans cells and cDC2 exhibit strongest incoming signaling, while
+inflammatory dendritic cells also show strong receiving activity.</p>
+<p>These patterns suggest distinct signaling roles between fibroblast
+and immune cell populations within the inferred network.</p>
+<p>The CXCL specific analysis identifies APOE+ fibroblasts as the main
+predicted signal senders, followed by FBN1+ fibroblasts. Langerhans
+cells display the highest incoming CXCL signaling strength followed by
+inflammatory dendritic cells.</p>
 </div>
 <div id="d-summarize-and-save-results-for-lesional-skin"
 class="section level3" number="3.1.4">
@@ -1797,10 +2153,26 @@ network.table.LS</code></pre>
 write.csv(df.net.LS, file = &quot;./02_RESULTS/CellChat_LS_interactions.csv&quot;, row.names = FALSE)
 
 write.csv(network.table.LS, file = &quot;./02_RESULTS/CellChat_LS_network_summary.csv&quot;, row.names = FALSE)</code></pre>
+<p><strong>End of Step 1</strong></p>
+<p>We applied the CellChat workflow for lesional skin, identifying
+predicted communication networks involving fibroblast and immune cell
+populations.</p>
+<p>The results obtained provide the basis for our next step, where NL
+and LS communication network will be compared in order to investigate
+condition-associated differences.</p>
 </div>
 </div>
-<div id="step-2" class="section level2" number="3.2">
-<h2><span class="header-section-number">3.2</span> Step 2 : …</h2>
+<div id="step-2-merging-the-lesional-and-nonlesional-cellchat-objects"
+class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Step 2 : Merging the
+lesional and nonlesional CellChat objects</h2>
+<div id="a-verifying-dataset-compatibility" class="section level3"
+number="3.2.1">
+<h3><span class="header-section-number">3.2.1</span> (A) Verifying
+dataset compatibility</h3>
+<p>Before merging the CellChat objects, we verify that they both contain
+the expected number of cells and share the same annotated cell
+populations.</p>
 <pre class="r"><code># Verify that both conditions are available
 stopifnot(ncol(cellchat.NL@data) == 2552, ncol(cellchat.LS@data) == 5011)
 # Compare annotated cell populations
@@ -1819,6 +2191,340 @@ table(cellchat.NL@idents)</code></pre>
 <pre class="r"><code># Check whether cell population names are identical
 setequal(levels(cellchat.NL@idents), levels(cellchat.LS@idents))</code></pre>
 <pre><code>## [1] TRUE</code></pre>
+<p><strong><em>Output interpretation</em></strong></p>
+<p><code>setequal()</code>function confirms that the same cell
+population labels are present in both condition to allow comparaison of
+corresponding cell groups.</p>
+<p>Populations size differ between NL and LS and two populations were
+filtered only in NL. These differences must be considered when
+interpreting results.</p>
+</div>
+<div id="b-merging-the-cellchat-objects" class="section level3"
+number="3.2.2">
+<h3><span class="header-section-number">3.2.2</span> (B) Merging the
+CellChat objects</h3>
+<p>We can now merge the analyzed NL and LS CellChat objects using
+<code>mergeCellChat()</code>. This function combines the results into a
+single object for comparative analysis while preserving the
+communication networks inferred for each condition.</p>
+<p><code>add.names</code> argument assigns a label to each dataset so
+that CellChat can distinguish NL from LS skin.</p>
+<pre class="r"><code>object.list &lt;- list(NL = cellchat.NL, LS = cellchat.LS) #create named list of cellchat objects
+
+cellchat.merged &lt;- mergeCellChat(object.list, add.names = names(object.list))</code></pre>
+<pre><code>## Merge the following slots: &#39;data.signaling&#39;,&#39;images&#39;,&#39;net&#39;, &#39;netP&#39;,&#39;meta&#39;, &#39;idents&#39;, &#39;var.features&#39; , &#39;DB&#39;, and &#39;LR&#39;.</code></pre>
+<pre class="r"><code>cellchat.merged</code></pre>
+<pre><code>## An object of class CellChat created from a merged object with multiple datasets 
+##  1093 signaling genes.
+##  7563 cells. 
+## CellChat analysis of single cell RNA-seq data!</code></pre>
+<p><strong><em>Output Interpretation</em></strong></p>
+<p>The NL and LS CellChat objects were successfully merged into a single
+object containing 7 563 cells and 1 093 signaling genes.</p>
+<p>The merged object preserves the inferred communication networks for
+both conditions, allowing comparaison.</p>
+</div>
+<div id="c-save-the-merged-cellchat-object" class="section level3"
+number="3.2.3">
+<h3><span class="header-section-number">3.2.3</span> (C) Save the merged
+CellChat object</h3>
+<pre class="r"><code>saveRDS(cellchat.merged, file = &quot;./02_RESULTS/cellchat_NL_LS_merged.rds&quot;)</code></pre>
+<p><strong>End of Step 2</strong></p>
+<p>Now that we created the merged CellChat object, we can move on with
+the comparaison.</p>
+</div>
+</div>
+<div id="step-3-comparing-the-number-and-strength-of-interactions"
+class="section level2" number="3.3">
+<h2><span class="header-section-number">3.3</span> Step 3 : Comparing
+the number and strength of interactions</h2>
+<div id="a-comparing-the-total-number-of-inferred-interactions"
+class="section level3" number="3.3.1">
+<h3><span class="header-section-number">3.3.1</span> (A) Comparing the
+total number of inferred interactions</h3>
+<p>We first compare the total number of inferred L-R communication
+between NL and LS skin.</p>
+<p><code>compareInteractions()</code>function summarizes the number of
+inferred interactions in each condition using the aggregated
+communication networks.</p>
+<p>NB : Differences in cell numbers and population composition may
+influence the number of inferred interactions.</p>
+<pre class="r"><code>p.count &lt;- compareInteractions(cellchat.merged, show.legend = FALSE, group = c(1,2))
+p.count</code></pre>
+<p><img
+src="03_FIGURES/Comparaison_count_unnamed-chunk-40-1.png" /><!-- --></p>
+<p><strong><em>Output Interpretation</em></strong></p>
+<p>NL condition contains 605 inferred interactions, while LS contains
+993 inferred interactions.</p>
+</div>
+<div id="b-comparing-overall-communication-strength"
+class="section level3" number="3.3.2">
+<h3><span class="header-section-number">3.3.2</span> (B) Comparing
+overall communication strength</h3>
+<p>We now compare the overall inferred communication strength.</p>
+<p>Interaction strength reflects the sum of their modeled communication
+scores.</p>
+<p>We use <code>measure = "weight"</code> to compare aggregated strength
+across our two conditions.</p>
+<p>This help us determine whether a condition shows stronger predicted
+signaling.</p>
+<pre class="r"><code>p.weight &lt;- compareInteractions(cellchat.merged, show.legend = FALSE, group = c(1,2), measure = &quot;weight&quot;)
+p.weight</code></pre>
+<p><img
+src="03_FIGURES/Comparaison_weight_unnamed-chunk-41-1.png" /><!-- --></p>
+<p><strong><em>Output Interpretation</em></strong></p>
+<p>The total inferred communication strength is higher in LS than in NL
+skin, indicating stronger aggregated signaling scores in LS network.</p>
+<p>These results suggest increased predicted communication in lesional
+skin. But, this difference must be interpreted cautiously as the two
+conditions differ in cell number and population.</p>
+</div>
+<div id="c-visualizing-differential-communication-networks"
+class="section level3" number="3.3.3">
+<h3><span class="header-section-number">3.3.3</span> (C) Visualizing
+differential communication networks</h3>
+<p>To identify changes in communication between specific cell
+populations, we visualize differential networks using
+<code>netVisual_diffInteraction()</code>. This function compares the
+inferred networks between NL and LS skin and assess changes in either
+interaction counts or aggregated communication strength.</p>
+<p>As the datasets were merged in the order NL -&gt; LS :</p>
+<ul>
+<li><p>Red edges indicated increased inferred communication in LS
+compared with NL,</p></li>
+<li><p>Blue edges indicate decrased inferred communication in LS
+compared with NL.</p></li>
+</ul>
+<p>NB : These differences are only descriptive.</p>
+<pre class="r"><code>par(mfrow = c(1,2), xpd = TRUE)
+#difference in number of interactions
+netVisual_diffInteraction(cellchat.merged, comparison = c(1, 2), weight.scale = TRUE, measure = &quot;count&quot;)
+#difference in aggregated communication strength
+netVisual_diffInteraction(cellchat.merged, comparison = c(1,2), weight.scale = TRUE, measure = &quot;weight&quot;)</code></pre>
+<p><img
+src="03_FIGURES/Comparaison_diff_unnamed-chunk-42-1.png" /><!-- --></p>
+<p><strong><em>Output Interpretation</em></strong></p>
+<p>The differential networks show a predominance of red edges,
+indicating increased inferred interaction counts and communication
+strengths in LS compared to NL.</p>
+<p>Several blue edges indicate that some communication are reduced in
+lesional skin, suggesting that network changes may not be the same
+across all cell populations (for example Langerhans cells).</p>
+<p>NB : These results are only descriptive and may not be statistically
+relevant.</p>
+<p><strong>End of Step 3</strong></p>
+<p>We compared the total number and aggregated strength of inferred
+communication between NL and LS skin.</p>
+<p>Differential network visualizations allow us to identify which cell
+population pairs show increased or decreased predicted communication in
+lesional skin.</p>
+<p>These analyses must be interpreted considering the differences in
+cell numbers between conditions and population composition.</p>
+</div>
+</div>
+<div
+id="step-4-identifying-differences-in-signaling-pathways-between-conditions"
+class="section level2" number="3.4">
+<h2><span class="header-section-number">3.4</span> Step 4 : Identifying
+differences in signaling pathways between conditions</h2>
+<p>The goal here is to move from the overall differences observed in
+Step 3 to a more specific biological question : which signaling pathways
+contribute differentially to the communications inferred in NL and LS
+?</p>
+<div id="a-comparing-signaling-pathway-activity-between-conditions"
+class="section level3" number="3.4.1">
+<h3><span class="header-section-number">3.4.1</span> (A) Comparing
+signaling pathway activity between conditions</h3>
+<p>We now investigate which signaling pathways contribute to these
+differences.</p>
+<p><code>rankNet()</code>function compares pathway-level information
+flow, defined as the sum of inferred communication probabilities across
+all sender-receiver population pairs within each pathway.</p>
+<p>This allows us to identify signaling pathways with higher or lower
+predicted communication strength in LS compared to NL.</p>
+<p>We choose to set <code>stacked = FALSE</code> because it makes it
+easier to see the differences between NL and LS.</p>
+<p><code>do.stat = TRUE</code> test if the difference in signaling
+pathway activity is significant between our two conditions.</p>
+<pre class="r"><code>p.pathways &lt;- rankNet(cellchat.merged, mode = &quot;comparison&quot;, measure = &quot;weight&quot;, stacked = FALSE, do.stat = TRUE)
+p.pathways</code></pre>
+<p><img
+src="03_FIGURES/Comparison_pathways_unnamed-chunk-43-1.png" /><!-- --></p>
+<p><strong><em>Output Interpretation</em></strong></p>
+<p>This comparison reveals distinct signaling patterns between our two
+conditions.</p>
+<p>Pathways such as MHC-II, ANNEXIN and CypA exhibit higher inferred
+information flow in LS, while CD45 and VCAM show stronger predicted
+communication in NL condition. Some pathways, like COLLAGEN and MIF
+contribute to both conditions.</p>
+<p>Several pathways are detected in one condition only (PTN, CADM, IL4…)
+suggesting condition-specific signaling patterns.</p>
+<p>These differences suggest a potential reorganization of intercellular
+communication in lesional skin (still exploratory results, may be
+influenced by differences in cell composition).</p>
+</div>
+<div id="b-focusing-on-cxcl-signaling-pathway" class="section level3"
+number="3.4.2">
+<h3><span class="header-section-number">3.4.2</span> (B) Focusing on
+CXCL signaling pathway</h3>
+<p>To illustrate pathway-specific changes, we focus on CXCL signaling as
+it was previously examined in both conditions.</p>
+<p>The total CXCL communication strength is computed by summing the
+inferred pathway-level communication probabilites across all
+sender-receiver population pairs.</p>
+<p>This provides a quantitative comparaison of CXCL-mediated signaling
+between NL and LS skin.</p>
+<pre class="r"><code>#calculate total communication strength
+cxcl.NL &lt;- sum(cellchat.NL@netP$prob[, , &quot;CXCL&quot;])
+cxcl.LS &lt;- sum(cellchat.LS@netP$prob[, , &quot;CXCL&quot;])
+
+cxcl.comparison &lt;- data.frame(condition = c(&quot;NL&quot;, &quot;LS&quot;), strength = c(cxcl.NL, cxcl.LS))
+cxcl.comparison</code></pre>
+<pre><code>##   condition  strength
+## 1        NL 0.5135400
+## 2        LS 0.6502606</code></pre>
+<pre class="r"><code>#visualize CXCL communication strength
+p.cxcl &lt;- ggplot(cxcl.comparison, aes(x = condition, y = strength, fill = condition)) +
+  geom_col(width = 0.6) +
+  labs(title = &quot;CXCL signaling: NL vs LS&quot;, x = &quot;Skin condition&quot;, y = &quot;Total inferred CXCL communication strength&quot;) +
+  theme_classic() +
+  theme(legend.position = &quot;none&quot;)
+p.cxcl</code></pre>
+<p><img
+src="03_FIGURES/Comparison_CXCL_unnamed-chunk-44-1.png" /><!-- --></p>
+<p><strong><em>Output Interpretation</em></strong></p>
+<p>The total inferred CXCL communication strength is higher in lesional
+skin (0.650) than in nonlesional skin (0.514), representing a 27%
+increase.</p>
+<p>This suggests enhanced predicted CXCL-mediated communication in LS
+and may reflect changes in fibroblast-immune cell signaling.</p>
+<p>This difference is descriptive and does not establish a statistically
+significant increase in biological CXCL activity.</p>
+<p><strong>End of Step 4</strong></p>
+<p>By comparing pathway-level information, we identified potential
+difference in intercellular signaling between NL and LS skin. CXCL
+pathway provides a focused example of how condition-specific
+communication patterns can be explored beyond global network
+comparisons.</p>
+</div>
+</div>
+<div
+id="step-5-interpreting-condition-specific-communication-patterns-and-discuss-limitations"
+class="section level2" number="3.5">
+<h2><span class="header-section-number">3.5</span> Step 5 : Interpreting
+condition-specific communication patterns and discuss limitations</h2>
+<div id="a-summary-of-nl-vs-ls-communication-differences"
+class="section level3" number="3.5.1">
+<h3><span class="header-section-number">3.5.1</span> (A) Summary of NL
+vs LS communication differences</h3>
+<pre class="r"><code>#summary table comparing NL and LS
+comparison.summary &lt;- data.frame(Metric = c(&quot;Number of cells&quot;, &quot;Candidate ligand-receptor pairs&quot;, &quot;Inferred communication records&quot;, &quot;Inferred signaling pathways&quot;, &quot;Total communication strength&quot;, &quot;CXCL communication strength&quot;),
+NL = c(ncol(cellchat.NL@data), nrow(cellchat.NL@LR$LRsig), nrow(df.net.NL), length(cellchat.NL@netP$pathways), sum(cellchat.NL@net$weight),cxcl.NL),
+LS = c(ncol(cellchat.LS@data), nrow(cellchat.LS@LR$LRsig), nrow(df.net.LS), length(cellchat.LS@netP$pathways), sum(cellchat.LS@net$weight), cxcl.LS))
+
+#display a formatted table in R Markdown
+knitr::kable(comparison.summary, digits = 3, caption = &quot;Summary of CellChat results: NL vs LS&quot;)</code></pre>
+<table>
+<caption>Summary of CellChat results: NL vs LS</caption>
+<thead>
+<tr class="header">
+<th align="left">Metric</th>
+<th align="right">NL</th>
+<th align="right">LS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Number of cells</td>
+<td align="right">2552.000</td>
+<td align="right">5011.000</td>
+</tr>
+<tr class="even">
+<td align="left">Candidate ligand-receptor pairs</td>
+<td align="right">1351.000</td>
+<td align="right">1645.000</td>
+</tr>
+<tr class="odd">
+<td align="left">Inferred communication records</td>
+<td align="right">605.000</td>
+<td align="right">993.000</td>
+</tr>
+<tr class="even">
+<td align="left">Inferred signaling pathways</td>
+<td align="right">34.000</td>
+<td align="right">33.000</td>
+</tr>
+<tr class="odd">
+<td align="left">Total communication strength</td>
+<td align="right">33.546</td>
+<td align="right">55.784</td>
+</tr>
+<tr class="even">
+<td align="left">CXCL communication strength</td>
+<td align="right">0.514</td>
+<td align="right">0.650</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>write.csv(comparison.summary, &quot;02_RESULTS/CellChat_NL_LS_summary.csv&quot;, row.names = FALSE)</code></pre>
+<p><strong><em>Interpretation</em></strong></p>
+<p>Our comparative analysis suggests a reorganization of inferred
+cell-cell communication networks between nonlesional and lesional
+skin.</p>
+<p>Lesional skin exhibits a higher number of predicted interactions and
+overall communication strength. But, these changes are not uniform
+across signaling pathways.</p>
+<p>For instance, MHC-II, FN1 and ANNEXIN signaling show greater
+information flow in LS, while CD45 signaling is stronger in NL.</p>
+<p>CXCL communication strength is approximatively 27% higher in LS,
+suggesting potential changes in chemokine-mediated interactions between
+stromal and immune cell populations.</p>
+</div>
+<div id="b-limitations-of-the-comparative-analysis"
+class="section level3" number="3.5.2">
+<h3><span class="header-section-number">3.5.2</span> (B) Limitations of
+the comparative analysis</h3>
+<p>Several limitations should be considered when interpreting the
+results obtained.</p>
+<p>First of all, NL and LS contain different number of cells (2 552 VS 5
+011), which may influence communication inference. Moreover, cDC1 and
+inflammatory dendritic cells were excluded from the NL network due to
+insufficient cell numbers but retained in LS.</p>
+<p>Secondly, the comparison is only exploratory and does not account for
+biological variability between our conditions.</p>
+<p>Finally, CellChat infers potential signaling from gene expression and
+known L-R interactions without mesuring protein abundance, receptor
+activation or physical cell proximity.</p>
+<p>Therefore, these findings require further experimental
+validation.</p>
+</div>
+<div id="c-final-tutorial-conclusion" class="section level3"
+number="3.5.3">
+<h3><span class="header-section-number">3.5.3</span> (C) Final tutorial
+conclusion</h3>
+<p>This tutorial demonstrated how CellChat v2 can be used to infer,
+visualize and compare cell-cell communication networks from scRNA-seq
+data.</p>
+<p>The overall analysis highlighted the potential role of fibroblast
+populations as major signal senders and antigen presenting immune cells
+such as Langerhans cells as major receivers in human skin.</p>
+<p>Our exploratory comparison suggested changes in global communication
+strength and CXCL pathway signaling between NL and LS conditions.</p>
+<p>CellChat provides a powerful framework for generation hypotheses
+about intercellular communication, while emphasizing the importance of
+paramater selection and biological interpretation.</p>
+<p><strong><em>Thank you for following this tutorial till the end ! We
+hope that it helped you understanding how CellChat v2 works and how to
+use it in your own single-cell transcriptomic
+analyses.</em></strong></p>
+<p>If you would like to explore cell-cell communication analysis
+further, we encourage you to check out the latest developments of
+CellChat, including its newest version : v3 which offers spatial
+transcriptomic analysis, available on the official Git repository linked
+at the beginning of this tutorial. You may also look out for alternative
+cell-cell communication analysis tool for single-cell transcriptomic
+data such as CellPhoneDB which is implemented in Python.</p>
+</div>
 </div>
 </div>
 
