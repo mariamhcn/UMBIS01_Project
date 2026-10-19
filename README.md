@@ -105,6 +105,9 @@ The NL and LS datasets contain different cell numbers and population distributio
 
 ## References :
 [1] Jin S, Plikus MV, Nie Q. CellChat for systematic analysis of cell-cell communication from single-cell transcriptomics. Nat Protoc. 2025 Jan;20(1):180-219. doi: 10.1038/s41596-024-01045-4. Epub 2024 Sep 16. PMID: 39289562.
+
 [2] Jin, S., Guerrero-Juarez, C.F., Zhang, L. et al. Inference and analysis of cell-cell communication using CellChat. Nat Commun 12, 1088 (2021). https://doi.org/10.1038/s41467-021-21246-9
+
 [3] Official CellChat repository : Interface between mathematics, AI and biomedicine. (2026). Jinworks/cellchat [R]. https://github.com/jinworks/CellChat (Original Edition 2023)
+
 [4] Original example dataset : https://ndownloader.figshare.com/files/25950872
