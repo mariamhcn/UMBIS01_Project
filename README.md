@@ -16,10 +16,11 @@ By the end of this tutorial, you will be able to :
 ## Dataset
 
 We use the human skin scRNA-seq example dataset provided by the CellChat developers, containing normalized gene expression data and annotated cell metadata.
-Condition	Cells
-Non-lesional skin (NL)	2,552
-Lesional skin (LS)	5,011
-Total	7,563
+| Condition | Cells |
+| --- | ---: |
+| Non-lesional skin (NL) | 2,552 |
+| Lesional skin (LS) | 5,011 |
+| **Total** | **7,563** |
 
 The expression matrix contains 17,328 genes, and cells are assigned to 12 annotated populations, including fibroblast, dendritic-cell, and T-cell populations.
 
@@ -80,6 +81,7 @@ The script downloads the dataset if necessary, executes the analysis, and produc
 
 ## Repository structure
 
+```text
 CellChat_Tutorial/
 ├── CellChat_Tutorial_UMBIS01.Rmd   # Tutorial source
 ├── README.md                       # This guide
@@ -92,6 +94,7 @@ CellChat_Tutorial/
 │   ├── PART_1_NL/                  # NL figures (if configured in the Rmd)
 │   └── PART_2_NL_vs_LS/            # Comparison figures (if configured in the Rmd)
 └── 04_REPRODUCIBILITY/             # Session information, if exported
+```
 
 
 ## Interpretation and limitations
