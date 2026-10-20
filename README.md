@@ -24,7 +24,7 @@ We use the human skin scRNA-seq example dataset provided by the CellChat develop
 
 The expression matrix contains 17,328 genes, and cells are assigned to 12 annotated populations, including fibroblast, dendritic-cell, and T-cell populations.
 
-**Original dataset: CellChat human skin dataset on Figshare**
+**Original dataset:** [CellChat human skin dataset on Figshare](https://ndownloader.figshare.com/files/25950872)
 
 The R Markdown script automatically downloads the .rda file to 01_DATA/ if it is absent. Internet access is required for the initial download. The dataset has already been preprocessed, normalized, and annotated, this tutorial does not repeat upstream single-cell quality control or clustering.
 
@@ -63,8 +63,10 @@ This project uses renv to record package versions. Restoration may require compa
 ## How to reproduce the analysis
 
 1. Obtain the repository. Clone it with Git, or select Code → Download ZIP on GitHub and extract it.
+```bash
 git clone <YOUR-REPOSITORY-URL>
 cd <YOUR-REPOSITORY-FOLDER>
+```
 
 2. Open the project in RStudio with the included .Rproj file. Make sure the working directory is the repository root (where the .Rmd and renv.lock files are located).
 
@@ -74,7 +76,7 @@ cd <YOUR-REPOSITORY-FOLDER>
 `renv::status()`
 If `renv::restore()` cannot install a GitHub/Bioconductor dependency, consult the package's official installation instructions and check that the lockfile records the correct source.
 
-4. Render the tutorial. Open CellChat_Tutorial_UMBIS01.Rmd and click Knit.
+4. Open CellChat_Tutorial_UMBIS01.Rmd and click Knit.
 
 The script downloads the dataset if necessary, executes the analysis, and produces the HTML tutorial. Its relative paths assume execution from the repository root.
 
@@ -83,19 +85,19 @@ The script downloads the dataset if necessary, executes the analysis, and produc
 
 ```text
 CellChat_Tutorial/
-├── CellChat_Tutorial_UMBIS01.Rmd   # Tutorial source
-├── README.md                       # This guide
-├── renv.lock                       # Recorded R dependencies
-├── .Rprofile                       # renv activation (if included)
-├── renv/                           # renv bootstrap/configuration (not its package library)
-├── 01_DATA/                         # Downloaded input dataset
-├── 02_RESULTS/                      # Saved CellChat objects and summary tables
-├── 03_FIGURES/
-│   ├── PART_1_NL/                  # NL figures (if configured in the Rmd)
-│   └── PART_2_NL_vs_LS/            # Comparison figures (if configured in the Rmd)
-└── 04_REPRODUCIBILITY/             # Session information, if exported
+├── CellChat_Tutorial.Rproj          # RStudio project
+├── CellChat_Tutorial_UMBIS01.Rmd   # Executable tutorial source
+├── CellChat_Tutorial_UMBIS01.html  # Rendered tutorial (read without R)
+├── README.md                       # Project description and instructions
+├── renv.lock                       # Locked package versions (root directory)
+├── .Rprofile                       # Automatic renv activation
+├── .gitignore                      # Excludes temporary files and local libraries
+├── renv/                           # renv activation/configuration scripts
+├── 01_DATA/                        # Input dataset
+├── 02_RESULTS/                     # Saved RDS objects and CSV tables
+├── 03_FIGURES/                     # Generated figures (organized by part)
+└── 04_REPRODUCIBILITY/             # Reproducibility notes and session information
 ```
-
 
 ## Interpretation and limitations
 CellChat infers potential communication based on expression patterns and a curated ligand–receptor database. Its predictions do not directly demonstrate ligand secretion, receptor activation, physical proximity, or functional signaling.
