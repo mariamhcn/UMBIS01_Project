@@ -71,12 +71,14 @@ cd <YOUR-REPOSITORY-FOLDER>
 2. Open the project in RStudio with the included .Rproj file. Make sure the working directory is the repository root (where the .Rmd and renv.lock files are located).
 
 3. Restore the R environment. In the R console:
-`install.packages("renv")` # only if renv is not yet available
-`renv::restore()`
-`renv::status()`
+```r
+install.packages("renv") # only if renv is not yet available
+renv::restore()
+renv::status()
+```
 If `renv::restore()` cannot install a GitHub/Bioconductor dependency, consult the package's official installation instructions and check that the lockfile records the correct source.
 
-4. Open CellChat_Tutorial_UMBIS01.Rmd and click Knit.
+5. Open CellChat_Tutorial_UMBIS01.Rmd and click Knit.
 
 The script downloads the dataset if necessary, executes the analysis, and produces the HTML tutorial. Its relative paths assume execution from the repository root.
 
