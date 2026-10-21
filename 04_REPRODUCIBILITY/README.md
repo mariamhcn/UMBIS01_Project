@@ -6,7 +6,29 @@ This directory contains supplementary information to support the reproducibility
 
 All analyses were performed in R using CellChat v2. The same main inference parameters were applied to non-lesional (NL) and lesional (LS) skin.
 
-## 2. Computational Environment
+## 2. Software Requirements and Environment Restoration
+
+This project was developed with **R 4.6.0**, Bioconductor 3.23, and CellChat v2 on macOS Apple Silicon. Successful execution has also been tested with R 4.6.1 on another macOS computer.
+
+The R package environment is managed through `renv`. The `renv.lock` file records the required package versions, including `presto`, which is used by CellChat for fast differential expression testing, and `yaml`, which supports R Markdown dependency parsing.
+
+**Installation procedure**
+
+1. Install R 4.6.x and RStudio.
+2. Clone or download the complete GitHub repository.
+3. Open `CellChat_Tutorial.Rproj` in RStudio.
+4. If required, install `renv` using `install.packages("renv")`.
+5. Restore the recorded dependencies using `renv::restore()`.
+6. Verify the environment using `renv::status()`.
+7. Render the tutorial using `rmarkdown::render("CellChat_Tutorial_UMBIS01.Rmd")`.
+
+The project uses the CRAN release of `presto`, avoiding the need for a separate GitHub installation.
+
+If package installation fails, check the R version, network access, and system compilation requirements. `renv` manages R packages but does not install R itself or external compilation tools.
+
+**Important:** Only update `renv.lock` from a validated development environment. New users should restore the recorded dependencies rather than creating a new snapshot.
+
+## 3. Computational Environment
 
 The project uses **`renv`** to manage R package dependencies and record their versions.
 
@@ -19,7 +41,7 @@ The following files are located at the root of the repository, not inside this d
 
 The file `04_REPRODUCIBILITY/session_info.txt` provides supplementary information about the R version, platform, and packages loaded during the analysis.
 
-## 3. Reproducing the Analysis
+## 4. Reproducing the Analysis
 
 **Step 1 — Obtain the project**
 
@@ -66,7 +88,7 @@ After successful execution, verify that the project generates the expected outpu
 
 The HTML output should reproduce the figures, tables, and interpretations presented in the notebook.
 
-## 4. Reproducibility Considerations
+## 5. Reproducibility Considerations
 
 The analysis uses CellChat inference settings across NL and LS, including `triMean` averaging, 100 bootstrap iterations, `population.size = FALSE`, and `min.cells = 10`.
 
@@ -76,7 +98,7 @@ Nevertheless, reproducibility of the computational workflow does not imply biolo
 
 The unequal cell numbers and population composition between NL and LS, together with the absence of donor-level statistical comparisons, mean that condition-specific differences should be interpreted as exploratory.
 
-## 5. Troubleshooting
+## 6. Troubleshooting
 
 If environment restoration fails, check that `renv` is activated and consult :
 
