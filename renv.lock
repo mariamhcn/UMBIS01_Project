@@ -5050,6 +5050,54 @@
       "VignetteBuilder": "knitr",
       "Repository": "CRAN"
     },
+    "presto": {
+      "Package": "presto",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Title": "Fast Functions for Differential Expression Using Wilcoxon and AUC",
+      "Authors@R": "c( person(\"Ilya\", \"Korsunsky\", email = \"ilya.korsunsky@gmail.com\",  role = c(\"aut\"), comment = c(ORCID = \"0000-0003-4848-3948\")), person(\"Aparna\", \"Nathan\",  role = \"aut\"), person(\"Nghia\", \"Millard\",  role = \"aut\", comment = c(ORCID = \"0000-0002-0518-7674\")), person(\"Soumya\", \"Raychaudhuri\",  role = c(\"aut\"), comment = c(ORCID = \"0000-0002-1901-8265\")), person(\"Kamil\", \"Slowikowski\", email = \"kslowikowski@gmail.com\", role = c(\"cre\", \"ctb\"), comment = c(ORCID = \"0000-0002-2843-6370\")), person(\"Austin\", \"Hartman\", role = c(\"ctb\"), comment = c(ORCID = \"0000-0001-7278-1852\")) )",
+      "Description": "Scalable implementation of the Wilcoxon rank sum test and the area under the receiver operating characteristic curve (also known as auROC or AUC) statistic. Interfaces to dense and sparse matrices, as well as the genomics analysis frameworks 'Seurat' and 'SingleCellExperiment'.",
+      "License": "GPL-3",
+      "Encoding": "UTF-8",
+      "Depends": [
+        "R (>= 3.5.0)"
+      ],
+      "LinkingTo": [
+        "Rcpp",
+        "RcppArmadillo"
+      ],
+      "Imports": [
+        "Rcpp",
+        "data.table",
+        "dplyr",
+        "methods",
+        "tidyr",
+        "purrr",
+        "tibble",
+        "Matrix",
+        "rlang",
+        "stats",
+        "utils"
+      ],
+      "RoxygenNote": "7.3.3",
+      "Suggests": [
+        "knitr",
+        "rmarkdown",
+        "testthat",
+        "Seurat",
+        "SingleCellExperiment",
+        "SummarizedExperiment",
+        "DelayedArray",
+        "broom",
+        "BiocStyle",
+        "DESeq2"
+      ],
+      "NeedsCompilation": "yes",
+      "VignetteBuilder": "knitr",
+      "Author": "Ilya Korsunsky [aut] (ORCID: <https://orcid.org/0000-0003-4848-3948>), Aparna Nathan [aut], Nghia Millard [aut] (ORCID: <https://orcid.org/0000-0002-0518-7674>), Soumya Raychaudhuri [aut] (ORCID: <https://orcid.org/0000-0002-1901-8265>), Kamil Slowikowski [cre, ctb] (ORCID: <https://orcid.org/0000-0002-2843-6370>), Austin Hartman [ctb] (ORCID: <https://orcid.org/0000-0001-7278-1852>)",
+      "Maintainer": "Kamil Slowikowski <kslowikowski@gmail.com>",
+      "Repository": "CRAN"
+    },
     "promises": {
       "Package": "promises",
       "Version": "1.5.0",

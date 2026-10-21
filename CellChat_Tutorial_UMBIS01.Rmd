@@ -1,6 +1,6 @@
 ---
 title: "CellChat v2: From Ligand–Receptor Interactions to Comparative Cell–Cell Communication Networks"
-author: "Mariam H."
+author: "Mariam H., Ann-Solène A, Myriam S."
 date: "2026-10-19"
 output:
   html_document:
@@ -97,6 +97,8 @@ writeLines(capture.output(sessionInfo()),"04_REPRODUCIBILITY/session_info.txt")
 library(CellChat)
 library(ggplot2)
 library(patchwork)
+library(presto)
+library(yaml)
 options(stringsAsFactors = FALSE)
 ```
 
@@ -1263,7 +1265,7 @@ First, CellChat infers potential communication from transcriptomic data and cura
 
 Secondly, cell population size and composition can influence communication inference. In our dataset, NL and LS contain different number of cells (2 552 VS 5 011). Moreover, cDC1 and inflammatory dendritic cells were excluded from the NL network due to insufficient cell numbers (`min.cells = 10`) but retained in LS. These differences may partly explain the greater number and strength of inferred interactions observed in LS.
 
-Plus, the results depend on computational parameters choice and reference database. For exemple, the choice of gene expression averaging method (`triMean` or `truncatedMean`) substantially affects the number of predicted interactions. Also, CellChat can only identify interactions listed in its ligand-receptor database. 
+Plus, the results depend on computational parameters choice and reference database. For exemple, the choice of gene expression averaging method (`triMean` or `truncatedMean`) substantially affects the number of predicted interactions. Also, CellChat can only identify interactions listed in its ligand-receptor database.
 
 Finally, our comparative analysis does not account for donor-level variability. Eventual differences between NL and LS conditions should be interpreted as descriptive only (and not as statistically validated disease associated changes).
 
