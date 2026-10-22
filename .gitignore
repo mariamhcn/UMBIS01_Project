@@ -2,3 +2,18 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# R temporary files
+.Rhistory
+.Rhistory *
+.RData
+.RDataTmp*
+.Rproj.user/
+
+# macOS
+.DS_Store
+
+# renv local libraries
+renv/library/
+renv/staging/
+renv/local/
