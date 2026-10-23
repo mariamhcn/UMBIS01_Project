@@ -78,7 +78,7 @@ renv::status()
 ```
 If `renv::restore()` cannot install a GitHub/Bioconductor dependency, consult the package's official installation instructions and check that the lockfile records the correct source.
 
-5. Open CellChat_Tutorial_UMBIS01.Rmd and click Knit.
+4. Open CellChat_Tutorial_UMBIS01.Rmd and click Knit.
 
 The script downloads the dataset if necessary, executes the analysis, and produces the HTML tutorial. Its relative paths assume execution from the repository root.
 
