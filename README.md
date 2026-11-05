@@ -203,40 +203,42 @@ These limitations will be addressed through statistical adjustment, sensitivity 
 [7] Harvard Chan Bioinformatics Core. Functional analysis of pseudobulk DE (HBC Training). https://hbctraining.github.io/Pseudobulk-for-scRNAseq-Quarto/lessons/10_functional_analysis_pseudobulk.html
 
 [8] Wu, T. et al. (2021). clusterProfiler 4.0: a universal enrichment tool for interpreting omics data. The Innovation, 2, 100141. https://doi.org/10.1016/j.xinn.2021.100141
-Subramanian, A. et al. (2005). Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide expression profiles. PNAS, 102, 15545–15550. https://doi.org/10.1073/pnas.0506580102
 
-[9] Liberzon, A. et al. (2015). The Molecular Signatures Database hallmark gene set collection. Cell Systems, 1, 417–425. https://doi.org/10.1016/j.cels.2015.12.004
+[9] Subramanian, A. et al. (2005). Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide expression profiles. PNAS, 102, 15545–15550. https://doi.org/10.1073/pnas.0506580102
 
-[10] Koopmans, F. et al. (2019). SynGO: an evidence-based, expert-curated knowledge base for the synapse. Neuron, 103, 217–234. https://doi.org/10.1016/j.neuron.2019.05.002
+[10] Liberzon, A. et al. (2015). The Molecular Signatures Database hallmark gene set collection. Cell Systems, 1, 417–425. https://doi.org/10.1016/j.cels.2015.12.004
 
-[11] Ruzicka, W. B. et al. (2024). Single-cell multi-cohort dissection of the schizophrenia transcriptome. Science, 384, eadg5136. https://doi.org/10.1126/science.adg5136 → baisse des gènes synaptiques dans les neurones en SCZ
+[11] Koopmans, F. et al. (2019). SynGO: an evidence-based, expert-curated knowledge base for the synapse. Neuron, 103, 217–234. https://doi.org/10.1016/j.neuron.2019.05.002
 
-[12] Jin S, Plikus MV, Nie Q. CellChat for systematic analysis of cell-cell communication from single-cell transcriptomics. Nat Protoc. 2025 Jan;20(1):180-219. doi: 10.1038/s41596-024-01045-4. Epub 2024 Sep 16. PMID: 39289562.
+[12] Ruzicka, W. B. et al. (2024). Single-cell multi-cohort dissection of the schizophrenia transcriptome. Science, 384, eadg5136. https://doi.org/10.1126/science.adg5136
 
-[13] Zhao, W., Johnston, K. G., Ren, H., Xu, X., & Nie, Q. (2023). Inferring neuron-neuron communications from single-cell transcriptomics through NeuronChat. Nature Communications, 14(1), 1128. https://doi.org/10.1038/s41467-023-36800-w
+[13] Jin S, Plikus MV, Nie Q. CellChat for systematic analysis of cell-cell communication from single-cell transcriptomics. Nat Protoc. 2025 Jan;20(1):180-219. doi: 10.1038/s41596-024-01045-4. Epub 2024 Sep 16. PMID: 39289562.
 
-[14] Wei-BioMath. (2026). Wei-biomath/neuronchat [R]. https://github.com/Wei-BioMath/NeuronChat (Édition originale 2022)
+[14] Zhao, W., Johnston, K. G., Ren, H., Xu, X., & Nie, Q. (2023). Inferring neuron-neuron communications from single-cell transcriptomics through NeuronChat. Nature Communications, 14(1), 1128. https://doi.org/10.1038/s41467-023-36800-w
 
-[15] López-Otín, C. et al. (2023). Hallmarks of aging: an expanding universe. Cell, 186, 243–278. https://doi.org/10.1016/j.cell.2022.11.001
+[15] Wei-BioMath. (2026). Wei-biomath/neuronchat [R]. https://github.com/Wei-BioMath/NeuronChat (Édition originale 2022)
 
-[16] Mattson, M. P. & Arumugam, T. V. (2018). Hallmarks of brain aging: adaptive and pathological modification by metabolic states. Cell Metabolism, 27, 1176–1199. https://doi.org/10.1016/j.cmet.2018.05.011 → hallmarks du vieillissement cérébral
+[16] López-Otín, C. et al. (2023). Hallmarks of aging: an expanding universe. Cell, 186, 243–278. https://doi.org/10.1016/j.cell.2022.11.001
 
-[17] Kaufmann, T. et al. (2019). Common brain disorders are associated with heritable patterns of apparent aging of the brain. Nature Neuroscience, 22, 1617–1623. https://doi.org/10.1038/s41593-019-0471-7
+[17] Mattson, M. P. & Arumugam, T. V. (2018). Hallmarks of brain aging: adaptive and pathological modification by metabolic states. Cell Metabolism, 27, 1176–1199. https://doi.org/10.1016/j.cmet.2018.05.011 → hallmarks du vieillissement cérébral
 
-[18] McKinney, B. C. et al. (2017). DNA methylation evidence against the accelerated aging hypothesis of schizophrenia. npj Schizophrenia, 3, 13. https://doi.org/10.1038/s41537-017-0026-4
+[18] Kaufmann, T. et al. (2019). Common brain disorders are associated with heritable patterns of apparent aging of the brain. Nature Neuroscience, 22, 1617–1623. https://doi.org/10.1038/s41593-019-0471-7
 
-[19] Fröhlich, A. S. et al. (2024). Single-nucleus transcriptomic profiling of human orbitofrontal cortex reveals convergent effects of aging and psychiatric disease. Nature Neuroscience, 27, 2021–2032. https://doi.org/10.1038/s41593-024-01742-z
+[19] McKinney, B. C. et al. (2017). DNA methylation evidence against the accelerated aging hypothesis of schizophrenia. npj Schizophrenia, 3, 13. https://doi.org/10.1038/s41537-017-0026-4
 
-[20] Yang, H., Clarence, T., Scott, M. R. et al. (2026). Lifespan single-cell transcriptomic atlas of the human prefrontal cortex. Nature, 657, 1003–1015. https://doi.org/10.1038/s41586-026-10271-7
+[20] Fröhlich, A. S. et al. (2024). Single-nucleus transcriptomic profiling of human orbitofrontal cortex reveals convergent effects of aging and psychiatric disease. Nature Neuroscience, 27, 2021–2032. https://doi.org/10.1038/s41593-024-01742-z
 
-[21] Saul, D. et al. (2022). A new gene set identifies senescent cells and predicts senescence-associated pathways across tissues. Nature Communications, 13, 4827. https://doi.org/10.1038/s41467-022-32552-1
+[21] Yang, H., Clarence, T., Scott, M. R. et al. (2026). Lifespan single-cell transcriptomic atlas of the human prefrontal cortex. Nature, 657, 1003–1015. https://doi.org/10.1038/s41586-026-10271-7
 
-[22] Galatro, T. F. et al. (2017). Transcriptomic analysis of purified human cortical microglia reveals age-associated changes. Nature Neuroscience, 20, 1162–1171. https://doi.org/10.1038/nn.4597
+[22] Saul, D. et al. (2022). A new gene set identifies senescent cells and predicts senescence-associated pathways across tissues. Nature Communications, 13, 4827. https://doi.org/10.1038/s41467-022-32552-1
 
-[23] The Gene Ontology Consortium (2023). The Gene Ontology knowledgebase in 2023. Genetics, 224, iyad031. https://doi.org/10.1093/genetics/iyad031 → terme GO de la myélinisation
-Hao, Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis. Nature Biotechnology, 42, 293–304. https://doi.org/10.1038/s41587-023-01767-y
+[23] Galatro, T. F. et al. (2017). Transcriptomic analysis of purified human cortical microglia reveals age-associated changes. Nature Neuroscience, 20, 1162–1171. https://doi.org/10.1038/nn.4597
 
-[24] Gonzales, M. M. et al. (2023). Senolytic therapy in mild Alzheimer’s disease: a phase 1 feasibility trial. Nature Medicine, 29, 2481–2488. https://doi.org/10.1038/s41591-023-02543-w
+[24] The Gene Ontology Consortium (2023). The Gene Ontology knowledgebase in 2023. Genetics, 224, iyad031. https://doi.org/10.1093/genetics/iyad031
+
+[25] Hao, Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis. Nature Biotechnology, 42, 293–304. https://doi.org/10.1038/s41587-023-01767-y
+
+[26] Gonzales, M. M. et al. (2023). Senolytic therapy in mild Alzheimer’s disease: a phase 1 feasibility trial. Nature Medicine, 29, 2481–2488. https://doi.org/10.1038/s41591-023-02543-w
 
 ---
 
