@@ -220,7 +220,7 @@ These limitations will be addressed through statistical adjustment, sensitivity 
 
 [16] López-Otín, C. et al. (2023). Hallmarks of aging: an expanding universe. Cell, 186, 243–278. https://doi.org/10.1016/j.cell.2022.11.001
 
-[17] Mattson, M. P. & Arumugam, T. V. (2018). Hallmarks of brain aging: adaptive and pathological modification by metabolic states. Cell Metabolism, 27, 1176–1199. https://doi.org/10.1016/j.cmet.2018.05.011 → hallmarks du vieillissement cérébral
+[17] Mattson, M. P. & Arumugam, T. V. (2018). Hallmarks of brain aging: adaptive and pathological modification by metabolic states. Cell Metabolism, 27, 1176–1199. https://doi.org/10.1016/j.cmet.2018.05.011
 
 [18] Kaufmann, T. et al. (2019). Common brain disorders are associated with heritable patterns of apparent aging of the brain. Nature Neuroscience, 22, 1617–1623. https://doi.org/10.1038/s41593-019-0471-7
 
