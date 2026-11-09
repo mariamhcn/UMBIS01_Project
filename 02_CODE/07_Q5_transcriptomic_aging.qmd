@@ -52,7 +52,8 @@ the brain ages faster in schizophrenia is **debated**: brain age estimated from 
 patients [3], whereas an epigenetic clock measured on post-mortem cortex found no acceleration [4]. A recent
 single-nucleus study of the orbitofrontal cortex found that genes changed with age and genes changed in psychiatric
 disease (mostly schizophrenia) overlap and change in the same direction, and that patients have an older transcriptomic
-age, but not an older epigenetic age [5]. We extend this question to the dorsolateral prefrontal cortex of the HBCC
+age, but not an older epigenetic age [5]. In the dorsolateral prefrontal cortex, a gene program shared by neurons and
+astrocytes declines both with age and in schizophrenia [14]. We extend this question to the dorsolateral prefrontal cortex of the HBCC
 cohort, compare **SCZ and BD** directly, and ask **which ageing hallmarks** are involved in each cell type.
 
 ## What we look for, and what we do not claim
@@ -70,9 +71,17 @@ changed by the disease (Q2) are the genes changed by age.
 smoking, metabolic disorders and cause of death are other possible explanations, discussed as limits.
 
 **Why signature scores.** Each hallmark is measured with `AddModuleScore()` [6], the Seurat function used in the
-practicals to score gene signatures. It gives one interpretable number per nucleus for a named biological process, it
-corrects for the general expression level of each nucleus, and it only needs published gene lists, which suits a
-cohort with a limited number of controls per cell type.
+practicals to score gene signatures. It gives one interpretable number for a named biological process, it corrects for
+the general expression level, and it only needs published gene lists, which suits a cohort with a limited number of
+controls per cell type.
+
+**Why on pseudobulk profiles.** The question is about **donors** ("does this patient look like an older control?"), so
+the donor is the unit of analysis. The scores are computed on the **pseudobulk** matrix of the preprocessing: for each
+donor and cell type, the counts of **all** its nuclei are summed, which gives one expression profile per donor and cell
+type, like a bulk RNA-seq of that sorted population. This is the unit used for differential expression in the PsychAD
+atlas [12] and for the program that declines with age and in schizophrenia described by Ling et al. [14]. It uses every
+nucleus (the shared Seurat object keeps only 200 nuclei per donor, for visualisation), and it is the same input as the
+differential expression of Q2, so the two questions can be compared.
 
 ## The scores used
 
@@ -81,16 +90,21 @@ also limits the number of tests.
 
 | Hallmark | Signature | Tested in | Ref. |
 |----------|-----------|-----------|------|
-| Cellular senescence | SenMayo | astrocytes, microglia | [1, 7] |
-| Chronic inflammation ("inflammaging") | Hallmark Inflammatory Response; Hallmark TNFα signalling via NF-κB | astrocytes, microglia | [1, 2, 8] |
+| Cellular senescence | SenMayo | microglia | [1, 7] |
+| Chronic inflammation ("inflammaging") | Hallmark Inflammatory Response; Hallmark TNFα signalling via NF-κB | microglia | [1, 2, 8] |
 | Microglial ageing | genes rising / falling with age in human cortical microglia (GalatroAging) | microglia | [9] |
 | Mitochondrial dysfunction | Hallmark Oxidative Phosphorylation | every cell type | [1, 2, 8] |
-| Loss of myelin (brain-specific) | GO "ensheathment of neurons" (contains myelination) | oligodendrocytes, OPC | [2, 10] |
-| Global transcriptomic age of the cell type | genes rising / falling with age in adult DLPFC (PsychAD lifespan atlas) | every cell type | [11] |
+| Loss of myelin (brain-specific) | GO "ensheathment of neurons" (contains myelination) | oligodendrocytes | [2, 10] |
+| Global transcriptomic age of the cell type | genes rising / falling with age in adult DLPFC (PsychAD lifespan atlas) | every cell type with a lifespan signature | [11] |
+
+The cell types are the 7 subclasses retained in Q1 (microglia, oligodendrocytes and five deep-layer excitatory neuron
+subclasses). Astrocytes and OPC are not among them; if the list of Q1 changes, the senescence and inflammation
+signatures are also tested in astrocytes, and myelination in OPC.
 
 | Term | Meaning in this notebook |
 |------|--------------------------|
-| **Score** | one number per donor and cell type: how strongly the signature genes are expressed |
+| **Pseudobulk profile** | for one donor and one cell type, the sum of the counts of all its nuclei |
+| **Score** | one number per donor and cell type: how strongly the signature genes are expressed in its pseudobulk profile |
 | **Validated score** | a score that follows age in our controls, in that cell type |
 | **Ageing index** | for each cell type, the mean of its validated scores, oriented so that higher = older-looking: the **main measure** |
 | **Apparent age gap** | how many years older (or younger) patients look than controls of the same age |
@@ -99,9 +113,9 @@ also limits the number of tests.
 
 | Step | What we do | Output |
 |------|------------|--------|
-| 1 | Check donors and choose the cell types analysed | tables |
+| 1 | Load the pseudobulk profiles, check donors and the cell types analysed | tables |
 | 2 | Prepare the signatures | tables |
-| 3 | Score each nucleus, then average per donor and cell type | table |
+| 3 | Score the pseudobulk profile of each donor, per cell type | table |
 | 4 | Keep only the scores that follow age in controls | F01 |
 | 5 | Build the ageing index of each cell type | table |
 | 6 | Do patients look older than controls of the same age? SCZ, BD, and SCZ vs BD | F02, F03, F04, F05 |
@@ -112,7 +126,7 @@ also limits the number of tests.
 
 | Package | Used for |
 |---------|----------|
-| `Seurat` | Seurat object, `AddModuleScore()` (seen in the practicals) |
+| `Seurat` | `NormalizeData()` and `AddModuleScore()` (seen in the practicals) |
 | `dplyr`, `tidyr`, `ggplot2` | tables and figures |
 
 ```{r setup}
@@ -136,12 +150,12 @@ All the choices are gathered in one place, so the analysis can be re-run with ot
 
 | Parameter | Value | Why |
 |-----------|-------|-----|
-| `subclass_column` / `class_column` | `cell_subclass` / `cell_class` | shared rule of the project: subclasses, merged into their class when too rare |
-| `min_cells` | 20 nuclei | a donor mean computed on fewer nuclei is too noisy (shared rule) |
+| `cell_types` | the 7 subclasses retained in Q1 | read from the Q1 results (`Q1_populations_retenues.txt`), the same for Q2 to Q5 |
+| `min_nuclei` | 20 nuclei | a pseudobulk profile built from fewer nuclei is too noisy (shared rule E7) |
 | `min_donors` | 10 donors per group | below this, a group is too small to compare (shared rule) |
 | `min_age` | 20 years | adult donors only (shared rule): younger brains are still developing |
 | `min_genes` | 5 genes | a signature with fewer genes present in the data is not reliable |
-| `covariates` | sex, PMI | known to change expression; age and diagnosis are in the models by design |
+| `covariates` | sex, genetic ancestry | sex changes expression; ancestry is strongly linked to the diagnosis in HBCC (most BD donors are of European ancestry, most SCZ donors of African ancestry), so it must be in every model. The post-mortem interval (PMI) is not available in the data |
 | `n_perm` | 200 | number of permutations of the concordance test (Step 7) |
 | `alpha` | 0.05 | threshold on the adjusted p-value (Benjamini–Hochberg) |
 
@@ -150,7 +164,8 @@ stable background estimate.
 
 ```{r parameters}
 # Inputs
-seurat_path   <- "../01_DATA/processed/hbcc_seurat_preprocessed.rds"
+pseudobulk_path <- "../03_RESULTS/pseudobulk/pseudobulk_HBCC_224donneurs.rds"     # preprocessing (all nuclei)
+q1_path         <- "../03_RESULTS/Q1_composition/Q1_populations_retenues.txt"    # cell types retained in Q1
 de_path       <- "../03_RESULTS/Q2_pseudobulk_DE/de_results_all.csv"   # Q2 results, for Step 7
 geneset_dir   <- "../01_DATA/genesets"   # one CSV per signature (gs_name, gene_symbol), see its README.md
 signature_files <- c("Q5_senmayo.csv", "Q5_inflammatory_response.csv", "Q5_tnfa_nfkb.csv",
@@ -160,21 +175,24 @@ lifespan_path <- file.path(geneset_dir, "Q5_lifespan_ageing.csv")
 # Outputs
 out_dir <- "../03_RESULTS/Q5_aging"
 fig_dir <- "../04_FIGURES/Q5"
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 
 # Analysis choices
-subclass_column <- "cell_subclass"
-class_column    <- "cell_class"
-min_cells       <- 20
+min_nuclei      <- 20
 min_donors      <- 10
 min_age         <- 20
 min_genes       <- 5
-covariates      <- c("sex", "pmi")
+covariates      <- c("sex", "ancestry")
 n_perm          <- 200
 alpha           <- 0.05
-key_celltypes   <- c("Micro", "Astro", "Oligo")   # shown in Figure F03; replace with the cell types highlighted in Q1
+cell_types      <- if (file.exists(q1_path)) readLines(q1_path) else
+                     c("Micro", "Oligo", "EN_L5_6_NP", "EN_L6_IT_1", "EN_L6_IT_2", "EN_L6B", "EN_L6_CT")
+cell_types      <- cell_types[nzchar(cell_types)]
+key_celltypes   <- c("Micro", "Oligo")   # shown in Figure F03: the cell types altered in Q1
 
-# In which cell classes each signature is tested ("all" = every cell type)
+# In which cell types each signature is tested ("all" = every cell type).
+# A name can be a subclass (Micro) or a class prefix (EN = every EN_* subclass).
 signature_scope <- list(
   SenMayo               = c("Astro", "Micro"),
   Inflammatory_Response = c("Astro", "Micro"),
@@ -199,72 +217,72 @@ scale_fill_shift <- function(lim, name) {
 
 # Step 1 – Donors and cell types
 
-**What we do and why.** In a cross-sectional study, the main risk is **confounding**: if patients were younger or
-older than controls, age and diagnosis would be mixed up. We first check that the groups are comparable, then choose
-the cell types analysed with the shared rule of the project.
+**What we do and why.** We load the pseudobulk profiles made during preprocessing (one column per donor and subclass,
+raw counts of all nuclei summed). In a cross-sectional study, the main risk is **confounding**: if patients were
+younger or older than controls, age and diagnosis would be mixed up. We first check that the groups are comparable, then
+which cell types have enough donors.
 
 ```{r load}
-sobj <- readRDS(seurat_path)
+pb <- load_pseudobulk(pseudobulk_path)
+pb_counts <- pb$counts   # genes x (donor x subclass), raw counts
+pb_desc   <- pb$desc     # one row per column: donor_id, cell_type, n_nuclei, diagnosis, age, sex, ancestry
 
-missing_cols <- setdiff(c(META_REQUIRED_COLUMNS, subclass_column, class_column), colnames(sobj@meta.data))
-if (length(missing_cols) > 0) stop("Missing metadata columns: ", paste(missing_cols, collapse = ", "))
+donor_meta <- pb_desc |>
+  distinct(donor_id, diagnosis, age, sex, ancestry)
 
-# AddModuleScore uses the log-normalised "data" layer; layers must be joined (one layer per assay)
-if (length(Layers(sobj, search = "data")) > 1) sobj <- JoinLayers(sobj)
-
-donor_meta <- sobj@meta.data |>
-  distinct(donor_id, diagnosis, age, sex, pmi) |>
-  mutate(diagnosis = factor(diagnosis, levels = c("CTRL", "SCZ", "BD")))
-
-# Adult donors only (should already be done in preprocessing: this is a safety check)
+# Adult donors only (already done in preprocessing: this is a safety check)
 n_young <- sum(donor_meta$age < min_age)
 if (n_young > 0) {
   cat("Note:", n_young, "donors under", min_age, "years removed.\n")
   donor_meta <- filter(donor_meta, age >= min_age)
-  sobj <- subset(sobj, cells = colnames(sobj)[sobj$donor_id %in% donor_meta$donor_id])
 }
 
 donor_meta |>
   group_by(diagnosis) |>
-  summarise(n_donors   = n(),
-            age_median = median(age),
-            age_range  = paste(min(age), "-", max(age)),
-            pct_female = round(100 * mean(sex == "female")),
-            pmi_median = median(pmi, na.rm = TRUE),
+  summarise(n_donors     = n(),
+            age_median   = median(age),
+            age_range    = paste(min(age), "-", max(age)),
+            n_age_60plus = sum(age >= 60),
+            pct_female   = round(100 * mean(sex == "female")),
+            pct_european = round(100 * mean(ancestry == "European", na.rm = TRUE)),
+            pct_african  = round(100 * mean(ancestry == "African", na.rm = TRUE)),
             .groups = "drop")
 
 kruskal.test(age ~ diagnosis, data = donor_meta)
 ```
 
 ::: {.callout-tip title="How to read"}
-One row per group: number of donors, median and range of age at death, percentage of women, median post-mortem interval
-(PMI). The Kruskal–Wallis test checks whether the age distributions differ between groups (without assuming a normal
-distribution). The same information is in Table 1 of the report (preprocessing).
+One row per group: number of donors, median and range of age at death, number of donors aged 60 or more, percentage of
+women, and percentage of donors of European and African genetic ancestry. The Kruskal–Wallis test checks whether the
+age distributions differ between groups (without assuming a normal distribution). The same information is in Table 1 of
+the report (preprocessing).
 :::
 
 ::: {.callout-important title="Interpretation [to fill]"}
 - Do the three groups cover the same age range? Patients often die younger: the models below compare them with
   controls **of the same age**, but the oldest ages will be represented mostly by controls.
-- Are sex and PMI balanced? An imbalance is handled by the covariates, but must be reported.
-- If the metadata contain metabolic disorders (for example diabetes), are they more frequent in patients? See the
-  limits.
+- How many donors are 60 or older? With few old donors, the effect of age is estimated mostly between 20 and 60 years,
+  and the slope model (Step 6) has little power.
+- Are sex and ancestry balanced? Ancestry is very unbalanced between SCZ and BD: it is a covariate of every model, and
+  the direct SCZ vs BD comparison must be presented with caution.
 :::
 
-**Which cell types are analysed.** A subclass is analysed on its own if at least `r min_donors` donors of **each** group
-have at least `r min_cells` nuclei of it. Otherwise its nuclei are pooled with the other rare subclasses of the same
-class (unit `<class>_other`), or with the whole class if no subclass of that class is kept.
+**Which cell types are analysed.** The cell types retained in Q1. A donor's profile is used only if it was built from at
+least `r min_nuclei` nuclei, and a cell type is analysed only if at least `r min_donors` donors of **each** group have
+such a profile (shared rule).
 
 ```{r units}
-units <- assign_analysis_units(sobj@meta.data, subclass_column, class_column,
-                               min_cells = min_cells, min_donors = min_donors)
-sobj$analysis_unit <- units$unit
-unit_class <- setNames(units$decision$class, units$decision$unit)   # class of each analysis unit
-units$decision
+celltype_table <- select_celltypes(filter(pb_desc, donor_id %in% donor_meta$donor_id),
+                                   cell_types, min_nuclei = min_nuclei, min_donors = min_donors)
+celltype_table
+analysis_units <- celltype_table$cell_type[celltype_table$kept]
+# Class of each cell type (EN_L6_IT_1 -> EN), used by signature_scope
+unit_class <- setNames(sub("_.*", "", analysis_units), analysis_units)
 ```
 
 ::: {.callout-tip title="How to read"}
-One row per subclass: number of donors with at least `r min_cells` nuclei of it, in each group, and the analysis unit
-it goes to (`unit`). `enough_donors = FALSE`: the subclass is pooled with others.
+One row per cell type retained in Q1: number of donors of each group with a profile of at least `r min_nuclei` nuclei.
+`kept = FALSE`: not enough donors, the cell type is not analysed.
 :::
 
 # Step 2 – The signatures
@@ -295,7 +313,7 @@ if (is.null(lifespan_sets)) cat("Note: lifespan file not found, the lifespan sig
 # Signatures used for one analysis unit, following signature_scope
 signatures_for_unit <- function(unit) {
   cl <- unit_class[[unit]]
-  in_scope <- function(sig) any(signature_scope[[sig]] %in% c("all", cl))
+  in_scope <- function(sig) any(signature_scope[[sig]] %in% c("all", unit, cl))
   sigs <- common_signatures[vapply(names(common_signatures), in_scope, logical(1))]
   if (!is.null(lifespan_sets)) {
     for (dir in c("UP", "DOWN")) {
@@ -313,7 +331,7 @@ signatures_for_unit <- function(unit) {
 }
 
 # Coverage: how many genes of each signature are in our data?
-geneset_coverage(common_signatures, rownames(sobj))
+geneset_coverage(common_signatures, rownames(pb_counts))
 ```
 
 ::: {.callout-tip title="How to read"}
@@ -351,49 +369,55 @@ signatures; 0 = nothing in common, 1 = identical).
 
 # Step 3 – Scores per donor and cell type
 
-**How a score is computed.** `AddModuleScore()` takes, for each nucleus, the mean expression of the signature genes and
-subtracts the mean expression of random "control" genes with a similar expression level. A positive score means that
-the signature genes are higher than comparable genes in that nucleus; using control genes of the same level removes the
-effect of sequencing depth.
+**How a score is computed.** For one cell type, the pseudobulk profiles of all donors are log-normalised
+(`NormalizeData()`, as in the practicals). `AddModuleScore()` then takes, for each donor, the mean expression of the
+signature genes and subtracts the mean expression of random "control" genes with a similar expression level. A positive
+score means that the signature genes are higher than comparable genes in that donor's cells; using control genes of the
+same level removes the effect of sequencing depth.
 
-**Why one score per donor.** Nuclei of the same donor are not independent: they share the donor's genetics, age,
-treatment and post-mortem conditions. Testing nuclei as if they were independent would give many false positives
-(pseudoreplication, the same reason Q2 uses pseudobulk). The **donor** is the statistical unit: scores are averaged per
-donor and cell type (donors with fewer than `r min_cells` nuclei are left out for that cell type), then expressed as
+**Why one profile per donor.** Nuclei of the same donor are not independent: they share the donor's genetics, age,
+treatment and post-mortem conditions. Scoring nuclei and testing them as if they were independent would give many false
+positives (pseudoreplication, the same reason Q2 uses pseudobulk). The **donor** is the statistical unit: each donor has
+one profile per cell type (built from at least `r min_nuclei` nuclei), hence one score. Scores are then expressed as
 **z-scores relative to the controls** (1 unit = 1 standard deviation of the controls), so all scores are on the same
-scale. The object is processed one cell type at a time to limit memory use; the effect of age on every gene in controls,
-used in Step 7, is computed in the same loop.
+scale. Summing nuclei gives slightly more weight to nuclei with many counts than averaging per-nucleus scores would;
+this is the standard pseudobulk approach. The effect of age on every gene in controls, used in Step 7, is computed in
+the same loop.
 
-```{r scoring, cache=TRUE, cache.extra=list(file.mtime(seurat_path), file.mtime(geneset_dir), file.mtime(lifespan_path))}
-analysis_units    <- sort(unique(sobj$analysis_unit))
+```{r scoring, cache=TRUE, cache.extra=list(file.mtime(pseudobulk_path), file.mtime(geneset_dir), file.mtime(lifespan_path))}
 donor_scores_list <- list()
 age_fits          <- list()   # effect of age on all genes in controls, per cell type (Step 7)
 
 for (u in analysis_units) {
-  sobj_u <- subset(sobj, cells = colnames(sobj)[sobj$analysis_unit == u])
+  cols <- pb_desc$cell_type == u & pb_desc$n_nuclei >= min_nuclei & pb_desc$donor_id %in% donor_meta$donor_id
+  counts_u <- pb_counts[, cols, drop = FALSE]
+  donors_u <- pb_desc$donor_id[cols]
 
-  cell_scores <- score_one_celltype(sobj_u, signatures_for_unit(u), seed = the.seed, min_genes = min_genes)
-  if (!is.null(cell_scores)) {
-    donor_scores_list[[u]] <- aggregate_by_donor(cell_scores, sobj_u$donor_id, u, min_cells = min_cells)
+  scores_u <- score_pseudobulk_celltype(counts_u, donors_u, signatures_for_unit(u),
+                                        seed = the.seed, min_genes = min_genes)
+  if (!is.null(scores_u)) {
+    donor_scores_list[[u]] <- scores_u |>
+      mutate(cell_type = u, n_nuclei = pb_desc$n_nuclei[cols][match(donor_id, donors_u)], .before = 1)
   }
-  age_fits[[u]] <- age_effects_in_controls(sobj_u, donor_meta, covariates = covariates, min_donors = min_donors)
-  rm(sobj_u); invisible(gc())
+  age_fits[[u]] <- age_effects_in_controls(counts_u, donors_u, donor_meta, covariates = covariates,
+                                           min_donors = min_donors)
 }
 
 donor_scores <- bind_rows(donor_scores_list) |>
   left_join(donor_meta, by = "donor_id") |>
   standardize_by_controls()
 
-# Signatures scored in each cell type
+# Signatures scored in each cell type, and number of donors
 donor_scores |>
-  distinct(cell_type, signature) |>
   group_by(cell_type) |>
-  summarise(signatures = paste(sort(signature), collapse = ", "), .groups = "drop")
+  summarise(n_donors   = n_distinct(donor_id),
+            signatures = paste(sort(unique(signature)), collapse = ", "), .groups = "drop")
 ```
 
 ::: {.callout-tip title="How to read"}
-For each cell type, the signatures that were scored, following `signature_scope`. A signature can be missing if fewer
-than `r min_genes` of its genes are in the data.
+For each cell type, the number of donors scored and the signatures scored, following `signature_scope`. A signature can
+be missing if fewer than `r min_genes` of its genes are in the data; the lifespan signatures exist only for the cell
+types of the lifespan atlas.
 :::
 
 # Step 4 – Which scores really follow age?
@@ -434,7 +458,7 @@ save_figure(p_F01, "Q5_F01_validation_controls", fig_dir, width = 9, height = 5)
 ```
 
 **Figure Q5-F01 – Validation of the ageing scores in controls.** Spearman correlation between each signature score
-(donor mean, z-score) and age at death, in control donors, per cell type. \* Benjamini–Hochberg adjusted p < 0.05.
+(pseudobulk profile of the donor, z-score) and age at death, in control donors, per cell type. \* Benjamini–Hochberg adjusted p < 0.05.
 Signatures are only tested in the cell types where they are biologically relevant (grey cells: not tested).
 
 ::: {.callout-tip title="How to read"}
@@ -443,8 +467,8 @@ age. Only cells with a star are used as ageing measures in the rest of the noteb
 :::
 
 ::: {.callout-important title="Interpretation [to fill]"}
-- Which scores are validated? We expect senescence and inflammation to rise in microglia and astrocytes, and
-  myelination to fall in oligodendrocytes.
+- Which scores are validated? We expect senescence and inflammation to rise in microglia, and myelination to fall in
+  oligodendrocytes.
 - Does OxPhos fall with age in neurons, as expected from mitochondrial decline?
 - A cell type with no validated score cannot be tested for an ageing-like profile.
 :::
@@ -482,8 +506,8 @@ age and is inverted in the index. Cell types without any validated signature hav
 
 | Model | Formula | What is tested | Meaning if significant |
 |-------|---------|----------------|------------------------|
-| **Offset** | `score ~ age + diagnosis + sex + pmi` | `diagnosis` | patients look older than controls **of the same age**, at every age |
-| **Slope** | `score ~ age * diagnosis + sex + pmi` | `age:diagnosis` | the score changes **faster with age** in patients |
+| **Offset** | `score ~ age + diagnosis + sex + ancestry` | `diagnosis` | patients look older than controls **of the same age**, at every age |
+| **Slope** | `score ~ age * diagnosis + sex + ancestry` | `age:diagnosis` | the score changes **faster with age** in patients |
 
 Putting age in the model compares patients and controls **of the same age**. For each model we test SCZ vs controls, BD
 vs controls, and **SCZ vs BD directly** (difference of the two effects in the same model): an effect seen in one
@@ -524,7 +548,7 @@ age gap. Slope model (right): the score rises faster with age in patients. Inven
 ```{r models}
 model_data <- donor_scores |>
   filter(!is.na(score_z)) |>
-  mutate(sex = factor(sex))
+  mutate(sex = factor(sex), ancestry = factor(ancestry))
 
 models <- fit_disease_models(model_data, covariates = covariates, min_donors_per_group = min_donors) |>
   adjust_by_family() |>
@@ -569,7 +593,7 @@ if (nrow(index_data) > 0) {
     labs(x = "Age at death (years)", y = "Ageing index\n(z-score vs controls)",
          title = "Ageing index versus age, per group",
          subtitle = "One dot per donor; lines = linear fit per group",
-         caption = "Higher index = older-looking profile. Raw fits, not adjusted for sex and PMI (the models are).") +
+         caption = "Higher index = older-looking profile. Raw fits, not adjusted for sex and ancestry (the models are).") +
     theme_project()
   print(p_F03)
   save_figure(p_F03, "Q5_F03_index_vs_age", fig_dir, width = 10, height = 4.5)
@@ -618,7 +642,7 @@ if (nrow(forest) > 0) {
     labs(x = "Apparent age gap vs controls of the same age (years, 95% CI)",
          y = "Cell type",
          title = "Apparent age gap of the ageing index in patients",
-         subtitle = "Offset model adjusted for age, sex and PMI; right: direct SCZ vs BD comparison",
+         subtitle = "Offset model adjusted for age, sex and ancestry; right: direct SCZ vs BD comparison",
          caption = "Right of the dashed line: patients look older than controls of the same age. 'SCZ vs BD' > 0: SCZ older-looking than BD.") +
     theme_project()
   print(p_F04)
@@ -627,7 +651,7 @@ if (nrow(forest) > 0) {
 ```
 
 **Figure Q5-F04 – Apparent age gap of SCZ and BD patients compared with controls of the same age.** Difference in
-ageing index between patients and controls (offset linear model adjusted for age, sex and PMI), expressed in years of
+ageing index between patients and controls (offset linear model adjusted for age, sex and genetic ancestry), expressed in years of
 age (disease effect divided by the effect of one year of age, 95 % confidence interval by the delta method), for SCZ
 (blue) and BD (red), in the cell types that have at least one validated ageing score. Filled dots: Benjamini–Hochberg
 adjusted p < 0.05. The text on the right gives the direct SCZ vs BD comparison.
@@ -676,7 +700,7 @@ if (nrow(detail) > 0) {
 ```
 
 **Figure Q5-F05 – Ageing shift of each signature.** Difference between patients and controls of the same age (offset
-linear model adjusted for sex and PMI), oriented so that positive values mean an older-looking profile, for each
+linear model adjusted for sex and genetic ancestry), oriented so that positive values mean an older-looking profile, for each
 signature and cell type, in SCZ, BD and SCZ vs BD. \* Benjamini–Hochberg adjusted p < 0.05 and score validated in
 controls; + adjusted p < 0.05 for a score that does not follow age in controls. Grey cells: signature not tested in
 that cell type.
@@ -721,12 +745,12 @@ DESeq2 Wald statistic). If the genes that rise with age also rise in the disease
 fall, the correlation is positive: the disease profile **resembles** the ageing profile. It helps to tell a broad
 ageing-like profile (high correlation) from a targeted effect, for example on inflammation only (low correlation).
 
-**How.** The effect of age is a linear model per gene on the pseudobulk of the controls (`expression ~ age + sex + pmi`),
+**How.** The effect of age is a linear model per gene on the pseudobulk of the controls (`expression ~ age + sex + ancestry`),
 fitted for all genes at once. The Spearman correlation with the Q2 statistic is computed over all genes tested in both.
 To know which correlations can arise by chance, the ages of the controls are shuffled `r n_perm` times (permutation test).
-This needs the Q2 cell types to have the same names as the analysis units of this notebook.
+This needs the Q2 cell types to have the same names as the subclasses of the preprocessing.
 
-```{r concordance, cache=TRUE, cache.extra=list(file.mtime(seurat_path), file.mtime(de_path))}
+```{r concordance, cache=TRUE, cache.extra=list(file.mtime(pseudobulk_path), file.mtime(de_path))}
 concordance <- NULL
 if (file.exists(de_path)) {
   de <- read.csv(de_path)
@@ -778,7 +802,7 @@ if (!is.null(concordance) && nrow(concordance) > 0) {
 
 **Figure Q5-F06 – Concordance between the effects of age and of the disease on gene expression.** For each cell type,
 Spearman correlation, over all genes tested in both analyses, between the effect of age in controls (t statistic of age
-in a pseudobulk linear model adjusted for sex and PMI) and the effect of the disease (DESeq2 Wald statistic, Q2), for
+in a pseudobulk linear model adjusted for sex and genetic ancestry) and the effect of the disease (DESeq2 Wald statistic, Q2), for
 SCZ (blue) and BD (red). Grey bars: 95 % range of the correlation expected by chance (ages permuted among controls).
 Filled dots: Benjamini–Hochberg adjusted permutation p < 0.05.
 
@@ -819,7 +843,7 @@ expected"), easy to report in the text and on a slide.
 The correlation with permutations (F06) keeps the correlation between genes and stays the main test; the Fisher test
 backs it up with a readable count.
 
-```{r overlap, cache=TRUE, cache.extra=list(file.mtime(seurat_path), file.mtime(de_path))}
+```{r overlap, cache=TRUE, cache.extra=list(file.mtime(pseudobulk_path), file.mtime(de_path))}
 overlap <- NULL
 if (file.exists(de_path)) {
   overlap <- bind_rows(lapply(names(age_fits), function(u) {
@@ -894,6 +918,14 @@ the same cell type (F06), backed by the overlap of significant genes in the same
   genes. Donors with metabolic disorders (for example diabetes) are kept, as in Lee et al. [12]; these disorders are more
   frequent in patients (partly because of antipsychotics), and are themselves associated with accelerated ageing. If the
   information is in the metadata, a sensitivity analysis without these donors should be run; otherwise it is a limit.
+  In HBCC, diabetes is more frequent in SCZ (27 %) than in controls (7 %) and BD (9 %), and tardive dyskinesia (a
+  side effect of long antipsychotic treatment) concerns 24 % of SCZ donors (preprocessing, Table 1).
+- **Genetic ancestry.** Ancestry is strongly linked to the diagnosis (most BD donors are of European ancestry, most SCZ
+  donors of African ancestry). It is a covariate of every model, but a residual confounding cannot be excluded, mainly
+  for the direct SCZ vs BD comparison.
+- **No post-mortem interval.** The PMI is not available in the data and is not in the models.
+- **Few old donors.** Only about 36 donors are 60 or older: the effect of age is estimated mostly before 60, and the
+  slope model has little power.
 - **Survival bias and cause of death.** Patients die younger on average; the cause of death (for example suicide) can
   affect the brain transcriptome.
 - **Lifespan signatures and our controls.** The lifespan atlas was built partly on HBCC controls [11], so these
@@ -957,6 +989,8 @@ sort(list.files(fig_dir, pattern = "^Q5_F.*\\.png$"))
     988–1002.
 13. Gonzales M. M. et al. (2023). Senolytic therapy in mild Alzheimer's disease: a phase 1 feasibility trial. *Nature
     Medicine*, 29, 2481–2488.
+14. Ling E. et al. (2024). A concerted neuron–astrocyte program declines in ageing and schizophrenia. *Nature*, 627,
+    604–611.
 
 # Session info
 

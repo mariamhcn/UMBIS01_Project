@@ -143,6 +143,7 @@ geneset_dir <- "../01_DATA/genesets"   # one CSV per collection (gs_name, gene_s
 # Outputs
 out_dir <- "../03_RESULTS/Q3_enrichment"
 fig_dir <- "../04_FIGURES/Q3"
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 
 # Analysis choices
@@ -154,7 +155,10 @@ simplify_cutoff     <- 0.7
 contrast_scz        <- "SCZ_vs_CTRL"
 contrast_bd         <- "BD_vs_CTRL"
 contrast_direct     <- "SCZ_vs_BD"   # direct comparison of the two disorders (provided by Q2)
-key_celltypes       <- c("EN", "IN", "Astro", "Micro", "Oligo")   # replace with the subclasses kept in Q1
+q1_path             <- "../03_RESULTS/Q1_composition/Q1_populations_retenues.txt"   # cell types retained in Q1
+key_celltypes       <- if (file.exists(q1_path)) readLines(q1_path) else
+                         c("Micro", "Oligo", "EN_L5_6_NP", "EN_L6_IT_1", "EN_L6_IT_2", "EN_L6B", "EN_L6_CT")
+key_celltypes       <- key_celltypes[nzchar(key_celltypes)]
 overview_collection <- "Hallmark"
 
 # Short labels for the three comparisons, and their full names for the legends
