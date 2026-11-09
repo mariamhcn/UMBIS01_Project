@@ -1,74 +1,69 @@
 # Helpers for Q5: transcriptomic ageing scores per cell type and donor.
 
-META_REQUIRED_COLUMNS <- c("donor_id", "diagnosis", "age", "sex", "pmi")
+# Input: the pseudobulk matrix of the preprocessing (counts summed per donor x subclass, all nuclei).
+# Column names of the preprocessing (in French) and the names used in this notebook:
+PB_COLUMNS <- c(donor_id = "donneur", cell_type = "sousclasse", n_nuclei = "n_noyaux",
+                diagnosis = "groupe", age = "age", sex = "sexe", ancestry = "ancestry")
 
 # ---------------------------------------------------------------------------
-# Analysis units (shared rule of the project, see README.md at the project root)
+# Input
 # ---------------------------------------------------------------------------
 
-# A subclass is analysed on its own if at least `min_donors` donors of EACH group have at least
-# `min_cells` nuclei of it. Otherwise its nuclei are merged into their class.
-# Returns a list: `unit` (one value per nucleus) and `decision` (one row per subclass, for the report).
-assign_analysis_units <- function(meta, subclass_col = "cell_subclass", class_col = "cell_class",
-                                  min_cells = 20, min_donors = 10) {
-  counts <- meta |>
-    dplyr::count(subclass = .data[[subclass_col]], class = .data[[class_col]],
-                 diagnosis, donor_id, name = "n_nuclei") |>
-    dplyr::filter(n_nuclei >= min_cells) |>
-    dplyr::count(subclass, class, diagnosis, name = "n_donors") |>
-    tidyr::pivot_wider(names_from = diagnosis, values_from = n_donors, values_fill = 0)
-  groups <- intersect(c("CTRL", "SCZ", "BD"), colnames(counts))
-  all_sub <- dplyr::distinct(meta, subclass = .data[[subclass_col]], class = .data[[class_col]])
-  decision <- dplyr::left_join(all_sub, counts, by = c("subclass", "class")) |>
-    dplyr::mutate(dplyr::across(dplyr::all_of(groups), ~ dplyr::coalesce(.x, 0L)))
-  decision$enough_donors <- apply(decision[, groups, drop = FALSE] >= min_donors, 1, all)
-  # merged subclasses are pooled into "<class>_other" when other subclasses of the class are kept,
-  # and into "<class>" when none is kept
-  class_has_kept <- tapply(decision$enough_donors, decision$class, any)
-  decision$unit <- ifelse(decision$enough_donors, decision$subclass,
-                          ifelse(class_has_kept[decision$class], paste0(decision$class, "_other"), decision$class))
-  unit <- decision$unit[match(meta[[subclass_col]], decision$subclass)]
-  list(unit = unit, decision = decision)
+# Reads the pseudobulk file (a list: `comptes` = genes x columns, raw counts; `description` = one row per column)
+# and returns the counts and a tidy description with the names used in the notebook.
+load_pseudobulk <- function(path, control_label = "Control") {
+  pb <- readRDS(path)
+  desc <- pb$description
+  missing_cols <- setdiff(PB_COLUMNS, colnames(desc))
+  if (length(missing_cols) > 0) stop("Missing columns in the pseudobulk description: ", paste(missing_cols, collapse = ", "))
+  desc <- desc[, c("colonne", PB_COLUMNS)]
+  colnames(desc) <- c("column", names(PB_COLUMNS))
+  desc$diagnosis <- factor(ifelse(desc$diagnosis == control_label, "CTRL", desc$diagnosis), levels = c("CTRL", "SCZ", "BD"))
+  stopifnot(identical(colnames(pb$comptes), desc$column))
+  list(counts = pb$comptes, desc = desc)
+}
+
+# Cell types analysed: a cell type is kept if at least `min_donors` donors of EACH group have a profile
+# built from at least `min_nuclei` nuclei (shared rule E7). Returns one row per cell type, for the report.
+select_celltypes <- function(desc, cell_types, min_nuclei = 20, min_donors = 10) {
+  desc |>
+    dplyr::filter(cell_type %in% cell_types, n_nuclei >= min_nuclei) |>
+    dplyr::count(cell_type, diagnosis, name = "n_donors") |>
+    tidyr::pivot_wider(names_from = diagnosis, values_from = n_donors, values_fill = 0) |>
+    dplyr::right_join(data.frame(cell_type = cell_types), by = "cell_type") |>
+    dplyr::mutate(dplyr::across(-cell_type, ~ dplyr::coalesce(.x, 0L)),
+                  kept = CTRL >= min_donors & SCZ >= min_donors & BD >= min_donors)
 }
 
 # ---------------------------------------------------------------------------
 # Scores
 # ---------------------------------------------------------------------------
 
-# Score every nucleus of one cell type with AddModuleScore (method seen in the TP).
-# Each signature is compared with control genes of similar expression level,
-# so the score is not driven by sequencing depth. Signatures with too few genes in the data are skipped.
-score_one_celltype <- function(sobj_ct, signatures, seed = 42, min_genes = 5) {
-  genes_in_data <- rownames(sobj_ct)
-  signatures <- lapply(signatures, intersect, genes_in_data)
+# Scores the pseudobulk profiles of one cell type (one column per donor) with AddModuleScore (method seen in the TP):
+# the profiles are log-normalised (NormalizeData), then each signature is compared with control genes of similar
+# expression level, so the score does not depend on sequencing depth. Signatures with too few genes are skipped.
+# Returns one row per donor and signature.
+score_pseudobulk_celltype <- function(counts_ct, donor_ids, signatures, seed = 42, min_genes = 5) {
+  colnames(counts_ct) <- donor_ids
+  counts_ct <- counts_ct[Matrix::rowSums(counts_ct) > 0, , drop = FALSE]   # genes not detected in this cell type
+  obj <- suppressWarnings(SeuratObject::CreateSeuratObject(counts = counts_ct))
+  obj <- Seurat::NormalizeData(obj, verbose = FALSE)
+  signatures <- lapply(signatures, intersect, rownames(obj))
   signatures <- signatures[vapply(signatures, length, integer(1)) >= min_genes]
   if (length(signatures) == 0) return(NULL)
-  sobj_ct <- Seurat::AddModuleScore(sobj_ct, features = signatures, name = "aging_sig_", seed = seed)
-  scores <- sobj_ct@meta.data[, paste0("aging_sig_", seq_along(signatures)), drop = FALSE]
+  obj <- Seurat::AddModuleScore(obj, features = signatures, name = "aging_sig_", seed = seed)
+  scores <- obj@meta.data[, paste0("aging_sig_", seq_along(signatures)), drop = FALSE]
   colnames(scores) <- names(signatures)
-  scores
+  data.frame(donor_id = rownames(scores), scores, check.names = FALSE) |>
+    tidyr::pivot_longer(-donor_id, names_to = "signature", values_to = "score")
 }
 
-# Pseudobulk log-CPM per donor (sum of raw counts of all nuclei of a donor).
-pseudobulk_logcpm <- function(counts, donor_ids, min_cpm = 1) {
-  design <- Matrix::sparse.model.matrix(~ 0 + donor, data.frame(donor = factor(donor_ids)))
-  colnames(design) <- sub("^donor", "", colnames(design))
-  pb <- as.matrix(counts %*% design)
+# log2-CPM of pseudobulk profiles (genes x donors), keeping genes with a mean CPM >= min_cpm.
+pseudobulk_logcpm <- function(counts, min_cpm = 1) {
+  pb <- as.matrix(counts)
   cpm <- t(t(pb) / colSums(pb)) * 1e6
   keep <- rowMeans(cpm) >= min_cpm
   log2(cpm[keep, , drop = FALSE] + 1)
-}
-
-# Mean score per donor, keeping only donors with enough nuclei of that cell type
-# (a mean over a handful of nuclei is too noisy).
-aggregate_by_donor <- function(cell_scores, donor_ids, cell_type, min_cells = 20) {
-  long <- data.frame(donor_id = donor_ids, cell_scores, check.names = FALSE) |>
-    tidyr::pivot_longer(-donor_id, names_to = "signature", values_to = "score")
-  long |>
-    dplyr::group_by(donor_id, signature) |>
-    dplyr::summarise(score = mean(score), n_cells = dplyr::n(), .groups = "drop") |>
-    dplyr::filter(n_cells >= min_cells) |>
-    dplyr::mutate(cell_type = cell_type, .before = 1)
 }
 
 # Express each donor score as a z-score relative to controls of the same cell type,
@@ -110,7 +105,7 @@ add_aging_index <- function(donor_scores, valid_pairs, exclude = NULL, name = "A
   idx <- d |>
     dplyr::group_by(cell_type, donor_id) |>
     dplyr::summarise(score        = mean(score_z * age_direction, na.rm = TRUE),
-                     n_cells      = min(n_cells),
+                     n_nuclei     = min(n_nuclei),
                      n_signatures = dplyr::n(),
                      .groups = "drop") |>
     dplyr::mutate(signature = name)
@@ -125,15 +120,15 @@ add_aging_index <- function(donor_scores, valid_pairs, exclude = NULL, name = "A
 # ---------------------------------------------------------------------------
 
 # Effect of age on every gene in controls, for one cell type:
-# pseudobulk log-CPM per control donor, then a linear model gene ~ age + covariates, fitted for all genes at once.
-# Returns the t statistic of age per gene (positive = rises with age), and the data needed for permutations.
-age_effects_in_controls <- function(sobj_ct, donor_meta, covariates = c("sex", "pmi"),
+# log-CPM of the pseudobulk profiles of the control donors, then a linear model gene ~ age + covariates, fitted for all
+# genes at once. Returns the t statistic of age per gene (positive = rises with age), and the data needed for permutations.
+age_effects_in_controls <- function(counts_ct, donor_ids, donor_meta, covariates = c("sex", "ancestry"),
                                     control_label = "CTRL", min_donors = 10) {
-  ctrl <- donor_meta$donor_id[donor_meta$diagnosis == control_label]
-  cells <- colnames(sobj_ct)[sobj_ct$donor_id %in% ctrl]
-  if (length(unique(sobj_ct$donor_id[cells])) < min_donors) return(NULL)
-  counts <- SeuratObject::LayerData(sobj_ct, assay = "RNA", layer = "counts")[, cells, drop = FALSE]
-  logcpm <- pseudobulk_logcpm(counts, sobj_ct$donor_id[cells])
+  ctrl <- donor_ids %in% donor_meta$donor_id[donor_meta$diagnosis == control_label]
+  if (sum(ctrl) < min_donors) return(NULL)
+  counts <- counts_ct[, ctrl, drop = FALSE]
+  colnames(counts) <- donor_ids[ctrl]
+  logcpm <- pseudobulk_logcpm(counts)
   meta <- donor_meta[match(colnames(logcpm), donor_meta$donor_id), ]
   keep <- stats::complete.cases(meta[, c("age", covariates)])
   meta <- meta[keep, ]; logcpm <- logcpm[, keep, drop = FALSE]
@@ -219,7 +214,7 @@ tidy_coefs <- function(fit, terms) {
 #  - offset model:      score_z ~ age + diagnosis + covariates  -> patients look "older" than controls of the same age
 #  - interaction model: score_z ~ age * diagnosis + covariates  -> the score changes faster with age in patients
 # For each model: SCZ vs CTRL, BD vs CTRL, and the direct comparison SCZ vs BD (difference of the two effects).
-fit_disease_models <- function(donor_scores, covariates = c("sex", "pmi"), min_donors_per_group = 10) {
+fit_disease_models <- function(donor_scores, covariates = c("sex", "ancestry"), min_donors_per_group = 10) {
   groups <- unique(donor_scores[, c("cell_type", "signature")])
   out <- lapply(seq_len(nrow(groups)), function(i) {
     d <- donor_scores[donor_scores$cell_type == groups$cell_type[i] &
