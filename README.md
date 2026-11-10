@@ -1,4 +1,4 @@
-# PsychAD — Single-Nucleus Transcriptomic Analysis of Schizophrenia and Bipolar Disorder
+# UMBIS01 - Single-Nucleus Transcriptomic Analysis of Schizophrenia and Bipolar Disorder on PsychAD cohort
 
 ### Exploring cell-type-specific molecular alterations, intercellular communication and aging-associated signatures in the human prefrontal cortex
 
