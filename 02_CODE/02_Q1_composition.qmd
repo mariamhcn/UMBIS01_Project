@@ -1,0 +1,491 @@
+---
+title: "Q1 - Which cell populations are most altered in schizophrenia and bipolar disorder?"
+subtitle: "Cell-type composition analysis (propeller) in the HBCC cohort"
+author: "Myriam Sijlimassi"
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    embed-resources: true
+    code-fold: show
+    df-print: kable
+    fig-align: center
+execute:
+  warning: false
+  message: false
+---
+
+::: {.callout-note title="How to read this notebook"}
+Each step starts with a short explanation of **what we do and why**, then the code. Every figure comes with:
+
+- a **legend** ("Figure Q1-Fxx"), written so that it can be copied into the report or the appendix;
+- a **"How to read"** box, to understand the figure without knowing the method;
+- an **"Interpretation"** box with the HBCC results.
+
+The donors and the numbers of nuclei come from the preprocessing (notebook `01_preprocessing.qmd`). The composition
+test runs in this notebook (a few seconds); the test function is in `scripts/utils_composition.R`. Figures are saved as `.png`
+(300 dpi) in `04_FIGURES/Q1/`. References are numbered in square brackets and listed at the end.
+:::
+
+# Overview
+
+## Question and hypothesis
+
+**Central question of the project.** Do schizophrenia (SCZ) and bipolar disorder (BD) share cell-type-specific
+molecular alterations in the human prefrontal cortex, and could these changes reflect accelerated ageing and affect
+neuronal and glial signalling networks?
+
+**Question of this notebook (Q1).** *Which neuronal and glial populations show the strongest alterations in SCZ and BD?*
+We answer it at the level of **cell-type composition**: does the proportion of each cell type change with the disease?
+
+**Hypothesis tested.** In the full PsychAD atlas, Lee et al. [1] report that psychiatric disorders are mainly
+associated with more neurons, especially deep-layer (L5-6) excitatory neurons. We test whether this signal is found in
+the HBCC cohort alone, and whether it is shared by SCZ and BD.
+
+| Notebook | Answers | Gives to the next questions |
+|----------|---------|-----------------------------|
+| Preprocessing | which donors, which data | donors, Seurat object, pseudobulk matrix |
+| **Q1 - this notebook** | ***where?*** which cell types change in proportion | the cell types to study |
+| Q2 - pseudobulk DE | *what?* which genes change in SCZ and in BD | the table of all tested genes |
+| Q3 - pathway enrichment | *which functions?* | - |
+| Q4 - cell communication | *which signals?* | - |
+| Q5 - ageing | *accelerated ageing?* | - |
+
+## The principle behind every step
+
+**We compare people, not cells.** A brain that gives 5,000 nuclei is still one person. Treating nuclei as independent
+samples (pseudoreplication) makes p-values far too small [2]. The proportions are therefore computed per **donor**, and
+the donor is the statistical unit of every test.
+
+## Plan
+
+| Step | What we do | Output |
+|------|-----------|--------|
+| 1 | Composition per donor and per group (description) | Q1-F01, Q1-F02 |
+| 2 | Composition test with propeller | Q1-F03 |
+| 3 | Sensitivity analyses: does the result hold? | Q1-F04 |
+| 4 | Cell types kept for Q2-Q5 | table |
+
+# Setup
+
+| Package | Used for |
+|---------|----------|
+| `speckle` | `propeller`: cell-type composition test [3] |
+| `limma` | linear model used by propeller [4] |
+| `ggplot2`, `knitr` | figures and tables |
+
+```{r setup}
+the.seed <- 2026
+set.seed(the.seed)
+
+suppressPackageStartupMessages({
+  library(ggplot2)
+  library(knitr)
+})
+
+source("scripts/utils_figures.R")       # common figure style, colours and saving (shared with the other notebooks)
+source("scripts/utils_composition.R")   # propeller test (main and sensitivity analyses)
+packageVersion("speckle")         # recorded for the report
+```
+
+All our choices were **fixed before looking at any result**.
+
+| Parameter | Value | Why |
+|-----------|-------|-----|
+| `fdr_threshold` | 0.1 | selection rule of Q1, on the Benjamini-Hochberg adjusted p-value [5] |
+| covariates | age, sex, genetic ancestry | ancestry is strongly unbalanced between groups; no post-mortem interval in the file |
+| `min_ancestry_size` | 10 donors | ancestries with fewer donors are pooled into "Other", so that the model stays stable |
+| `nuclei_min` | 20 nuclei | minimum number of nuclei of a cell type in a donor for a usable pseudobulk sample (criterion E7) |
+| `donors_min_per_group` | 10 donors | a cell type is retained only if at least 10 donors per group have `nuclei_min` nuclei of it |
+| contrasts | SCZ vs controls, BD vs controls, SCZ vs BD | the three comparisons of the project question |
+
+```{r parameters}
+# Inputs (outputs of the preprocessing notebook)
+proc_dir <- "../01_DATA/processed"            # selected donors, nuclei per donor and subclass
+pre_dir  <- "../03_RESULTS/preprocessing"     # E7 table
+
+# Outputs
+out_dir <- "../03_RESULTS/Q1_composition"
+fig_dir <- "../04_FIGURES/Q1"
+for (d in c(out_dir, fig_dir)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+
+# Analysis choices
+fdr_threshold        <- 0.1
+min_ancestry_size    <- 10
+nuclei_min           <- 20     # applied in the preprocessing (E7 table)
+donors_min_per_group <- 10
+
+# Colours of the groups, the same in every figure of the project (blue = SCZ, red = BD)
+col_groups <- c(Control = "grey60", SCZ = "#2166ac", BD = "#b2182b")
+```
+
+```{r load}
+# Selected donors
+donors <- readRDS(file.path(proc_dir, "donor_classification.rds"))
+sel    <- donors[donors$group != "Excluded", ]
+
+# Nuclei per donor and per subclass (all nuclei), and E7 table
+counts <- as.matrix(read.csv(file.path(proc_dir, "nuclei_donor_x_subclass.csv"), check.names = FALSE, row.names = 1))
+counts <- counts[sel$donor_id, ]
+E7     <- as.matrix(read.csv(file.path(pre_dir, "E7_donors_per_subclass.csv"), check.names = FALSE, row.names = 1))
+
+# Covariates of the model
+donor_info <- data.frame(donor    = sel$donor_id,
+                         group    = factor(sel$group, levels = c("Control", "SCZ", "BD")),
+                         age      = as.numeric(sel$age),
+                         sex      = factor(sel$sex),
+                         ancestry = as.character(sel$genetic_ancestry))
+small_ancestries <- names(which(table(donor_info$ancestry) < min_ancestry_size))
+donor_info$ancestry[donor_info$ancestry %in% small_ancestries] <- "Other"
+donor_info$ancestry <- factor(donor_info$ancestry)
+
+table(donor_info$ancestry, donor_info$group)
+cat("Donors:", nrow(counts), "| cell types:", ncol(counts), "| nuclei:", format(sum(counts), big.mark = ","), "\n")
+```
+
+# Step 1 - Composition per donor and per group
+
+**What we do and why.** Before any test, we look at the proportion of each cell type in each donor. The proportions of
+a donor always add up to 100 % (compositional data): if one cell type increases, the others decrease mechanically.
+
+```{r proportions}
+proportions <- counts / rowSums(counts)
+
+long <- data.frame(donor    = rep(rownames(proportions), times = ncol(proportions)),
+                   subclass = rep(colnames(proportions), each = nrow(proportions)),
+                   share    = as.vector(proportions))
+long$group <- donor_info$group[match(long$donor, donor_info$donor)]
+```
+
+```{r fig-Q1-F01, fig.width=8, fig.height=6}
+mean_share <- aggregate(share ~ group + subclass, data = long, FUN = mean)
+
+p_Q1_F01 <- ggplot(mean_share, aes(group, share, fill = subclass)) +
+  geom_col(width = 0.7) +
+  scale_y_continuous(labels = function(x) paste0(round(100 * x), " %")) +
+  labs(x = NULL, y = "Mean share of the nuclei", fill = "Subclass",
+       title = "Mean cell-type composition per group",
+       subtitle = "Mean over the donors of each group; all nuclei of each donor") +
+  theme_project() +
+  theme(legend.key.size = unit(0.35, "cm"), legend.text = element_text(size = 7))
+p_Q1_F01
+save_figure(p_Q1_F01, "Q1_F01_mean_composition", fig_dir, width = 8, height = 6)
+```
+
+**Figure Q1-F01 - Mean cell-type composition per group.** Mean proportion of each of the `r ncol(counts)` subclasses
+among the nuclei of a donor, averaged over the donors of each group (`r format(sum(counts), big.mark = ",")` nuclei in
+total).
+
+```{r fig-Q1-F02, fig.width=12, fig.height=10}
+p_Q1_F02 <- ggplot(long, aes(group, share, fill = group)) +
+  geom_boxplot(outlier.size = 0.5) +
+  facet_wrap(~ subclass, scales = "free_y", ncol = 6) +
+  scale_fill_manual(values = col_groups, guide = "none") +
+  scale_y_continuous(labels = function(x) paste0(round(100 * x, 1), " %")) +
+  labs(x = NULL, y = "Share of the donor's nuclei",
+       title = "Proportion of each subclass per donor",
+       subtitle = "One box per group; each donor counts once") +
+  theme_project() +
+  theme(strip.text = element_text(size = 7), axis.text.x = element_text(angle = 45, hjust = 1))
+p_Q1_F02
+save_figure(p_Q1_F02, "Q1_F02_proportions_per_donor", fig_dir, width = 12, height = 10)
+```
+
+**Figure Q1-F02 - Proportion of each subclass per donor.** Box plots (median, interquartile range, outliers) of the share
+of each subclass among the nuclei of a donor, per group. Y axes are free: compare the groups within a panel, not between
+panels.
+
+::: {.callout-tip title="How to read"}
+In each panel, a box shifted up or down compared with the controls suggests a change in proportion. Overlapping boxes
+mean that the variability between donors is larger than the difference between groups.
+:::
+
+::: {.callout-important title="Interpretation"}
+- **The variability between donors is huge** (oligodendrocytes from almost 0 % to
+  `r round(100 * max(proportions[, "Oligo"]))` % of a donor's nuclei, astrocytes up to
+  `r round(100 * max(proportions[, "Astro"]))` %), and the boxes of the three groups overlap in every panel.
+- Two shifts are visible by eye: fewer oligodendrocytes in BD and fewer microglia in SCZ. This is description only; the
+  test is Step 2.
+- The proportion of oligodendrocytes mostly depends on how much white matter was dissected with the cortex: a difference
+  there may be a dissection effect.
+- Deep-layer neurons are absent in some donors (for example EN_L6_IT_2 in `r sum(counts[, "EN_L6_IT_2"] == 0)` donors),
+  probably a dissection effect too.
+:::
+
+# Step 2 - Composition test with propeller
+
+**What we do and why.** Proportions cannot be compared with a simple test, because they always add up to 100 %: if one
+cell type increases, the others decrease. `propeller` [3] is a method made for this situation:
+
+1. for each donor, compute the share of each cell type;
+2. transform these shares so that they can be analysed like ordinary measurements;
+3. for each cell type, compare the groups while taking age, sex and ancestry into account (`limma` [4]);
+4. correct for the fact that `r ncol(counts)` cell types are tested (false discovery rate, FDR [5]).
+
+```{r propeller}
+three_comparisons <- list(c("Control", "SCZ"), c("Control", "BD"), c("BD", "SCZ"))   # c(reference, tested)
+main <- test_composition(counts, donor_info, three_comparisons)
+
+# One row per subclass, one column per contrast
+short_name <- c(SCZ_vs_Control = "SCZ_vs_Ctl", BD_vs_Control = "BD_vs_Ctl", SCZ_vs_BD = "SCZ_vs_BD")
+results <- data.frame(subclass = unique(main$subclass))
+for (k in c("FDR", "ratio", "t")) for (contrast in names(short_name)) {
+  part <- main[main$contrast == contrast, ]
+  results[[paste0(k, "_", short_name[[contrast]])]] <- part[[k]][match(results$subclass, part$subclass)]
+}
+```
+
+::: {.callout-warning title="Reading the propeller output"}
+In the source code of `propeller.ttest`, `Tstatistic`, `P.Value` and `FDR` come from the **adjusted** model (age, sex,
+ancestry), whereas `PropRatio` is **not adjusted**: it is the ratio of the raw mean proportions of the two groups. We
+therefore read the direction of the adjusted effect on the t statistic.
+:::
+
+```{r fig-Q1-F03, fig.width=11, fig.height=7}
+contrast_labels <- c(SCZ_vs_Control = "SCZ vs controls", BD_vs_Control = "BD vs controls", SCZ_vs_BD = "SCZ vs BD")
+effects <- main
+effects$contrast    <- factor(contrast_labels[effects$contrast], levels = contrast_labels)
+effects$significant <- effects$FDR < fdr_threshold
+
+p_Q1_F03 <- ggplot(effects, aes(t, reorder(subclass, t), shape = significant)) +
+  geom_vline(xintercept = 0, colour = "grey60") +
+  geom_point(size = 2.2) +
+  scale_shape_manual(values = c("FALSE" = 1, "TRUE" = 16), name = paste0("FDR < ", fdr_threshold)) +
+  facet_wrap(~ contrast) +
+  labs(x = "Adjusted t statistic (negative = fewer nuclei of this type in the first group)", y = NULL,
+       title = "Change in proportion of each subclass",
+       subtitle = paste0("propeller (logit), adjusted for age, sex and genetic ancestry; ", nrow(counts), " donors")) +
+  theme_project()
+p_Q1_F03
+save_figure(p_Q1_F03, "Q1_F03_propeller_t", fig_dir, width = 11, height = 7)
+
+significant <- effects[effects$significant, c("contrast", "subclass", "t", "FDR")]
+significant$t   <- round(significant$t, 2)
+significant$FDR <- signif(significant$FDR, 2)
+rownames(significant) <- NULL
+significant
+```
+
+**Figure Q1-F03 - Change in proportion of each cell subclass in SCZ and BD.** Adjusted t statistic of the propeller test
+(logit transformation, linear model with age, sex and genetic ancestry) for each of the `r ncol(counts)` subclasses, in
+SCZ vs controls, BD vs controls and SCZ vs BD (`r nrow(counts)` donors). Filled dots: Benjamini-Hochberg FDR <
+`r fdr_threshold`. The table below the figure gives the significant results.
+
+::: {.callout-tip title="How to read"}
+Each dot is a subclass. Left of the vertical line: fewer nuclei of this type in the first group of the comparison (for
+example fewer in SCZ than in controls). The further from 0, the stronger the evidence. Only filled dots pass the threshold
+fixed in advance.
+:::
+
+::: {.callout-important title="Interpretation"}
+- **Microglia are less abundant in SCZ (FDR `r signif(results$FDR_SCZ_vs_Ctl[results$subclass == "Micro"], 2)`) and in
+  BD (FDR `r signif(results$FDR_BD_vs_Ctl[results$subclass == "Micro"], 2)`) than in controls**, with no difference
+  between the two disorders (FDR `r signif(results$FDR_SCZ_vs_BD[results$subclass == "Micro"], 2)` for SCZ vs BD): a
+  shared change of the immune compartment. Perivascular macrophages (PVM) show the same trend without passing the
+  threshold. This is an association, not a mechanism: treatment or the conditions of death are possible explanations
+  that this cohort cannot test.
+- **Oligodendrocytes are less abundant in BD** (FDR `r signif(results$FDR_BD_vs_Ctl[results$subclass == "Oligo"], 2)`),
+  but this is the result most exposed to a dissection effect.
+- **SCZ vs BD: no significant difference.** With limited power and ancestry confounding, this means "no difference
+  detected", not "no difference".
+- **Deep-layer (L5-6) neurons: no change.** The increase reported in the full atlas [1] is not found in HBCC alone, which
+  has far fewer donors.
+:::
+
+# Step 3 - Does the result hold? (sensitivity analyses)
+
+**What we do and why.** We run the same test again, changing one thing at a time. These analyses were decided before
+seeing the results. A result that holds in every variant is robust; a result that disappears has to be discussed.
+
+```{r sensitivity}
+deep_layers    <- c("EN_L5_6_NP", "EN_L6_IT_1", "EN_L6_IT_2", "EN_L6B", "EN_L6_CT")
+key_subclasses <- c("Micro", "Oligo", deep_layers)
+
+# B. without the donors with fewer than 1,000 nuclei (imprecise proportions)
+keep_B <- rowSums(counts) >= 1000
+# C. without the oligodendrocytes: proportions recomputed among the other nuclei
+counts_C <- counts[, colnames(counts) != "Oligo"]
+# D. SCZ vs controls in donors of African ancestry only
+keep_D <- donor_info$ancestry == "African" & donor_info$group %in% c("Control", "SCZ")
+# E. BD vs controls in donors of European ancestry only
+keep_E <- donor_info$ancestry == "European" & donor_info$group %in% c("Control", "BD")
+# F. without the donors with 0 nuclei in a deep layer (dissection effect)
+missing_deep_layer <- apply(counts[, deep_layers] == 0, 1, any)
+keep_F <- !missing_deep_layer
+
+all_variants <- rbind(
+  data.frame(analysis = "A_main",                             main),
+  data.frame(analysis = "B_without_donors_under_1000_nuclei", test_composition(counts[keep_B, ], donor_info[keep_B, ], three_comparisons)),
+  data.frame(analysis = "C_without_oligodendrocytes",         test_composition(counts_C, donor_info, three_comparisons)),
+  data.frame(analysis = "D_African_ancestry_only",            test_composition(counts[keep_D, ], donor_info[keep_D, ], list(c("Control", "SCZ")))),
+  data.frame(analysis = "E_European_ancestry_only",           test_composition(counts[keep_E, ], donor_info[keep_E, ], list(c("Control", "BD")))),
+  data.frame(analysis = "F_all_deep_layers_present",          test_composition(counts[keep_F, ], donor_info[keep_F, ], three_comparisons)))
+
+sensitivity <- all_variants[all_variants$subclass %in% key_subclasses, c("analysis", "subclass", "contrast", "t", "FDR")]
+sensitivity$t   <- round(sensitivity$t, 2)
+sensitivity$FDR <- signif(sensitivity$FDR, 2)
+rownames(sensitivity) <- NULL
+
+# Are the donors without a deep layer distributed in the same way in the three groups? (donor-level test)
+deep_table  <- table(missing_deep_layer, donor_info$group)
+deep_fisher <- fisher.test(deep_table)
+deep_table
+```
+
+| Variant | Donors | Question |
+|---------|--------|----------|
+| A. main analysis | `r nrow(counts)` | reference |
+| B. without donors with fewer than 1,000 nuclei | `r sum(keep_B)` | do imprecise proportions drive the result? |
+| C. without oligodendrocytes | `r nrow(counts)` | does the drop of oligodendrocytes create effects elsewhere? |
+| D. donors of African ancestry only | `r sum(keep_D & donor_info$group == "Control")` controls, `r sum(keep_D & donor_info$group == "SCZ")` SCZ | does the SCZ effect hold without the ancestry imbalance? |
+| E. donors of European ancestry only | `r sum(keep_E & donor_info$group == "Control")` controls, `r sum(keep_E & donor_info$group == "BD")` BD | does the BD effect hold without the ancestry imbalance? |
+| F. donors with all deep layers present | `r sum(keep_F)` | does the dissection of deep layers change the result? |
+
+```{r fig-Q1-F04, fig.width=10, fig.height=5}
+sens <- sensitivity[sensitivity$subclass %in% c("Micro", "Oligo") &
+                    sensitivity$contrast %in% c("SCZ_vs_Control", "BD_vs_Control"), ]
+sens$panel <- paste0(sens$subclass, ", ", sub("_vs_Control", " vs controls", sens$contrast))
+variant_labels <- c(A_main                             = "A. main analysis",
+                    B_without_donors_under_1000_nuclei = "B. without donors < 1,000 nuclei",
+                    C_without_oligodendrocytes         = "C. without oligodendrocytes",
+                    D_African_ancestry_only            = "D. African ancestry only",
+                    E_European_ancestry_only           = "E. European ancestry only",
+                    F_all_deep_layers_present          = "F. all deep layers present")
+sens$variant     <- factor(variant_labels[sens$analysis], levels = rev(variant_labels))
+sens$significant <- sens$FDR < fdr_threshold
+
+p_Q1_F04 <- ggplot(sens, aes(t, variant, shape = significant)) +
+  geom_vline(xintercept = 0, colour = "grey60") +
+  geom_point(size = 2.5) +
+  scale_shape_manual(values = c("FALSE" = 1, "TRUE" = 16), name = paste0("FDR < ", fdr_threshold)) +
+  facet_wrap(~ panel, nrow = 1) +
+  labs(x = "Adjusted t statistic", y = "Variant",
+       title = "Microglia and oligodendrocytes in every sensitivity analysis",
+       subtitle = "Same propeller model; one thing changed at a time") +
+  theme_project()
+p_Q1_F04
+save_figure(p_Q1_F04, "Q1_F04_sensitivity", fig_dir, width = 10, height = 5)
+
+micro_D <- sensitivity[sensitivity$analysis == "D_African_ancestry_only" & sensitivity$subclass == "Micro", ]
+bd_E    <- sensitivity[sensitivity$analysis == "E_European_ancestry_only" & sensitivity$subclass %in% c("Micro", "Oligo"), ]
+```
+
+**Figure Q1-F04 - Robustness of the main Q1 results.** Adjusted t statistic of the propeller test for microglia and
+oligodendrocytes in the main analysis (A) and in five sensitivity analyses (B-F, see the table above). Filled dots: FDR <
+`r fdr_threshold`. Missing dots: the comparison was not run in that variant.
+
+::: {.callout-tip title="How to read"}
+If the dots of a panel stay on the same side of 0 in every variant, the direction of the effect is robust. A dot moving
+towards 0 in a smaller variant can reflect a loss of power rather than a disappearing effect.
+:::
+
+::: {.callout-important title="Interpretation"}
+- **Microglia in SCZ: the most robust result.** Same direction in every variant, and the strongest effect in donors of
+  African ancestry only (t = `r micro_D$t`, FDR `r micro_D$FDR`): ancestry does not explain it.
+- **Microglia and oligodendrocytes in BD:** same direction everywhere, but weaker in donors of European ancestry only
+  (FDR `r paste(bd_E$FDR, collapse = " and ")`). Loss of power (`r sum(keep_E)` donors instead of `r nrow(counts)`) or
+  partly an ancestry effect: we cannot tell them apart.
+- Removing oligodendrocytes does not create any effect on neurons (variant C): no mechanical artefact of composition.
+- Donors without deep layers are not unbalanced between groups
+  (`r paste0(round(100 * prop.table(deep_table, 2)["TRUE", ]), " % of ", colnames(deep_table), collapse = ", ")`;
+  Fisher exact test p = `r signif(deep_fisher$p.value, 2)`).
+:::
+
+# Step 4 - Cell types kept for Q2 to Q5
+
+**What we do and why.** The rule was fixed before the analysis: a subclass is kept if its FDR is below
+`r fdr_threshold` in at least one comparison, plus the deep-layer (L5-6) excitatory neurons kept *a priori* from the
+hypothesis of [1], provided that the subclass is frequent enough for Q2 (at least `r donors_min_per_group` donors per
+group with `r nuclei_min` nuclei or more, E7 table of the preprocessing).
+
+```{r kept}
+smallest_FDR <- pmin(results$FDR_SCZ_vs_Ctl, results$FDR_BD_vs_Ctl, results$FDR_SCZ_vs_BD)
+results$significant     <- smallest_FDR < fdr_threshold
+results$a_priori_L5_6   <- grepl("^EN_L5|^EN_L6", results$subclass)
+results$usable_E7       <- apply(E7, 1, min)[results$subclass] >= donors_min_per_group
+results$retained_for_Q2 <- (results$significant | results$a_priori_L5_6) & results$usable_E7
+results <- results[order(smallest_FDR), ]
+
+retained_subclasses <- results$subclass[results$retained_for_Q2]
+data.frame(subclass = retained_subclasses,
+           reason   = ifelse(results$significant[results$retained_for_Q2],
+                             paste0("significant in Q1 (FDR < ", fdr_threshold, ")"),
+                             "kept a priori (hypothesis of Lee et al.), not changed in Q1"))
+
+# Too rare for a pseudobulk analysis
+results$subclass[!results$usable_E7]
+
+write.csv(results, file.path(out_dir, "Q1_propeller_results.csv"), row.names = FALSE)
+write.csv(sensitivity, file.path(out_dir, "Q1_sensitivity.csv"), row.names = FALSE)
+writeLines(retained_subclasses, file.path(out_dir, "Q1_retained_subclasses.txt"))   # read by Q2 to Q5
+```
+
+::: {.callout-important title="Interpretation"}
+- Two subclasses are kept **on result** (microglia, oligodendrocytes) and five **on hypothesis** (L5-6 neurons): the
+  L5-6 neurons are not "altered" in Q1.
+- `r paste(results$subclass[!results$usable_E7], collapse = ", ")` are too rare for a pseudobulk analysis and are left
+  out.
+:::
+
+# Synthesis: answer to Q1
+
+| Element | Result | Figure |
+|---------|--------|--------|
+| Donors analysed | `r nrow(counts)` (`r sum(donor_info$group == "Control")` controls, `r sum(donor_info$group == "SCZ")` SCZ, `r sum(donor_info$group == "BD")` BD), one brain bank | preprocessing |
+| Main limit | genetic ancestry confounded with diagnosis | preprocessing |
+| Main composition change | fewer microglia in SCZ and in BD, shared | Q1-F03 |
+| Most robust result | fewer microglia in SCZ, also in African-ancestry donors only | Q1-F04 |
+| Fragile result | fewer oligodendrocytes in BD (dissection, ancestry) | Q1-F03, Q1-F04 |
+| SCZ vs BD | no difference detected | Q1-F03 |
+| Hypothesis of [1] (more L5-6 neurons) | not found in HBCC | Q1-F03 |
+
+**In one sentence:** in the HBCC cohort, the only robust change in cell-type composition is a lower proportion of
+microglia, shared by schizophrenia and bipolar disorder and clearer in schizophrenia, where it persists after
+stratification on ancestry.
+
+# Limits
+
+- **Ancestry confounded with diagnosis** (severity 5/5): adjusted for and stratified, but it cannot be removed.
+- **Dissection** (4/5): the share of oligodendrocytes depends on the white matter dissected; deep layers are missing in
+  some donors.
+- **Power** (3/5): `r sum(donor_info$group == "SCZ")` SCZ and `r sum(donor_info$group == "BD")` BD donors; a
+  non-significant result is not evidence of no effect.
+- **No post-mortem interval and no information on treatments** (3/5): covariates limited to age, sex and ancestry.
+- **Donors with few nuclei** (2/5): `r sum(rowSums(counts) < 1000)` donors with fewer than 1,000 nuclei (minimum
+  `r min(rowSums(counts))`); variant B.
+- **Observational post-mortem study**: we report associations, never causes.
+
+# List of figures
+
+| Figure | File | What it shows |
+|--------|------|---------------|
+| Q1-F01 | `Q1_F01_mean_composition` | mean composition per group |
+| Q1-F02 | `Q1_F02_proportions_per_donor` | proportions per donor |
+| Q1-F03 | `Q1_F03_propeller_t` | propeller results |
+| Q1-F04 | `Q1_F04_sensitivity` | sensitivity analyses |
+
+```{r figure-files}
+sort(list.files(fig_dir, pattern = "\\.png$"))
+```
+
+# References
+
+1. Lee D. et al. (2024). Single-cell atlas of transcriptomic vulnerability across multiple neurodegenerative and
+   neuropsychiatric diseases. *medRxiv*. doi:10.1101/2024.10.31.24316513
+2. Squair J. W. et al. (2021). Confronting false discoveries in single-cell differential expression. *Nature
+   Communications*, 12, 5692.
+3. Phipson B. et al. (2022). propeller: testing for differences in cell type proportions in single cell data.
+   *Bioinformatics*, 38, 4720-4726.
+4. Ritchie M. E. et al. (2015). limma powers differential expression analyses for RNA-sequencing and microarray studies.
+   *Nucleic Acids Research*, 43, e47.
+5. Benjamini Y. and Hochberg Y. (1995). Controlling the false discovery rate: a practical and powerful approach to
+   multiple testing. *Journal of the Royal Statistical Society B*, 57, 289-300.
+
+# Session info
+
+```{r session-info}
+sessionInfo()
+```

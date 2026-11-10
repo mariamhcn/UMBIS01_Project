@@ -1,0 +1,904 @@
+---
+title: "Preprocessing - From the PsychAD atlas to an analysable HBCC cohort"
+subtitle: "Donor selection, data reading, quality control, standard single-cell pipeline and pseudobulk matrix"
+author: "Myriam Sijlimassi"
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    embed-resources: true
+    code-fold: show
+    df-print: kable
+    fig-align: center
+execute:
+  warning: false
+  message: false
+---
+
+::: {.callout-note title="How to read this notebook"}
+Each step starts with a short explanation of **what we do and why**, then the code. Every figure comes with:
+
+- a **legend** ("Figure PP-Fxx"), written so that it can be copied into the report or the appendix;
+- a **"How to read"** box, to understand the figure without knowing the method;
+- an **"Interpretation"** box with the HBCC results.
+
+The whole analysis runs in this notebook. The technical functions (reading the `.h5ad` file block by block, building
+the pseudobulk matrix, the selection criteria) are in `scripts/utils_h5ad.R` and `scripts/utils_donors.R`.
+
+**First render: about 30 minutes plus the download** (the `.h5ad` file of the HBCC cohort weighs about 14 GB and is
+downloaded once into `01_DATA/raw/`). The three heavy steps (nucleus metadata, Seurat object, pseudobulk matrix) save
+their result in `01_DATA/processed/`; the next renders reload these files and take about one minute. To recompute a step, delete its
+file.
+
+Figures are saved as `.png` (300 dpi) in `04_FIGURES/preprocessing/`. References are numbered in square brackets and
+listed at the end.
+:::
+
+# Overview
+
+## Question and role of the preprocessing
+
+**Central question of the project.** Do schizophrenia (SCZ) and bipolar disorder (BD) share cell-type-specific
+molecular alterations in the human prefrontal cortex, and could these changes reflect accelerated ageing and affect
+neuronal and glial signalling networks?
+
+**Role of this notebook.** The PsychAD atlas [1] contains 6.3 million nuclei from 1,494 donors and several brain banks.
+We extract from it a cohort that can answer the question without obvious bias, and we prepare the data sets used by Q1 to
+Q5:
+
+| Output | Content | Used by |
+|--------|---------|---------|
+| Donor selection | 224 donors, Table 1, inclusion and exclusion criteria, E7 table | every question |
+| Nuclei per donor and subclass | number of nuclei of each subclass in each donor (all nuclei) | Q1 (composition) |
+| Seurat object | about 45,000 nuclei (at most 200 per donor), normalised, PCA, UMAP | visualisation, Q4 (CellChat) |
+| Pseudobulk matrix | 34,176 genes x 6,048 columns (donor x subclass), raw counts | Q2 (differential expression), Q5 |
+
+## The principle behind every step
+
+**We compare people, not cells.** A brain that gives 5,000 nuclei is still one person. Treating nuclei as independent
+samples (pseudoreplication) makes p-values far too small [2]. Every test of the project is therefore done at the
+**donor** level, and the preprocessing is built for that.
+
+## Plan
+
+The notebook has two parts: first we decide **who we compare** (study design), then we prepare **the data** of these
+donors (data processing).
+
+| Part | Step | What we do | Output |
+|------|------|------------|--------|
+| A - Study design | 1 | The data: download the HBCC file, read the table of the nuclei | 1,486,324 nuclei, 300 donors |
+| | 2 | Donor selection (inclusion and exclusion criteria) | flow table, PP-F01 |
+| | 3 | Description of the groups (Table 1) and check of the clinical information | tables, PP-F02 |
+| | 4 | Sensitivity analyses: group sizes when one criterion changes | table |
+| | 5 | Cell types per donor (input of Q1) | E7 table |
+| B - Data processing | 6 | Reading the data, one donor at a time | Seurat object |
+| | 7 | Quality control | PP-F03 |
+| | 8 | Normalisation and visual check of the cell types (PCA, UMAP, marker genes) | PP-F04 to PP-F07 |
+| | 9 | Pseudobulk (input of Q2 and Q5) | pseudobulk matrix |
+
+# Setup
+
+| Package | Used for |
+|---------|----------|
+| `rhdf5`, `Matrix` | reading the `.h5ad` file block by block, sparse matrices |
+| `Seurat` | normalisation, HVG, scaling, PCA, UMAP [4] |
+| `ggplot2`, `knitr` | figures and tables |
+
+```{r setup}
+the.seed <- 2026
+set.seed(the.seed)
+
+suppressPackageStartupMessages({
+  library(ggplot2)
+  library(knitr)
+  library(Matrix)
+  library(rhdf5)
+  library(Seurat)
+})
+
+source("scripts/utils_figures.R")   # common figure style, colours and saving (shared with the other notebooks)
+source("scripts/utils_h5ad.R")      # reading the .h5ad file block by block, pseudobulk
+source("scripts/utils_donors.R")    # donor table, diagnoses, selection criteria, Table 1
+```
+
+All our choices are gathered in one place. They were **fixed before looking at any result**.
+
+| Parameter | Value | Why |
+|-----------|-------|-----|
+| `age_min` | 20 years | end of the developmental transcriptomic remodelling of the cortex [3] |
+| `keep_tardive_dyskinesia` | yes | part of the real clinical picture of SCZ (side effect of antipsychotics) |
+| `keep_metabolic_controls` | yes | controls with diabetes or atherosclerosis are tolerated in [1] |
+| `nuclei_min` | 20 nuclei | minimum number of nuclei of a cell type in a donor for a usable pseudobulk sample (criterion E7) |
+| covariates | age, sex, genetic ancestry | ancestry is strongly unbalanced between groups (Step 3); no post-mortem interval in the file |
+| `max_nuclei_per_donor` | 200 | random subsample used only for the Seurat object, so that every donor weighs the same |
+
+```{r parameters}
+# Data: PsychAD atlas on CELLxGENE, HBCC cohort (one brain bank, 300 donors, dorsolateral prefrontal cortex)
+h5ad_url  <- "https://datasets.cellxgene.cziscience.com/d27fb144-f105-46c2-b36f-f51421f74e4e.h5ad"
+h5ad_file <- "../01_DATA/raw/HBCC_Cohort.h5ad"
+
+# Outputs
+proc_dir <- "../01_DATA/processed"            # data prepared here and used by the next notebooks
+pre_dir  <- "../03_RESULTS/preprocessing"     # results shown in this notebook (tables)
+fig_dir  <- "../04_FIGURES/preprocessing"
+for (d in c(proc_dir, pre_dir, fig_dir)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+
+meta_file       <- file.path(proc_dir, "meta_nuclei_HBCC.rds")
+seurat_file     <- file.path(proc_dir, "seurat_object_HBCC_224donors.rds")
+pseudobulk_file <- file.path(proc_dir, "pseudobulk_HBCC_224donors.rds")
+
+# Analysis choices
+age_min                 <- 20
+keep_tardive_dyskinesia <- TRUE
+keep_metabolic_controls <- TRUE
+nuclei_min              <- 20
+max_nuclei_per_donor    <- 200
+
+# Colours of the groups, the same in every figure of the project (blue = SCZ, red = BD)
+col_groups <- c(Control = "grey60", SCZ = "#2166ac", BD = "#b2182b")
+```
+
+# Part A – Study design: who do we compare?
+
+Before looking at any gene, we decide which donors are compared, with criteria fixed in advance, as for a clinical
+trial. This part only uses the table of the nuclei (donor, diagnoses, age, sex, ancestry, cell type), not the gene
+expression.
+
+# Step 1 – The data
+
+**What we do and why.** The data come from the PsychAD atlas [1], which is shared on CELLxGENE as one file per brain
+bank. We use the file of the **HBCC** bank (NIMH Human Brain Collection Core): 1,486,324 nuclei from 300 donors, about
+14 GB. The file is downloaded once and kept in `01_DATA/raw/`.
+
+```{r download}
+# The data set is downloaded from its CELLxGENE link (h5ad_url, defined in the parameters).
+# If the complete file is already in 01_DATA/raw/, it is used as it is.
+if (!file.exists(h5ad_file)) {
+  dir.create(dirname(h5ad_file), recursive = TRUE, showWarnings = FALSE)
+  options(timeout = 36000)                                    # large file: allow a long download
+  download.file(h5ad_url, paste0(h5ad_file, ".part"), mode = "wb")
+  file.rename(paste0(h5ad_file, ".part"), h5ad_file)          # renamed only once the download is complete
+}
+file.size(h5ad_file) / 1e9                                    # size in GB (about 14)
+```
+
+**The nucleus metadata.** The file contains a table with one row per nucleus: its donor, the donor's diagnoses, age,
+sex and ancestry, and the cell type of the nucleus. To select the donors, we only need this table, not the gene
+expression, so we read only this part of the file.
+
+```{r metadata}
+obs_columns <- c("donor_id", "disease", "development_stage", "sex", "genetic_ancestry", "self_reported_ethnicity",
+                 "Schizophrenia", "Bipolar_Disorder", "AD_status", "ASCVD_status", "DLBD_status", "FTD_status",
+                 "Parkinson_disease", "Tardive_dyskinesia", "Tauopathy_status", "Vascular_status", "Source",
+                 "class", "subclass", "subtype", "n_counts", "n_genes")
+
+if (!file.exists(meta_file)) {
+  meta <- read_h5ad_obs(h5ad_file, obs_columns)
+  saveRDS(meta, meta_file)
+}
+meta <- readRDS(meta_file)
+
+dim(meta)                                   # one row per nucleus
+c(donors = length(unique(meta$donor_id)),   # expected: 300 donors
+  subclasses = length(unique(meta$subclass)))
+table(meta$Source)                          # H = HBCC only
+```
+
+# Step 2 – Donor selection
+
+**What we do and why.** We start from the 300 donors of the HBCC brain bank. Using a single bank avoids mixing a
+difference between banks with a difference between diseases (a "site" confounder). We then apply inclusion and
+exclusion criteria, as for a clinical trial, starting from the group definitions of Lee et al. [1] and making them
+stricter on two points.
+
+**From nuclei to donors.** We keep one row per donor: we want to count people, not nuclei. The age is written as text
+("45-year-old stage", "8-month-old stage"): we convert it to years.
+
+```{r donors}
+donors <- donors_from_nuclei(meta)
+donors$age <- parse_age(donors$development_stage)
+
+nrow(donors)                                        # expected: 300 donors
+unique(donors$development_stage[is.na(donors$age)]) # must be empty: every age format is read
+summary(donors$age)
+```
+
+**One TRUE/FALSE column per diagnosis.** The `disease` column lists all the diagnoses of a donor, separated by `||`
+(for example `schizophrenia || type 2 diabetes mellitus || tardive dyskinesia`). `flag_diagnoses()` creates one column
+per diagnosis; whatever is left after removing the known diagnoses is an "other diagnosis" (OCD, epilepsy...).
+Schizoaffective disorder of bipolar type contains the word "bipolar", so it is flagged first and removed from the text.
+
+```{r diagnoses}
+donors <- flag_diagnoses(donors)
+
+table(donors$other_diagnosis[donors$has_other_diagnosis])    # the other diagnoses present
+table(SCZ = donors$has_SCZ, BD = donors$has_BD)              # SCZ crossed with BD (donors)
+```
+
+**The criteria.** Each criterion is one line of `select_donors()`. A donor is counted once, at the first criterion it
+fails.
+
+| Criterion | Rule | Why |
+|-----------|------|-----|
+| I2 | age at death >= 20 years | before 20, the cortex is still maturing [3]: young controls versus adult patients would create a false difference |
+| E1 | not both SCZ and BD | a donor cannot be in both groups we compare |
+| E2 | no schizoaffective disorder, bipolar type | in [1] these donors are counted in both SCZ and BD |
+| E4, E5 | no other brain disorder (dementia, epilepsy, other psychiatric diagnosis) | it would change the cells independently of SCZ or BD ("no secondary diagnosis" rule of [1]) |
+| E6 | no missing covariate | age, sex and ancestry are needed in every model |
+| kept on purpose | tardive dyskinesia; controls with diabetes or atherosclerosis | part of the real clinical picture; metabolic disorders are tolerated in [1] |
+
+```{r selection}
+selection <- select_donors(donors, age_min = age_min,
+                           keep_td = keep_tardive_dyskinesia,
+                           keep_metabolic_controls = keep_metabolic_controls)
+donors$group            <- selection$group
+donors$exclusion_reason <- selection$reason
+
+sel <- donors[donors$group != "Excluded", ]
+sel$group <- factor(sel$group, levels = c("Control", "SCZ", "BD"))
+table(sel$group)
+
+flow <- as.data.frame(table(donors$exclusion_reason))
+names(flow) <- c("Criterion", "Donors excluded")
+flow_display <- rbind(flow, data.frame(Criterion = paste0("Total excluded (", nrow(donors), " -> ", nrow(sel), ")"),
+                                       "Donors excluded" = sum(flow[[2]]), check.names = FALSE))
+flow_display
+```
+
+::: {.callout-tip title="How to read"}
+Flow of the donors through the criteria (CONSORT-like table): each row is a criterion and the number of donors it
+removed. The criteria are applied in order, so a donor is counted once, at the first criterion it fails.
+:::
+
+```{r fig-PP-F01, fig.width=7, fig.height=4.5}
+p_PP_F01 <- ggplot(sel, aes(group, age, fill = group)) +
+  geom_violin(alpha = 0.35, colour = NA) +
+  geom_boxplot(width = 0.18, outlier.shape = NA) +
+  geom_jitter(width = 0.08, size = 0.8, alpha = 0.6) +
+  scale_fill_manual(values = col_groups, guide = "none") +
+  labs(x = NULL, y = "Age at death (years)",
+       title = "Age at death of the selected donors",
+       subtitle = paste0(nrow(sel), " donors aged ", age_min, " or more")) +
+  theme_project()
+p_PP_F01
+save_figure(p_PP_F01, "PP_F01_age_by_group", fig_dir, width = 7, height = 4.5)
+
+age_test <- kruskal.test(age ~ group, data = sel)   # do the ages differ between groups? (descriptive)
+age_test
+```
+
+**Figure PP-F01 - Age at death of the selected donors, per group.** Violin plot, box plot (median and interquartile
+range) and individual donors (dots). Only donors aged `r age_min` years or more were kept.
+
+::: {.callout-tip title="How to read"}
+Each dot is a donor. The box gives the median and the middle half of the ages. If the three violins overlap well, age
+cannot fully explain a difference between groups; it is still adjusted for in every model.
+:::
+
+::: {.callout-important title="Interpretation"}
+- **`r nrow(sel)` donors kept out of `r nrow(donors)`**: `r sum(sel$group == "Control")` controls,
+  `r sum(sel$group == "SCZ")` SCZ and `r sum(sel$group == "BD")` BD.
+- Median ages differ a little between groups (Kruskal-Wallis p = `r signif(age_test$p.value, 1)`), but the
+  distributions overlap widely: we treat age as a covariate of every model rather than as a reason to exclude more
+  donors.
+- The criterion with the largest effect is the age threshold (`r sum(donors$exclusion_reason == "I2 - age below threshold", na.rm = TRUE)`
+  donors under `r age_min`, almost all controls). Thresholds of 17 and 24 years are sensitivity analyses (Step 4).
+:::
+
+# Step 3 – Description of the groups
+
+**What we do and why.** Before comparing patients with controls, we check that they are similar on everything else
+(Table 1, balance of covariates). We also check that the clinical columns of the file agree with the text of the
+diagnoses (metadata quality control).
+
+```{r table1}
+table1 <- make_table1(sel)
+row_labels <- c(N = "Donors (n)", Age_median = "Median age at death (years)", Age_min = "Minimum age (years)",
+                Age_max = "Maximum age (years)", Women = "Women, n (%)", Atherosclerosis = "Atherosclerosis, n (%)",
+                Diabetes = "Diabetes, n (%)", Tardive_dyskinesia = "Tardive dyskinesia, n (%)",
+                Nuclei_median = "Median number of nuclei per donor")
+data.frame(Characteristic = row_labels[rownames(table1)], table1, check.names = FALSE, row.names = NULL)
+```
+
+```{r fig-PP-F02, fig.width=7, fig.height=4.5}
+ancestry_table <- as.data.frame(table(ancestry = sel$genetic_ancestry, group = sel$group))
+ancestry_table <- ancestry_table[ancestry_table$Freq > 0, ]
+
+p_PP_F02 <- ggplot(ancestry_table, aes(group, Freq, fill = ancestry)) +
+  geom_col(position = "fill", width = 0.7) +
+  scale_y_continuous(labels = function(x) paste0(round(100 * x), " %")) +
+  scale_fill_brewer(palette = "Set2", name = "Genetic ancestry") +
+  labs(x = NULL, y = "Share of the donors of the group",
+       title = "Genetic ancestry is strongly unbalanced between the groups",
+       subtitle = "Most BD donors are of European ancestry, most SCZ donors of African ancestry") +
+  theme_project()
+p_PP_F02
+save_figure(p_PP_F02, "PP_F02_ancestry_by_group", fig_dir, width = 7, height = 4.5)
+
+ancestry_counts <- table(droplevels(sel$genetic_ancestry), sel$group)
+as.data.frame.matrix(ancestry_counts)
+```
+
+**Figure PP-F02 - Genetic ancestry of the donors, per group.** Share of each genetic ancestry among the donors of each
+group (counts in the table below the figure).
+
+::: {.callout-tip title="How to read"}
+Each bar is one group and adds up to 100 %. If the colours had the same shares in the three bars, ancestry would be
+balanced. Here they clearly do not.
+:::
+
+::: {.callout-important title="Interpretation"}
+- **This is the most serious limit of the project.** BD donors are mostly of European ancestry
+  (`r ancestry_counts["European", "BD"]` of `r sum(sel$group == "BD")`) and SCZ donors mostly of African ancestry
+  (`r ancestry_counts["African", "SCZ"]` of `r sum(sel$group == "SCZ")`). Genetic ancestry changes the expression of some
+  genes (eQTL), so comparing SCZ with BD is partly comparing two ancestries (confounding between diagnosis and ancestry).
+- How we handle it: ancestry is a covariate of every model, SCZ vs BD is interpreted with caution, and Q1 adds analyses
+  stratified by ancestry. Controls are better balanced (`r ancestry_counts["African", "Control"]` African,
+  `r ancestry_counts["European", "Control"]` European), so each disease can be compared with controls of the same
+  ancestry.
+- Tardive dyskinesia is only found in SCZ (`r table1["Tardive_dyskinesia", "SCZ"]`), as expected for a side effect of
+  antipsychotics.
+:::
+
+```{r metadata-qc}
+# All 300 donors, with every column of the file
+all_donors <- meta[!duplicated(meta$donor_id), ]
+all_donors$disease <- as.character(all_donors$disease)
+
+metadata_qc <- rbind(
+  metadata_agreement(all_donors, "Schizophrenia",      "schizophrenia|schizoaffective"),
+  metadata_agreement(all_donors, "Bipolar_Disorder",   "bipolar"),
+  metadata_agreement(all_donors, "ASCVD_status",       "atherosclerosis"),
+  metadata_agreement(all_donors, "Tardive_dyskinesia", "tardive dyskinesia"))
+setNames(metadata_qc, c("Column of the file", "Positive in the column", "Positive in the diagnosis text",
+                        "Positive in both", "Discordant"))
+
+# Selected controls marked "Yes" in the Tardive_dyskinesia column
+td_controls <- sum(sel$Tardive_dyskinesia == "Yes" & sel$group == "Control")
+```
+
+::: {.callout-tip title="How to read"}
+For each yes/no column of the file, agreement with the text of the diagnoses (300 donors). A column with discordant
+donors cannot be trusted.
+:::
+
+::: {.callout-important title="Interpretation"}
+- The schizophrenia, bipolar disorder and atherosclerosis columns agree 100 % with the diagnoses.
+- The `Tardive_dyskinesia` column does not (`r metadata_qc$discordant[4]` discordant donors, including
+  `r td_controls` selected controls marked "Yes"), so we use the text of the diagnoses instead.
+- The post-mortem interval (PMI) is not in the file: our covariates are limited to age, sex and ancestry.
+:::
+
+# Step 4 – Sensitivity analyses
+
+**What we do and why.** We repeat the selection, changing one parameter at a time. These variants are
+used by the sensitivity analyses of the next questions.
+
+```{r sensitivity-sizes}
+variants <- list(
+  main                       = selection,
+  age_17                     = select_donors(donors, 17,      keep_tardive_dyskinesia, keep_metabolic_controls),
+  age_24                     = select_donors(donors, 24,      keep_tardive_dyskinesia, keep_metabolic_controls),
+  without_tardive_dyskinesia = select_donors(donors, age_min, FALSE,                   keep_metabolic_controls),
+  strict_controls            = select_donors(donors, age_min, keep_tardive_dyskinesia, FALSE),
+  schizoaff_bipolar_to_SCZ   = select_donors(donors, age_min, keep_tardive_dyskinesia, keep_metabolic_controls, "SCZ"),
+  schizoaff_bipolar_to_BD    = select_donors(donors, age_min, keep_tardive_dyskinesia, keep_metabolic_controls, "BD"))
+
+group_levels <- c("Control", "SCZ", "BD", "Excluded")
+sensitivity_group_sizes <- t(sapply(variants, function(v) table(factor(v$group, levels = group_levels))))
+sensitivity_group_sizes
+
+# The group of each donor in each variant, kept for the next questions
+donors$group_age17          <- variants$age_17$group
+donors$group_age24          <- variants$age_24$group
+donors$group_without_TD     <- variants$without_tardive_dyskinesia$group
+donors$group_strict_control <- variants$strict_controls$group
+donors$group_sab_SCZ        <- variants$schizoaff_bipolar_to_SCZ$group
+donors$group_sab_BD         <- variants$schizoaff_bipolar_to_BD$group
+```
+
+# Step 5 – Cell types per donor (input of Q1)
+
+**What we do and why.** For the composition analysis (Q1), all we need is the number of nuclei of each of the 27
+subclasses in each selected donor, using **all** their nuclei. We also count, for each subclass, how many donors of each
+group have at least `r nuclei_min` nuclei of it (criterion E7): a subclass that is too rare cannot be analysed in
+pseudobulk.
+
+```{r nuclei-per-subclass}
+meta_sel <- meta[meta$donor_id %in% sel$donor_id, ]
+nuclei_donor_subclass <- table(as.character(meta_sel$donor_id), as.character(meta_sel$subclass))
+nuclei_donor_subclass <- nuclei_donor_subclass[sel$donor_id, ]
+dim(nuclei_donor_subclass)                       # donors x subclasses
+sum(nuclei_donor_subclass)                       # nuclei of the selected donors
+
+E7 <- donors_per_subclass(nuclei_donor_subclass, as.character(sel$group), nuclei_min)
+E7[order(apply(E7, 1, min)), ]                   # rarest subclasses first
+```
+
+```{r save-selection}
+write.csv(flow, file.path(pre_dir, "flow_diagram.csv"), row.names = FALSE)
+write.csv(table1, file.path(pre_dir, "table1.csv"))
+write.csv(sensitivity_group_sizes, file.path(pre_dir, "sensitivity_group_sizes.csv"))
+write.csv(metadata_qc, file.path(pre_dir, "metadata_qc.csv"), row.names = FALSE)
+# Data used by the next notebooks
+write.csv(donors, file.path(proc_dir, "donor_classification.csv"), row.names = FALSE)
+saveRDS(donors, file.path(proc_dir, "donor_classification.rds"))
+write.csv(as.data.frame.matrix(nuclei_donor_subclass), file.path(proc_dir, "nuclei_donor_x_subclass.csv"))
+write.csv(E7, file.path(pre_dir, "E7_donors_per_subclass.csv"))
+```
+
+# Part B – Data processing: are the data usable, and in which form?
+
+Now that the donors are chosen, we read their gene expression, check its quality, and put it in the two forms used by
+the next questions: a Seurat object (one column per nucleus) and a pseudobulk matrix (one column per donor and cell
+type).
+
+# Step 6 – Reading the data
+
+**What we do and why.** The data set is too large to be loaded at once in the memory of a computer (1.5 million
+nuclei). We therefore read the file **one donor at a time**: we read the nuclei of a donor, keep what we need, free the
+memory, then move to the next donor. This works because the nuclei of each donor are stored next to each other in the
+file (checked for every donor). The reading functions are in `scripts/utils_h5ad.R`.
+
+**Raw counts?** The file has no `raw/` layer, so the matrix `X` should hold the raw counts. We read the first million
+values and check that they are integers.
+
+```{r raw-counts}
+test_values <- as.numeric(h5read(h5ad_file, "/X/data", index = list(1:1e6)))
+h5closeAll()
+all(test_values == round(test_values))     # TRUE = integers = raw counts
+summary(test_values)
+```
+
+**The subsample for the Seurat object.** For the standard single-cell pipeline (visualisation, annotation check,
+CellChat in Q4), we randomly draw at most `r max_nuclei_per_donor` nuclei per selected donor, so that every donor
+weighs the same. The pseudobulk matrix (Step 9) uses **all** the nuclei.
+
+```{r seurat-object}
+gene_table <- read_gene_names(h5ad_file)
+nrow(gene_table)                                     # expected: 34,176 genes
+head(gene_table)                                     # Ensembl identifier and gene symbol
+
+rows_by_donor  <- rows_per_donor(meta, sel$donor_id)
+chosen_nuclei  <- draw_nuclei(rows_by_donor, max_nuclei_per_donor, seed = the.seed)
+kept_rows      <- unlist(chosen_nuclei)
+length(kept_rows)                                    # nuclei in the Seurat object
+
+if (!file.exists(seurat_file)) {
+  # 1. Read the drawn nuclei, donor by donor (about 7 minutes)
+  counts <- read_chosen_nuclei(h5ad_file, chosen_nuclei, gene_table$name)
+
+  # 2. Metadata of each nucleus, with the information of its donor
+  meta_nuclei <- meta[kept_rows, c("donor_id", "class", "subclass", "subtype", "n_counts", "n_genes")]
+  rownames(meta_nuclei) <- colnames(counts)
+  position <- match(as.character(meta_nuclei$donor_id), sel$donor_id)
+  meta_nuclei$group    <- as.character(sel$group[position])
+  meta_nuclei$age      <- sel$age[position]
+  meta_nuclei$sex      <- sel$sex[position]
+  meta_nuclei$ancestry <- as.character(sel$genetic_ancestry[position])
+
+  obj <- CreateSeuratObject(counts = counts, meta.data = meta_nuclei, project = "HBCC_SCZ_BD")
+  rm(counts); invisible(gc())
+
+  # 3. The UMAP computed by the authors, to compare it with ours
+  umap_authors <- t(h5read(h5ad_file, "/obsm/X_umap")[, kept_rows])
+  h5closeAll()
+  rownames(umap_authors) <- colnames(obj)
+  colnames(umap_authors) <- c("umapAuthors_1", "umapAuthors_2")
+  obj[["umap_authors"]] <- CreateDimReducObject(embeddings = umap_authors, key = "umapAuthors_", assay = "RNA")
+
+  saveRDS(obj, seurat_file)        # saved now, and again after the pipeline of Step 8
+}
+obj <- readRDS(seurat_file)
+obj
+```
+
+**Is the reading correct?** We compare the total counts of each nucleus with the `n_counts` column computed by the
+authors.
+
+```{r reading-check}
+read_counts      <- obj$nCount_RNA
+authors_counts <- meta$n_counts[kept_rows]
+summary(read_counts / authors_counts)     # expected: values between 0.98 and 1
+cor(read_counts, authors_counts)          # expected: a correlation close to 1
+```
+
+::: {.callout-tip title="Why we check a ratio and not an exact equality"}
+Our totals are slightly lower than the authors' (by about 0.5 %) but perfectly correlated with them. A reading error
+would give random differences and a low correlation: the reading is correct. The small gap probably comes from a longer
+gene list used by the authors to compute their totals (not tested).
+:::
+
+# Step 7 – Quality control
+
+**What we do and why.** The authors had already filtered the nuclei [1]. We did not filter again, to stay comparable
+with the atlas; we checked the distributions on the subsample.
+
+```{r fig-PP-F03, fig.width=10, fig.height=4}
+obj[["percent_mt"]] <- PercentageFeatureSet(obj, pattern = "^MT-")    # mitochondrial genes (human names start with MT-)
+
+p_PP_F03 <- VlnPlot(obj, features = c("nCount_RNA", "nFeature_RNA", "percent_mt"),
+                    group.by = "group", pt.size = 0, ncol = 3, cols = col_groups)
+p_PP_F03
+save_figure(p_PP_F03, "PP_F03_qc_by_group", fig_dir, width = 10, height = 4)
+
+qc_summary <- sapply(c("nCount_RNA", "nFeature_RNA", "percent_mt"), function(v) summary(obj[[v]][, 1]))
+round(qc_summary, 2)
+median_counts <- tapply(obj$nCount_RNA, obj$group, median)
+```
+
+**Figure PP-F03 - Quality of the nuclei, per group.** Number of RNA molecules per nucleus (`nCount_RNA`), number of
+detected genes (`nFeature_RNA`) and percentage of mitochondrial reads (`percent_mt`, human pattern `^MT-`), on
+`r format(ncol(obj), big.mark = ",")` nuclei (at most `r max_nuclei_per_donor` per donor).
+
+::: {.callout-tip title="How to read"}
+One violin per group and per measure. Similar violins in the three groups mean that the data quality does not differ
+between controls and patients.
+:::
+
+::: {.callout-important title="Interpretation"}
+- Sharp bounds (never fewer than `r min(obj$nFeature_RNA)` genes, never more than
+  `r round(max(obj$percent_mt), 1)` % mitochondrial reads) show that a filter has already been applied upstream.
+- **Mitochondrial reads are almost absent (median `r round(median(obj$percent_mt), 2)` %)** because these are nuclei:
+  mitochondria are in the cytoplasm (single-nucleus RNA-seq). The 5-20 % thresholds used for whole cells do not apply
+  here.
+- SCZ nuclei have about `r round(100 * (1 - median_counts["SCZ"] / median_counts["Control"]))` % fewer molecules than
+  controls (medians). This is a nucleus-level description, not a test; depth differences are corrected by the
+  normalisation of each sample.
+- No knee plot can be drawn: the file contains only the nuclei retained by the authors, not all the droplets.
+:::
+
+# Step 8 – Normalisation and visual check of the cell types (PCA, UMAP)
+
+**What we do and why.** We follow the steps of the course on the subsample. The upstream steps (alignment, filtering,
+annotation) were done by the authors on the whole atlas [1]: we checked them rather than redoing them.
+
+| Step of the pipeline (course video) | What it is for | What we did |
+|-------------------------------------|----------------|------------|
+| Experimental design (01) | decide who is compared with whom | 224 donors, one bank, criteria fixed in advance |
+| Count table (02) | count the RNA molecules of each gene in each nucleus | done by the authors; raw integer counts checked |
+| Quality control (03-04) | remove damaged, empty or double nuclei | done by the authors; distributions checked (PP-F03) |
+| Normalisation (05) | make nuclei comparable despite different amounts of captured RNA | `NormalizeData()`, LogNormalize, scale factor 10,000 |
+| Highly variable genes (06) | keep the genes that separate cell types | `FindVariableFeatures(nfeatures = 2000)`, vst method |
+| Scaling (06) | give every gene the same weight in the PCA | `ScaleData()` on the 2,000 variable genes |
+| PCA (08-09) | summarise 2,000 genes in a few axes | `RunPCA(npcs = 30)`; elbow around 10-15, 30 kept |
+| Clustering (10) | group similar cells | not redone: 27 subclasses of the authors |
+| UMAP (07, 10) | draw a 2D map where similar cells are close | `RunUMAP(dims = 1:30)` |
+| Annotation (11-12) | name the cell groups | annotation of the authors, checked on our UMAP and with marker genes |
+| Differential expression (13) | genes changing between conditions | prepared at the donor level (pseudobulk, Step 9) |
+| Integration (bonus) | correct batch effects | not done: one bank, donors mixed on the UMAP |
+
+**Why normalise.** A nucleus that captured twice as much RNA shows twice as many molecules of every gene without being
+biologically different. LogNormalize divides each count by the total of the nucleus, multiplies by 10,000 and takes
+log(1 + x).
+
+```{r pipeline}
+# The pipeline is computed once, then saved with the object
+if (!"umap" %in% Reductions(obj)) {
+  obj <- NormalizeData(obj)                             # LogNormalize, scale factor 10,000
+  obj <- FindVariableFeatures(obj, nfeatures = 2000)    # 2,000 most variable genes (vst)
+  obj <- ScaleData(obj)                                 # each variable gene centred and scaled
+  obj <- RunPCA(obj, npcs = 30)                         # principal component analysis
+  obj <- RunUMAP(obj, dims = 1:30)                      # 2D map from the first 30 components
+  saveRDS(obj, seurat_file)
+}
+obj
+```
+
+```{r elbow, fig.width=6, fig.height=4}
+ElbowPlot(obj, ndims = 30) + theme_project() +
+  labs(title = "Variance explained by the principal components")
+```
+
+**Why 30 principal components.** The elbow of the variance plot is around 10 to 15 components. We kept 30 because too few
+components can erase rare populations (microglia, vascular cells), whereas a few extra components mainly add noise to a
+map used only for visualisation.
+
+**Why we did not re-cluster.** The 27 subclasses come from a hierarchical annotation of more than 6 million nuclei [1].
+A clustering of a subsample would be less reliable and not comparable with the atlas.
+
+```{r fig-PP-F04, fig.width=8, fig.height=7}
+p_PP_F04 <- DimPlot(obj, reduction = "umap", group.by = "subclass", label = TRUE, repel = TRUE) + NoLegend() +
+  labs(title = "Cell subclasses of the authors on our UMAP")
+p_PP_F04
+save_figure(p_PP_F04, "PP_F04_umap_subclass", fig_dir, width = 8, height = 7)
+```
+
+**Figure PP-F04 - UMAP of `r format(ncol(obj), big.mark = ",")` nuclei coloured by cell subclass.** UMAP computed on the
+first 30 principal components of the 2,000 most variable genes; subclasses as annotated by the authors [1].
+
+::: {.callout-tip title="How to read"}
+Each dot is a nucleus; nuclei with similar gene expression are close. Distances between islands are not meaningful,
+only which nuclei group together.
+:::
+
+::: {.callout-important title="Interpretation"}
+- The 27 subclasses form separate islands, as in the authors' UMAP: our pipeline recovers their annotation, which
+  validates the reading of the data.
+- Excitatory neurons (EN), inhibitory neurons (IN), oligodendrocytes, astrocytes, OPC, microglia and vascular cells each
+  form their own islands.
+:::
+
+**Do the cell types express their known marker genes?** The UMAP shows that the 27 subclasses form separate islands. We
+also check that each subclass expresses its marker genes, as in the annotation step of a single-cell analysis. We use
+two sources linked to our data set:
+
+- the marker genes chosen by the authors of the atlas [1]: Figure 2d of [1] for the neuronal subclasses (two per
+  subclass), and, for the other cell types, the subclass-level markers of the gene panel that the authors designed for
+  their spatial transcriptomics experiment (Supplementary Table 10 of [1]; this panel had room for about 100 genes, so
+  it keeps one to three of the most specific genes per subclass);
+- the marker genes of the cell taxonomy that the authors used to name the cell types, Ma et al. 2022 [5].
+
+No marker gene is given for adaptive immune cells in these sources: they are not shown.
+
+```{r markers}
+# Neuronal subclasses (1): markers of Figure 2d of Lee et al. [1], two per subclass
+markers_psychad_neurons <- list(
+  EN_L2_3_IT    = c("CUX2", "ONECUT2"),
+  EN_L3_5_IT_1  = c("MME", "COL22A1"),
+  EN_L3_5_IT_2  = c("GABRG1", "TPBG"),
+  EN_L3_5_IT_3  = c("TRABD2A", "MKX"),
+  EN_L5_6_NP    = c("HTR2C", "NPSR1"),
+  EN_L5_ET      = c("POU3F1", "SYT2"),
+  EN_L6B        = c("NPFFR2", "LRAT"),
+  EN_L6_CT      = c("SULF1", "SMIM36"),
+  EN_L6_IT_1    = c("THEMIS", "ADAMTS3"),
+  EN_L6_IT_2    = c("POSTN", "SMYD1"),
+  IN_ADARB2     = c("NDNF", "KCNG1"),
+  IN_LAMP5_LHX6 = c("CHST9", "CA3"),
+  IN_LAMP5_RELN = c("PID1", "TRPC3"),
+  IN_PVALB      = c("MYO5B", "SULF1"),
+  IN_PVALB_CHC  = c("CA8", "PVALB"),
+  IN_SST        = c("SST", "MAFB"),
+  IN_VIP        = c("VIP", "CHRNA2"))
+
+# Markers of the taxonomy used to name the cell types, Ma et al. 2022 [5]
+# (a gene can mark several of our subclasses: RORB for the three L3-5 IT, OPRK1 for the two L6 IT;
+#  CCN2 is the current name of CTGF)
+markers_ma <- list(
+  EN_L2_3_IT    = "PCDH8",
+  EN_L3_5_IT_1  = "RORB", EN_L3_5_IT_2 = "RORB", EN_L3_5_IT_3 = "RORB",
+  EN_L5_6_NP    = "HTR2C",
+  EN_L5_ET      = c("FEZF2", "BCL11B", "POU3F1"),
+  EN_L6B        = "CCN2",
+  EN_L6_CT      = "SYT6",
+  EN_L6_IT_1    = "OPRK1", EN_L6_IT_2 = "OPRK1",
+  IN_ADARB2     = c("ADARB2", "KCNG1"),
+  IN_LAMP5_LHX6 = c("LAMP5", "LHX6"),
+  IN_LAMP5_RELN = c("LAMP5", "RELN"),
+  IN_PVALB      = "PVALB",
+  IN_PVALB_CHC  = "PVALB",
+  IN_SST        = "SST",
+  IN_VIP        = "VIP",
+  Astro         = "AQP4",
+  Micro         = "P2RY12",
+  Endo          = "FLT1")
+
+# Non-neuronal subclasses: file of the authors, Supplementary Table 10 of Lee et al. [1]
+# We keep the subclass-level markers (tier 1, no subtype); the other rows are markers of finer subtypes
+panel <- read.csv("../01_DATA/markers/PsychAD_SupplementaryTable10.csv")
+panel <- panel[panel$tier == 1 & panel$subtype == "" & !panel$class %in% c("EN", "IN"), ]
+markers_psychad_other <- split(panel$marker, panel$subclass)
+
+# One table: one row per marker gene and expected subclass, with its source
+as_table <- function(markers, source) {
+  data.frame(gene = unlist(markers), expected = rep(names(markers), lengths(markers)), source = source)
+}
+marker_table <- rbind(as_table(markers_psychad_neurons, "Lee et al., Fig. 2d"),
+                      as_table(markers_psychad_other,   "Lee et al., Suppl. Table 10"),
+                      as_table(markers_ma,              "Ma et al. 2022"))
+marker_table <- marker_table[marker_table$gene %in% rownames(obj), ]    # genes present in our data
+rownames(marker_table) <- NULL
+table(marker_table$source)
+```
+
+```{r fig-PP-F05, fig.width=10, fig.height=11}
+neuron_subclasses <- names(markers_psychad_neurons)
+neuron_genes <- unique(marker_table$gene[marker_table$expected %in% neuron_subclasses])
+
+obj_neurons <- subset(obj, subset = subclass %in% neuron_subclasses)
+obj_neurons$subclass <- factor(obj_neurons$subclass, levels = neuron_subclasses)
+
+p_PP_F05 <- DotPlot(obj_neurons, features = rev(neuron_genes), group.by = "subclass") + coord_flip() +
+  labs(x = NULL, y = NULL, title = "Marker genes of the neuronal subclasses",
+       subtitle = "Markers of Lee et al. (Fig. 2d) and Ma et al. 2022; one column per subclass") +
+  theme_project() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), axis.text.y = element_text(face = "italic"))
+p_PP_F05
+save_figure(p_PP_F05, "PP_F05_markers_neurons", fig_dir, width = 10, height = 11)
+```
+
+**Figure PP-F05 - Expression of marker genes in the 17 neuronal subclasses.** Markers of Figure 2d of [1] and of the
+taxonomy used to name the cell types [5], on the `r format(ncol(obj_neurons), big.mark = ",")` neuronal nuclei of the
+subsample. Dot size: percentage of nuclei of the subclass that express the gene; colour: mean expression, scaled across
+subclasses.
+
+```{r fig-PP-F06, fig.width=8, fig.height=6}
+other_subclasses <- c("Astro", "Oligo", "OPC", "Micro", "PVM", "Endo", "PC", "SMC", "VLMC")
+other_genes <- unique(marker_table$gene[marker_table$expected %in% other_subclasses])
+
+obj_other <- subset(obj, subset = subclass %in% other_subclasses)
+obj_other$subclass <- factor(obj_other$subclass, levels = other_subclasses)
+
+p_PP_F06 <- DotPlot(obj_other, features = rev(other_genes), group.by = "subclass") + coord_flip() +
+  labs(x = NULL, y = NULL, title = "Marker genes of the non-neuronal subclasses",
+       subtitle = "Markers of Lee et al. (Suppl. Table 10) and Ma et al. 2022; one column per subclass") +
+  theme_project() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), axis.text.y = element_text(face = "italic"))
+p_PP_F06
+save_figure(p_PP_F06, "PP_F06_markers_non_neuronal", fig_dir, width = 8, height = 6)
+```
+
+**Figure PP-F06 - Expression of marker genes in the 9 non-neuronal subclasses.** Subclass-level markers of
+Supplementary Table 10 of [1] and markers of [5], on the `r format(ncol(obj_other), big.mark = ",")` non-neuronal nuclei
+of the subsample. Same reading as Figure PP-F05.
+
+::: {.callout-tip title="How to read"}
+Each row is a gene, each column a subclass. The size of a dot is the percentage of nuclei of the subclass that express
+the gene; its colour is the mean expression. A good marker gives a large dark dot in its own subclass and small pale dots
+elsewhere: if the annotation is right, the dark dots form a diagonal.
+:::
+
+**The same check in numbers.** For each marker gene, we look for the subclass where its mean expression is the highest,
+and compare it with the subclass it is supposed to mark.
+
+```{r marker-check}
+shown <- c(neuron_subclasses, other_subclasses)
+in_shown <- obj$subclass %in% shown
+expression <- LayerData(obj, layer = "data")[unique(marker_table$gene), in_shown]
+subclass_of_nuclei <- factor(obj$subclass[in_shown], levels = shown)
+membership <- fac2sparse(subclass_of_nuclei)                       # subclasses x nuclei, 1 = belongs
+mean_expression <- as.matrix(expression %*% t(membership)) / rep(rowSums(membership), each = nrow(expression))
+highest <- setNames(colnames(mean_expression)[apply(mean_expression, 1, which.max)], rownames(mean_expression))
+
+marker_table$highest_in <- highest[marker_table$gene]
+# A gene that marks several subclasses (e.g. RORB) is correct if it is highest in one of them
+expected_sets <- tapply(marker_table$expected, paste(marker_table$gene, marker_table$source), unique)
+marker_table$match <- mapply(function(g, s, h) h %in% expected_sets[[paste(g, s)]],
+                             marker_table$gene, marker_table$source, marker_table$highest_in)
+
+n_match   <- sum(marker_table$match)
+n_markers <- nrow(marker_table)
+aggregate(match ~ source, data = marker_table, FUN = function(x) paste0(sum(x), " / ", length(x)))
+marker_table[!marker_table$match, ]                                # markers that are not highest where expected
+```
+
+**`r n_match` of `r n_markers` marker genes are highest in their expected subclass.** The table above lists the
+exceptions.
+
+::: {.callout-important title="Interpretation"}
+[to fill after the first render with the real data]
+:::
+
+```{r fig-PP-F07, fig.width=8, fig.height=7}
+p_PP_F07 <- DimPlot(obj, reduction = "umap", group.by = "group", shuffle = TRUE, cols = col_groups) +
+  labs(title = "Diagnoses on our UMAP")
+p_PP_F07
+save_figure(p_PP_F07, "PP_F07_umap_group", fig_dir, width = 8, height = 7)
+```
+
+**Figure PP-F07 - UMAP of `r format(ncol(obj), big.mark = ",")` nuclei coloured by diagnosis.** Same UMAP as Figure
+PP-F04.
+
+::: {.callout-tip title="How to read"}
+If one diagnosis formed its own island, the disease would create a new cell state. Mixed colours mean that the same cell
+types are found in the three groups.
+:::
+
+::: {.callout-important title="Interpretation"}
+- Controls, SCZ and BD are mixed in every island: **the diseases do not create new cell types**.
+- A few small areas look dominated by one colour, for example the lower part of the astrocyte island (mostly BD). We
+  checked it by selecting this area by eye on the UMAP (exploratory check, not reproduced by the code): it holds 386
+  nuclei, 72 % of them from BD donors, versus 25 % BD among all astrocytes; but 3 BD donors bring 35 % of its nuclei.
+  The area therefore mostly reflects a few people, not the disease. A similar area of the OPC (36 % BD versus 28 %) has
+  no dominant donor. **A coloured area of a UMAP is not a result**: only a donor-level test can conclude (Q1, Q2).
+:::
+
+# Step 9 – Pseudobulk: one sample per donor and cell type (input of Q2 and Q5)
+
+**What we do and why.** For each donor, we sort its nuclei by cell type and add up their counts, gene by gene. For
+example, all the microglia of donor 1 become one "sample", all its astrocytes another one. We obtain one sample per
+donor and cell type, as if the cells of each type had been sorted and sequenced together (pseudobulk). Each donor then
+counts once in the tests, which avoids treating 5,000 nuclei of the same brain as 5,000 people [2]. We use all the
+nuclei here, not the 200-nuclei subsample. This matrix is the input of Q2 and Q5.
+
+The 27 cell types are kept for every donor, even when a donor has none of a type (empty sample): Q2 removes the samples
+with too few nuclei (E7 threshold).
+
+```{r pseudobulk}
+if (!file.exists(pseudobulk_file)) {
+  pb <- build_pseudobulk(h5ad_file, meta, sel, gene_table$name)     # about 10 minutes
+  saveRDS(pb, pseudobulk_file)
+  write.csv(pb$description, file.path(proc_dir, "pseudobulk_column_description.csv"), row.names = FALSE)
+}
+pb <- readRDS(pseudobulk_file)
+dim(pb$counts)                       # expected: 34,176 genes x 6,048 columns (224 donors x 27 subclasses)
+head(pb$description)
+```
+
+**Checks.**
+
+```{r pseudobulk-check}
+subclasses <- sort_subclasses(unique(as.character(meta$subclass)))
+expected   <- as.vector(t(unclass(nuclei_donor_subclass)[sel$donor_id, subclasses]))
+empty      <- pb$description$n_nuclei == 0
+
+data.frame(
+  check = c("columns (donor x subclass)",
+            "numbers of nuclei identical to the table of Step 5",
+            "empty columns (subclass absent in a donor)",
+            "empty columns contain only zeros",
+            "raw integer counts",
+            paste0("columns with >= ", nuclei_min, " nuclei (usable in Q2)")),
+  result = sapply(list(ncol(pb$counts),
+                       all(pb$description$n_nuclei == expected),
+                       sum(empty),
+                       all(colSums(pb$counts[, empty, drop = FALSE]) == 0),
+                       all(pb$counts@x == round(pb$counts@x)),
+                       sum(pb$description$n_nuclei >= nuclei_min)), as.character))
+```
+
+::: {.callout-tip title="How to read"}
+The matrix has one row per gene and one column per donor and subclass. The number of nuclei of every column is identical
+to the table of Step 5, and empty columns contain only zeros. Counts are raw integers: the Q2 tools (DESeq2, edgeR,
+limma-voom) compute their own normalisation.
+:::
+
+# Synthesis of the preprocessing
+
+| Element | Result | Figure |
+|---------|--------|--------|
+| Donors analysed | `r nrow(sel)` (`r sum(sel$group == "Control")` controls, `r sum(sel$group == "SCZ")` SCZ, `r sum(sel$group == "BD")` BD), one brain bank | PP-F01 |
+| Main limit | genetic ancestry confounded with diagnosis | PP-F02 |
+| Data quality | good, already filtered by the authors; nuclei, hence almost no mitochondrial reads | PP-F03 |
+| Annotation | 27 subclasses of the authors, recovered by our pipeline and by their marker genes | PP-F04 to PP-F06 |
+| New cell types in disease? | no: the three groups are mixed on the UMAP | PP-F07 |
+| Input of Q1 | nuclei per donor and subclass (all `r format(sum(nuclei_donor_subclass), big.mark = ",")` nuclei) | - |
+| Input of Q2 | pseudobulk matrix, raw counts, `r format(sum(pb$description$n_nuclei >= nuclei_min), big.mark = ",")` usable columns | - |
+
+# Limits
+
+- **Ancestry confounded with diagnosis** (severity 5/5): adjusted for and stratified, but it cannot be removed.
+- **QC and doublet detection not redone** (3/5): we rely on the filtering of the authors [1].
+- **No post-mortem interval and no information on treatments** (3/5): covariates limited to age, sex and ancestry.
+- **Subsample of `r max_nuclei_per_donor` nuclei per donor** (2/5): used only for the Seurat object; every statistical
+  analysis uses all nuclei.
+- **Donors with few nuclei** (2/5): `r sum(sel$n_nuclei < 1000)` donors with fewer than 1,000 nuclei (minimum
+  `r min(sel$n_nuclei)`).
+
+# List of figures
+
+| Figure | File | What it shows |
+|--------|------|---------------|
+| PP-F01 | `PP_F01_age_by_group` | age at death per group |
+| PP-F02 | `PP_F02_ancestry_by_group` | ancestry per group |
+| PP-F03 | `PP_F03_qc_by_group` | quality of the nuclei |
+| PP-F04 | `PP_F04_umap_subclass` | UMAP by subclass |
+| PP-F05 | `PP_F05_markers_neurons` | marker genes of the neuronal subclasses |
+| PP-F06 | `PP_F06_markers_non_neuronal` | marker genes of the non-neuronal subclasses |
+| PP-F07 | `PP_F07_umap_group` | UMAP by diagnosis |
+
+```{r figure-files}
+sort(list.files(fig_dir, pattern = "\\.png$"))
+```
+
+# References
+
+1. Lee D. et al. (2024). Single-cell atlas of transcriptomic vulnerability across multiple neurodegenerative and
+   neuropsychiatric diseases. *medRxiv*. doi:10.1101/2024.10.31.24316513
+2. Squair J. W. et al. (2021). Confronting false discoveries in single-cell differential expression. *Nature
+   Communications*, 12, 5692.
+3. Girdhar K. et al. PsychAD lifespan atlas of the human prefrontal cortex. *medRxiv*. doi:10.1101/2024.11.06.24316592
+4. Hao Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis (Seurat v5).
+   *Nature Biotechnology*, 42, 293-304.
+5. Ma S. et al. (2022). Molecular and cellular evolution of the primate dorsolateral prefrontal cortex. *Science*,
+   377, eabo7257.
+
+# Session info
+
+```{r session-info}
+sessionInfo()
+```

@@ -1,0 +1,999 @@
+---
+title: "Q5 - Do schizophrenia and bipolar disorder show an accelerated-ageing-like transcriptomic profile?"
+subtitle: "Ageing hallmark scores per cell type and donor, compared between patients and controls of the same age"
+author: "Ann-Solène Adelson"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    embed-resources: true
+    code-fold: show
+    df-print: kable
+    fig-align: center
+execute:
+  warning: false   # hides the technical warnings of the packages (deprecated functions...)
+  message: false   # our own notes are printed with cat(), so they stay visible
+---
+
+::: {.callout-note title="How to read this notebook"}
+Each step starts with a short explanation of **what we do and why**, then the code. Every figure comes with:
+
+- a **legend** ("Figure Q5-Fxx"), written so that it can be copied into the report or the appendix;
+- a **"How to read"** box, to understand the figure without knowing the method;
+- an **"Interpretation"** box, to fill in with the real HBCC results (*[to fill]*), with guiding questions.
+
+The notebook makes **6 figures**, each one answering a part of the question; checks and intermediate results are
+tables. Figures are saved as `.png` in `04_FIGURES/Q5/`. References are numbered in square brackets
+and listed at the end.
+:::
+
+# Overview
+
+## Question and hypothesis
+
+**Central question of the project.** Do schizophrenia (SCZ) and bipolar disorder (BD) share cell-type-specific
+molecular alterations in the human prefrontal cortex, and could these changes reflect accelerated ageing and
+affect neuronal and glial signalling networks?
+
+**Question of this notebook (Q5).** *Do SCZ and BD show an accelerated-ageing-like transcriptomic profile in specific
+neuronal or glial populations?*
+
+**Hypothesis tested (H3).** In some cell populations, patients may have the transcriptomic profile of older controls,
+in a way that is shared by the two disorders or specific to one of them.
+
+## Why this question
+
+Ageing is not a single process: it is described by a set of **hallmarks** [1], such as chronic inflammation, cellular
+senescence or mitochondrial dysfunction, plus changes specific to the brain, such as the loss of myelin [2]. Whether
+the brain ages faster in schizophrenia is **debated**: brain age estimated from MRI is older than chronological age in
+patients [3], whereas an epigenetic clock measured on post-mortem cortex found no acceleration [4]. A recent
+single-nucleus study of the orbitofrontal cortex found that genes changed with age and genes changed in psychiatric
+disease (mostly schizophrenia) overlap and change in the same direction, and that patients have an older transcriptomic
+age, but not an older epigenetic age [5]. In the dorsolateral prefrontal cortex, a gene program shared by neurons and
+astrocytes declines both with age and in schizophrenia [14]. We extend this question to the dorsolateral prefrontal cortex of the HBCC
+cohort, compare **SCZ and BD** directly, and ask **which ageing hallmarks** are involved in each cell type.
+
+## What we look for, and what we do not claim
+
+**What we look for.** We do not test whether patients *age* faster, which cannot be shown with one sample per donor. We
+ask whether, in some cell types, patients have the transcriptomic profile of **older controls**: for example, a
+25-year-old patient whose microglia look like those of a 45-year-old control.
+
+**How.** For each ageing hallmark, a **published gene signature** is scored per donor and cell type. The **controls**
+define what is normal at each age; patients are compared with controls **of the same age**, and the difference is
+expressed as an **apparent age gap** (in years). A complementary test, using all genes, checks whether the genes
+changed by the disease (Q2) are the genes changed by age.
+
+**What we will not claim.** A profile that resembles ageing does not mean that the disease causes ageing: treatments,
+smoking, metabolic disorders and cause of death are other possible explanations, discussed as limits.
+
+**Why signature scores.** Each hallmark is measured with `AddModuleScore()` [6], the Seurat function used in the
+practicals to score gene signatures. It gives one interpretable number for a named biological process, it corrects for
+the general expression level, and it only needs published gene lists, which suits a cohort with a limited number of
+controls per cell type.
+
+**Why on pseudobulk profiles.** The question is about **donors** ("does this patient look like an older control?"), so
+the donor is the unit of analysis. The scores are computed on the **pseudobulk** matrix of the preprocessing: for each
+donor and cell type, the counts of **all** its nuclei are summed, which gives one expression profile per donor and cell
+type, like a bulk RNA-seq of that sorted population. This is the unit used for differential expression in the PsychAD
+atlas [12] and for the program that declines with age and in schizophrenia described by Ling et al. [14]. It uses every
+nucleus (the shared Seurat object keeps only 200 nuclei per donor, for visualisation), and it is the same input as the
+differential expression of Q2, so the two questions can be compared.
+
+## The scores used
+
+Each hallmark is measured by a published signature, and only in the cell types where it makes biological sense, which
+also limits the number of tests.
+
+| Hallmark | Signature | Tested in | Ref. |
+|----------|-----------|-----------|------|
+| Cellular senescence | SenMayo | microglia | [1, 7] |
+| Chronic inflammation ("inflammaging") | Hallmark Inflammatory Response; Hallmark TNFα signalling via NF-κB | microglia | [1, 2, 8] |
+| Microglial ageing | genes rising / falling with age in human cortical microglia (GalatroAging) | microglia | [9] |
+| Mitochondrial dysfunction | Hallmark Oxidative Phosphorylation | every cell type | [1, 2, 8] |
+| Loss of myelin (brain-specific) | GO "ensheathment of neurons" (contains myelination) | oligodendrocytes | [2, 10] |
+| Global transcriptomic age of the cell type | genes rising / falling with age in adult DLPFC (PsychAD lifespan atlas) | every cell type with a lifespan signature | [11] |
+
+The cell types are the 7 subclasses retained in Q1 (microglia, oligodendrocytes and five deep-layer excitatory neuron
+subclasses). Astrocytes and OPC are not among them; if the list of Q1 changes, the senescence and inflammation
+signatures are also tested in astrocytes, and myelination in OPC.
+
+| Term | Meaning in this notebook |
+|------|--------------------------|
+| **Pseudobulk profile** | for one donor and one cell type, the sum of the counts of all its nuclei |
+| **Score** | one number per donor and cell type: how strongly the signature genes are expressed in its pseudobulk profile |
+| **Validated score** | a score that follows age in our controls, in that cell type |
+| **Ageing index** | for each cell type, the mean of its validated scores, oriented so that higher = older-looking: the **main measure** |
+| **Apparent age gap** | how many years older (or younger) patients look than controls of the same age |
+
+## Plan
+
+| Step | What we do | Output |
+|------|------------|--------|
+| 1 | Load the pseudobulk profiles, check donors and the cell types analysed | tables |
+| 2 | Prepare the signatures | tables |
+| 3 | Score the pseudobulk profile of each donor, per cell type | table |
+| 4 | Keep only the scores that follow age in controls | F01 |
+| 5 | Build the ageing index of each cell type | table |
+| 6 | Do patients look older than controls of the same age? SCZ, BD, and SCZ vs BD | F02, F03, F04, F05 |
+| 7 | Are the genes changed by the disease the genes changed by age? (all genes, then significant genes) | F06, table |
+| 8 | Synthesis | summary table |
+
+# Setup
+
+| Package | Used for |
+|---------|----------|
+| `Seurat` | `NormalizeData()` and `AddModuleScore()` (seen in the practicals) |
+| `dplyr`, `tidyr`, `ggplot2` | tables and figures |
+
+```{r setup}
+the.seed <- 42          # AddModuleScore draws control genes at random: a fixed seed makes it reproducible
+set.seed(the.seed)
+
+suppressPackageStartupMessages({
+  library(Seurat)
+  library(dplyr)
+  library(tidyr)
+  library(ggplot2)
+})
+
+# Reusable functions, kept outside the notebook so the code below stays readable
+source("scripts/utils_genesets.R")
+source("scripts/utils_aging_scores.R")
+source("scripts/utils_figures.R")     # common figure style, colours and saving (shared with the other notebooks)
+```
+
+All the choices are gathered in one place, so the analysis can be re-run with other values.
+
+| Parameter | Value | Why |
+|-----------|-------|-----|
+| `cell_types` | the 7 subclasses retained in Q1 | read from the Q1 results (`Q1_retained_subclasses.txt`), the same for Q2 to Q5 |
+| `min_nuclei` | 20 nuclei | a pseudobulk profile built from fewer nuclei is too noisy (shared rule E7) |
+| `min_donors` | 10 donors per group | below this, a group is too small to compare (shared rule) |
+| `min_age` | 20 years | adult donors only (shared rule): younger brains are still developing |
+| `min_genes` | 5 genes | a signature with fewer genes present in the data is not reliable |
+| `covariates` | sex, genetic ancestry | sex changes expression; ancestry is strongly linked to the diagnosis in HBCC (most BD donors are of European ancestry, most SCZ donors of African ancestry), so it must be in every model. The post-mortem interval (PMI) is not available in the data |
+| `n_perm` | 200 | number of permutations of the concordance test (Step 7) |
+| `alpha` | 0.05 | threshold on the adjusted p-value (Benjamini–Hochberg) |
+
+`AddModuleScore()` is used with its default of 100 control genes per signature gene: more control genes give a more
+stable background estimate.
+
+```{r parameters}
+# Inputs
+pseudobulk_path <- "../01_DATA/processed/pseudobulk_HBCC_224donors.rds"     # preprocessing (all nuclei)
+q1_path         <- "../03_RESULTS/Q1_composition/Q1_retained_subclasses.txt"    # cell types retained in Q1
+de_path       <- "../03_RESULTS/Q2/de_results_all.csv"   # Q2 results, for Step 7
+geneset_dir   <- "../01_DATA/genesets"   # one CSV per signature (gs_name, gene_symbol), see its README.md
+signature_files <- c("Q5_senmayo.csv", "Q5_inflammatory_response.csv", "Q5_tnfa_nfkb.csv",
+                     "Q5_microglia_ageing_galatro.csv", "Q5_oxphos.csv", "Q5_myelination.csv")
+lifespan_path <- file.path(geneset_dir, "Q5_lifespan_ageing.csv")
+
+# Outputs
+out_dir <- "../03_RESULTS/Q5_aging"
+fig_dir <- "../04_FIGURES/Q5"
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Analysis choices
+min_nuclei      <- 20
+min_donors      <- 10
+min_age         <- 20
+min_genes       <- 5
+covariates      <- c("sex", "ancestry")
+n_perm          <- 200
+alpha           <- 0.05
+cell_types      <- if (file.exists(q1_path)) readLines(q1_path) else
+                     c("Micro", "Oligo", "EN_L5_6_NP", "EN_L6_IT_1", "EN_L6_IT_2", "EN_L6B", "EN_L6_CT")
+cell_types      <- cell_types[nzchar(cell_types)]
+key_celltypes   <- c("Micro", "Oligo")   # shown in Figure F03: the cell types altered in Q1
+
+# In which cell types each signature is tested ("all" = every cell type).
+# A name can be a subclass (Micro) or a class prefix (EN = every EN_* subclass).
+signature_scope <- list(
+  SenMayo               = c("Astro", "Micro"),
+  Inflammatory_Response = c("Astro", "Micro"),
+  TNFa_NFkB             = c("Astro", "Micro"),
+  Microglia_AgingUp     = "Micro",
+  Microglia_AgingDown   = "Micro",
+  OxPhos                = "all",
+  Myelination           = c("Oligo", "OPC"),
+  Lifespan_AgingUp      = "all",
+  Lifespan_AgingDown    = "all"
+)
+
+col_dx <- c(CTRL = "grey40", col_disease[c("SCZ", "BD")])
+lab_dx <- c(SCZ = "SCZ vs controls", BD = "BD vs controls", SCZ_vs_BD = "SCZ vs BD (direct)")
+
+# Diverging scale for ageing shifts: orange = older-looking, purple = younger-looking
+scale_fill_shift <- function(lim, name) {
+  scale_fill_gradient2(low = "#5e3c99", mid = "white", high = "#e66101", midpoint = 0,
+                       limits = c(-lim, lim), name = name)
+}
+```
+
+# Step 1 – Donors and cell types
+
+**What we do and why.** We load the pseudobulk profiles made during preprocessing (one column per donor and subclass,
+raw counts of all nuclei summed). In a cross-sectional study, the main risk is **confounding**: if patients were
+younger or older than controls, age and diagnosis would be mixed up. We first check that the groups are comparable, then
+which cell types have enough donors.
+
+```{r load}
+pb <- load_pseudobulk(pseudobulk_path)
+pb_counts <- pb$counts   # genes x (donor x subclass), raw counts
+pb_desc   <- pb$desc     # one row per column: donor_id, cell_type, n_nuclei, diagnosis, age, sex, ancestry
+
+donor_meta <- pb_desc |>
+  distinct(donor_id, diagnosis, age, sex, ancestry)
+
+# Adult donors only (already done in preprocessing: this is a safety check)
+n_young <- sum(donor_meta$age < min_age)
+if (n_young > 0) {
+  cat("Note:", n_young, "donors under", min_age, "years removed.\n")
+  donor_meta <- filter(donor_meta, age >= min_age)
+}
+
+donor_meta |>
+  group_by(diagnosis) |>
+  summarise(n_donors     = n(),
+            age_median   = median(age),
+            age_range    = paste(min(age), "-", max(age)),
+            n_age_60plus = sum(age >= 60),
+            pct_female   = round(100 * mean(sex == "female")),
+            pct_european = round(100 * mean(ancestry == "European", na.rm = TRUE)),
+            pct_african  = round(100 * mean(ancestry == "African", na.rm = TRUE)),
+            .groups = "drop")
+
+kruskal.test(age ~ diagnosis, data = donor_meta)
+```
+
+::: {.callout-tip title="How to read"}
+One row per group: number of donors, median and range of age at death, number of donors aged 60 or more, percentage of
+women, and percentage of donors of European and African genetic ancestry. The Kruskal–Wallis test checks whether the
+age distributions differ between groups (without assuming a normal distribution). The same information is in Table 1 of
+the report (preprocessing).
+:::
+
+::: {.callout-important title="Interpretation [to fill]"}
+- Do the three groups cover the same age range? Patients often die younger: the models below compare them with
+  controls **of the same age**, but the oldest ages will be represented mostly by controls.
+- How many donors are 60 or older? With few old donors, the effect of age is estimated mostly between 20 and 60 years,
+  and the slope model (Step 6) has little power.
+- Are sex and ancestry balanced? Ancestry is very unbalanced between SCZ and BD: it is a covariate of every model, and
+  the direct SCZ vs BD comparison must be presented with caution.
+:::
+
+**Which cell types are analysed.** The cell types retained in Q1. A donor's profile is used only if it was built from at
+least `r min_nuclei` nuclei, and a cell type is analysed only if at least `r min_donors` donors of **each** group have
+such a profile (shared rule).
+
+```{r units}
+celltype_table <- select_celltypes(filter(pb_desc, donor_id %in% donor_meta$donor_id),
+                                   cell_types, min_nuclei = min_nuclei, min_donors = min_donors)
+celltype_table
+analysis_units <- celltype_table$cell_type[celltype_table$kept]
+# Class of each cell type (EN_L6_IT_1 -> EN), used by signature_scope
+unit_class <- setNames(sub("_.*", "", analysis_units), analysis_units)
+```
+
+::: {.callout-tip title="How to read"}
+One row per cell type retained in Q1: number of donors of each group with a profile of at least `r min_nuclei` nuclei.
+`kept = FALSE`: not enough donors, the cell type is not analysed.
+:::
+
+# Step 2 – The signatures
+
+**What we do and why.** We load the published signatures listed in the overview. The lifespan signatures come from the
+PsychAD lifespan atlas [11], which studied the same brain region with the same technique: for each subclass, the genes
+that change with age **in adulthood** (age groups 20–39, 40–59 and ≥ 60 years; childhood excluded), split into genes
+that rise and genes that fall with age (see `01_DATA/genesets/README.md`).
+
+```{r signatures}
+# One file per signature; myelination is the GO term "ensheathment of neurons" (GO:0007272), which contains
+# myelination (GO:0042552)
+common_sets <- bind_rows(lapply(file.path(geneset_dir, signature_files), read_geneset_file))
+common_signatures <- term2gene_to_list(common_sets)
+short_names <- c(SAUL_SEN_MAYO = "SenMayo", SENMAYO = "SenMayo",
+                 HALLMARK_INFLAMMATORY_RESPONSE = "Inflammatory_Response",
+                 HALLMARK_TNFA_SIGNALING_VIA_NFKB = "TNFa_NFkB",
+                 HALLMARK_OXIDATIVE_PHOSPHORYLATION = "OxPhos",
+                 GOBP_ENSHEATHMENT_OF_NEURONS = "Myelination",
+                 GALATRO_AGING_UP = "Microglia_AgingUp", GALATRO_AGING_DOWN = "Microglia_AgingDown")
+names(common_signatures) <- ifelse(names(common_signatures) %in% names(short_names),
+                                   short_names[names(common_signatures)], names(common_signatures))
+
+# Lifespan atlas genes: gs_name AGING_UP_<cell type> / AGING_DOWN_<cell type>
+lifespan_sets <- read_geneset_file(lifespan_path)
+if (is.null(lifespan_sets)) cat("Note: lifespan file not found, the lifespan signatures are skipped.\n")
+
+# Signatures used for one analysis unit, following signature_scope
+signatures_for_unit <- function(unit) {
+  cl <- unit_class[[unit]]
+  in_scope <- function(sig) any(signature_scope[[sig]] %in% c("all", unit, cl))
+  sigs <- common_signatures[vapply(names(common_signatures), in_scope, logical(1))]
+  if (!is.null(lifespan_sets)) {
+    for (dir in c("UP", "DOWN")) {
+      # the lifespan atlas may be annotated at subclass or class level: try the unit first, then its class
+      for (key in c(unit, cl)) {
+        genes <- lifespan_sets$gene_symbol[lifespan_sets$gs_name == paste0("AGING_", dir, "_", key)]
+        if (length(genes) > 0) {
+          sigs[[paste0("Lifespan_Aging", ifelse(dir == "UP", "Up", "Down"))]] <- genes
+          break
+        }
+      }
+    }
+  }
+  sigs
+}
+
+# Coverage: how many genes of each signature are in our data?
+geneset_coverage(common_signatures, rownames(pb_counts))
+```
+
+::: {.callout-tip title="How to read"}
+`n_genes` = size of the signature; `n_present` = genes found in our data; `fraction_present` = their ratio. Missing genes
+are usually not expressed in the cortex.
+:::
+
+::: {.callout-important title="Interpretation [to fill]"}
+- Is every signature at least ~70 % covered? A poorly covered signature should be interpreted with caution or dropped.
+:::
+
+**Do the signatures overlap?** If two signatures share most of their genes, they are not independent evidence.
+
+```{r signature-overlap}
+sig_names <- names(common_signatures)
+expand.grid(sig_a = sig_names, sig_b = sig_names, stringsAsFactors = FALSE) |>
+  filter(sig_a < sig_b) |>
+  mutate(shared_genes = mapply(function(a, b) length(intersect(common_signatures[[a]], common_signatures[[b]])), sig_a, sig_b),
+         jaccard = mapply(function(a, b) {
+           ga <- common_signatures[[a]]; gb <- common_signatures[[b]]
+           round(length(intersect(ga, gb)) / length(union(ga, gb)), 2)
+         }, sig_a, sig_b)) |>
+  arrange(desc(jaccard))
+```
+
+::: {.callout-tip title="How to read"}
+One row per pair of signatures: number of shared genes and Jaccard index (shared genes / all genes of the two
+signatures; 0 = nothing in common, 1 = identical).
+:::
+
+::: {.callout-important title="Interpretation [to fill]"}
+- Do the inflammation signatures and SenMayo overlap strongly? If yes, a result found with all of them is less
+  independent than it looks: say so in the report.
+:::
+
+# Step 3 – Scores per donor and cell type
+
+**How a score is computed.** For one cell type, the pseudobulk profiles of all donors are log-normalised
+(`NormalizeData()`, as in the practicals). `AddModuleScore()` then takes, for each donor, the mean expression of the
+signature genes and subtracts the mean expression of random "control" genes with a similar expression level. A positive
+score means that the signature genes are higher than comparable genes in that donor's cells; using control genes of the
+same level removes the effect of sequencing depth.
+
+**Why one profile per donor.** Nuclei of the same donor are not independent: they share the donor's genetics, age,
+treatment and post-mortem conditions. Scoring nuclei and testing them as if they were independent would give many false
+positives (pseudoreplication, the same reason Q2 uses pseudobulk). The **donor** is the statistical unit: each donor has
+one profile per cell type (built from at least `r min_nuclei` nuclei), hence one score. Scores are then expressed as
+**z-scores relative to the controls** (1 unit = 1 standard deviation of the controls), so all scores are on the same
+scale. Summing nuclei gives slightly more weight to nuclei with many counts than averaging per-nucleus scores would;
+this is the standard pseudobulk approach. The effect of age on every gene in controls, used in Step 7, is computed in
+the same loop.
+
+```{r scoring, cache=TRUE, cache.extra=list(file.mtime(pseudobulk_path), file.mtime(geneset_dir), file.mtime(lifespan_path))}
+donor_scores_list <- list()
+age_fits          <- list()   # effect of age on all genes in controls, per cell type (Step 7)
+
+for (u in analysis_units) {
+  cols <- pb_desc$cell_type == u & pb_desc$n_nuclei >= min_nuclei & pb_desc$donor_id %in% donor_meta$donor_id
+  counts_u <- pb_counts[, cols, drop = FALSE]
+  donors_u <- pb_desc$donor_id[cols]
+
+  scores_u <- score_pseudobulk_celltype(counts_u, donors_u, signatures_for_unit(u),
+                                        seed = the.seed, min_genes = min_genes)
+  if (!is.null(scores_u)) {
+    donor_scores_list[[u]] <- scores_u |>
+      mutate(cell_type = u, n_nuclei = pb_desc$n_nuclei[cols][match(donor_id, donors_u)], .before = 1)
+  }
+  age_fits[[u]] <- age_effects_in_controls(counts_u, donors_u, donor_meta, covariates = covariates,
+                                           min_donors = min_donors)
+}
+
+donor_scores <- bind_rows(donor_scores_list) |>
+  left_join(donor_meta, by = "donor_id") |>
+  standardize_by_controls()
+
+# Signatures scored in each cell type, and number of donors
+donor_scores |>
+  group_by(cell_type) |>
+  summarise(n_donors   = n_distinct(donor_id),
+            signatures = paste(sort(unique(signature)), collapse = ", "), .groups = "drop")
+```
+
+::: {.callout-tip title="How to read"}
+For each cell type, the number of donors scored and the signatures scored, following `signature_scope`. A signature can
+be missing if fewer than `r min_genes` of its genes are in the data; the lifespan signatures exist only for the cell
+types of the lifespan atlas.
+:::
+
+# Step 4 – Which scores really follow age?
+
+**What we do and why.** A score is only an ageing measure if it changes with age in **healthy** donors. For each cell
+type and signature, we compute the Spearman correlation between the score and age in controls (rank-based, so robust to
+extreme values). A score is **validated** if this correlation is significant after correction; its **direction** is kept
+(+1 if it rises with age, −1 if it falls), so that every score can be read as "older-looking" afterwards.
+
+The lifespan atlas was built partly on HBCC controls, very probably ours [11]: its signatures are expected to follow age
+in our controls. This is not independent evidence, but it is not a problem for the question, which compares
+**patients** with controls.
+
+```{r validation}
+validation <- validate_in_controls(donor_scores, min_donors = min_donors)
+write.csv(validation, file.path(out_dir, "validation_controls.csv"), row.names = FALSE)
+
+valid_pairs <- validation |>
+  filter(p_adj < alpha) |>
+  transmute(cell_type, signature, age_direction = sign(rho))
+validation |> mutate(rho = round(rho, 2), validated = p_adj < alpha)
+```
+
+```{r fig-F01, fig.width=9, fig.height=5}
+p_F01 <- ggplot(validation, aes(signature, cell_type, fill = rho)) +
+  geom_tile(colour = "white") +
+  geom_text(aes(label = ifelse(p_adj < alpha, "*", "")), size = 6, vjust = 0.75) +
+  scale_fill_shift(1, "Spearman rho\n(score vs age)") +
+  labs(x = "Signature", y = "Cell type",
+       title = "Correlation of each ageing score with age in controls",
+       subtitle = paste0("Control donors only; * adjusted p < ", alpha, " (validated score). Grey cell: signature not tested there"),
+       caption = "Orange: the score rises with age; purple: it decreases with age.") +
+  theme_project() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1), panel.grid = element_blank(), legend.position = "right",
+        panel.background = element_rect(fill = "grey90"))
+p_F01
+save_figure(p_F01, "Q5_F01_validation_controls", fig_dir, width = 9, height = 5)
+```
+
+**Figure Q5-F01 – Validation of the ageing scores in controls.** Spearman correlation between each signature score
+(pseudobulk profile of the donor, z-score) and age at death, in control donors, per cell type. \* Benjamini–Hochberg adjusted p < 0.05.
+Signatures are only tested in the cell types where they are biologically relevant (grey cells: not tested).
+
+::: {.callout-tip title="How to read"}
+Each cell is a score in a cell type. Orange = the score rises with age, purple = it falls with age, white = no link with
+age. Only cells with a star are used as ageing measures in the rest of the notebook.
+:::
+
+::: {.callout-important title="Interpretation [to fill]"}
+- Which scores are validated? We expect senescence and inflammation to rise in microglia, and myelination to fall in
+  oligodendrocytes.
+- Does OxPhos fall with age in neurons, as expected from mitochondrial decline?
+- A cell type with no validated score cannot be tested for an ageing-like profile.
+:::
+
+# Step 5 – The ageing index of each cell type
+
+**What we do and why.** Rather than testing every signature separately, we summarise each cell type by one **ageing
+index**: the mean of its validated scores, each one oriented so that higher always means older-looking (a falling score,
+such as myelination, is multiplied by −1). The index is then re-expressed as a z-score relative to the controls. It is
+the **main test** of this notebook: one index per cell type, so few tests and a light multiple-testing correction. The
+individual signatures are kept as a detailed analysis, to see which hallmark drives an effect. The index is chosen on
+controls only and never looks at the diagnosis, so it does not favour a difference between patients and controls.
+
+```{r aging-index}
+donor_scores <- add_aging_index(donor_scores, valid_pairs)
+write.csv(donor_scores, file.path(out_dir, "donor_scores.csv"), row.names = FALSE)
+
+# Components of the index in each cell type
+valid_pairs |>
+  mutate(component = paste0(signature, ifelse(age_direction > 0, " (+)", " (-)"))) |>
+  group_by(cell_type) |>
+  summarise(n_signatures = n(), index_components = paste(component, collapse = ", "), .groups = "drop")
+```
+
+::: {.callout-tip title="How to read"}
+For each cell type, the validated signatures averaged into its ageing index. `(+)` = rises with age, `(-)` = falls with
+age and is inverted in the index. Cell types without any validated signature have no index.
+:::
+
+# Step 6 – Do patients look older than controls of the same age?
+
+## Two patterns, and the apparent age gap
+
+**What we do and why.** An ageing-like profile can take two forms, tested with two linear models (one per cell type):
+
+| Model | Formula | What is tested | Meaning if significant |
+|-------|---------|----------------|------------------------|
+| **Offset** | `score ~ age + diagnosis + sex + ancestry` | `diagnosis` | patients look older than controls **of the same age**, at every age |
+| **Slope** | `score ~ age * diagnosis + sex + ancestry` | `age:diagnosis` | the score changes **faster with age** in patients |
+
+Putting age in the model compares patients and controls **of the same age**. For each model we test SCZ vs controls, BD
+vs controls, and **SCZ vs BD directly** (difference of the two effects in the same model): an effect seen in one
+disease only is called specific only if the direct test is significant.
+
+**Apparent age gap.** In the offset model, the disease effect divided by the effect of one year of age gives how many
+**years** older (or younger) patients look than controls of the same age, with a 95 % confidence interval (delta
+method). It is only meaningful for scores that follow age clearly in controls, which is the case of the ageing index by
+construction.
+
+```{r fig-F02, fig.width=9, fig.height=4}
+concept <- expand.grid(age = seq(20, 90, 5), group = c("Controls", "Patients"),
+                       model = c("Offset: older at every age", "Slope: faster change with age"))
+concept$score <- with(concept, 0.03 * (age - 20) +
+  ifelse(group == "Patients" & model == "Offset: older at every age", 0.6, 0) +
+  ifelse(group == "Patients" & model == "Slope: faster change with age", 0.02 * (age - 20), 0))
+
+p_F02 <- ggplot(concept, aes(age, score, colour = group)) +
+  geom_line(linewidth = 1.2) +
+  geom_segment(data = data.frame(model = factor("Offset: older at every age", levels = levels(concept$model))),
+               aes(x = 40, xend = 60, y = 1.2, yend = 1.2), inherit.aes = FALSE,
+               linetype = "dotted", colour = "grey30", linewidth = 0.8) +
+  facet_wrap(~ model) +
+  scale_colour_manual(values = c(Controls = "grey40", Patients = "#a88600"), name = NULL) +
+  labs(x = "Age at death (years)", y = "Ageing score",
+       title = "Two patterns of an ageing-like profile",
+       subtitle = "Schematic illustration (invented data)",
+       caption = "Offset: a 40-year-old patient has the score of a 60-year-old control (dotted line = apparent age gap of 20 years).") +
+  theme_project()
+p_F02
+save_figure(p_F02, "Q5_F02_offset_slope_schema", fig_dir, width = 9, height = 4)
+```
+
+**Figure Q5-F02 – Two patterns of an ageing-like profile (schematic).** Offset model (left): patients have a higher
+ageing score than controls of the same age, at every age; the horizontal distance between the two lines is the apparent
+age gap. Slope model (right): the score rises faster with age in patients. Invented data.
+
+```{r models}
+model_data <- donor_scores |>
+  filter(!is.na(score_z)) |>
+  mutate(sex = factor(sex), ancestry = factor(ancestry))
+
+models <- fit_disease_models(model_data, covariates = covariates, min_donors_per_group = min_donors) |>
+  adjust_by_family() |>
+  left_join(valid_pairs, by = c("cell_type", "signature")) |>
+  mutate(validated = signature == "Ageing_index" | !is.na(age_direction),
+         age_direction = ifelse(signature == "Ageing_index", 1, coalesce(age_direction, 1)),
+         # > 0 = shifted towards an older profile (for SCZ vs BD: SCZ older-looking than BD)
+         aging_shift = estimate * age_direction,
+         lower = pmin(estimate - 1.96 * std_error, estimate + 1.96 * std_error) * age_direction,
+         upper = pmax(estimate - 1.96 * std_error, estimate + 1.96 * std_error) * age_direction,
+         years_lower = years - 1.96 * years_se,
+         years_upper = years + 1.96 * years_se,
+         comparison = factor(comparison, levels = c("SCZ", "BD", "SCZ_vs_BD")))
+write.csv(models, file.path(out_dir, "disease_models.csv"), row.names = FALSE)
+
+# Main test: ageing index, offset model
+models |>
+  filter(signature == "Ageing_index", model == "offset") |>
+  select(cell_type, comparison, n_CTRL, n_SCZ, n_BD, aging_shift, years, years_lower, years_upper, p_adj) |>
+  mutate(across(c(aging_shift, years, years_lower, years_upper), ~ round(.x, 1)))
+```
+
+::: {.callout-tip title="How to read"}
+Main test: one row per cell type and comparison. `aging_shift` = difference between patients and controls of the same
+age, in control standard deviations; `years` = the same difference expressed as an apparent age gap, with its 95 %
+confidence interval (`years_lower`, `years_upper`); `p_adj` = adjusted p-value. For `SCZ_vs_BD`, positive values mean SCZ
+looks older than BD.
+:::
+
+## The main result: the ageing index
+
+```{r fig-F03, fig.width=10, fig.height=4.5}
+index_data <- model_data |>
+  filter(signature == "Ageing_index", cell_type %in% key_celltypes)
+
+if (nrow(index_data) > 0) {
+  p_F03 <- ggplot(index_data, aes(age, score_z, colour = diagnosis)) +
+    geom_point(alpha = 0.7, size = 1.8) +
+    geom_smooth(method = "lm", se = FALSE, formula = y ~ x, linewidth = 1) +
+    facet_wrap(~ cell_type) +
+    scale_colour_manual(values = col_dx, name = NULL) +
+    labs(x = "Age at death (years)", y = "Ageing index\n(z-score vs controls)",
+         title = "Ageing index versus age, per group",
+         subtitle = "One dot per donor; lines = linear fit per group",
+         caption = "Higher index = older-looking profile. Raw fits, not adjusted for sex and ancestry (the models are).") +
+    theme_project()
+  print(p_F03)
+  save_figure(p_F03, "Q5_F03_index_vs_age", fig_dir, width = 10, height = 4.5)
+}
+```
+
+**Figure Q5-F03 – Ageing index versus age in key cell types.** Ageing index (mean of the validated ageing scores of the
+cell type, oriented towards an older profile, z-score relative to controls) as a function of age at death, for controls
+(grey), SCZ (blue) and BD (red). Each dot is a donor; lines are linear fits per group.
+
+::: {.callout-tip title="How to read"}
+In controls, the grey line goes up: this is what "ageing index" means. A coloured line **above and parallel** to the
+grey one means patients look older at every age (offset); a **steeper** coloured line means a faster change with age
+(slope).
+:::
+
+::: {.callout-important title="Interpretation [to fill]"}
+- Which pattern (offset, slope, none) do we see for SCZ and BD in each cell type?
+- Are a few extreme donors driving the lines? If so, mention it.
+:::
+
+```{r fig-F04, fig.width=10, fig.height=6}
+forest <- models |>
+  filter(signature == "Ageing_index", model == "offset")
+
+if (nrow(forest) > 0) {
+  direct_lab <- forest |>
+    filter(comparison == "SCZ_vs_BD") |>
+    mutate(label = paste0("SCZ vs BD: ", sprintf("%+.1f", years), " y, adj. p = ", signif(p_adj, 2)))
+  x_text <- max(forest$years_upper[forest$comparison != "SCZ_vs_BD"], na.rm = TRUE) + 1
+
+  p_F04 <- forest |>
+    filter(comparison != "SCZ_vs_BD") |>
+    ggplot(aes(years, cell_type, colour = comparison, group = comparison)) +
+    geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+    geom_errorbar(aes(xmin = years_lower, xmax = years_upper), width = 0.25, orientation = "y",
+                  position = position_dodge(width = 0.6)) +
+    geom_point(aes(shape = p_adj < alpha), size = 3, position = position_dodge(width = 0.6)) +
+    geom_text(data = direct_lab, aes(x = x_text, y = cell_type, label = label),
+              inherit.aes = FALSE, hjust = 0, size = 3.2, colour = "grey25") +
+    scale_colour_manual(values = c(SCZ = col_disease[["SCZ"]], BD = col_disease[["BD"]]),
+                        labels = lab_dx, name = NULL) +
+    scale_shape_manual(values = c(`FALSE` = 1, `TRUE` = 16),
+                       labels = c(`FALSE` = "not significant", `TRUE` = paste0("adjusted p < ", alpha)), name = NULL) +
+    scale_x_continuous(expand = expansion(mult = c(0.05, 0.45))) +
+    labs(x = "Apparent age gap vs controls of the same age (years, 95% CI)",
+         y = "Cell type",
+         title = "Apparent age gap of the ageing index in patients",
+         subtitle = "Offset model adjusted for age, sex and ancestry; right: direct SCZ vs BD comparison",
+         caption = "Right of the dashed line: patients look older than controls of the same age. 'SCZ vs BD' > 0: SCZ older-looking than BD.") +
+    theme_project()
+  print(p_F04)
+  save_figure(p_F04, "Q5_F04_index_forest", fig_dir, width = 10, height = 6)
+}
+```
+
+**Figure Q5-F04 – Apparent age gap of SCZ and BD patients compared with controls of the same age.** Difference in
+ageing index between patients and controls (offset linear model adjusted for age, sex and genetic ancestry), expressed in years of
+age (disease effect divided by the effect of one year of age, 95 % confidence interval by the delta method), for SCZ
+(blue) and BD (red), in the cell types that have at least one validated ageing score. Filled dots: Benjamini–Hochberg
+adjusted p < 0.05. The text on the right gives the direct SCZ vs BD comparison.
+
+::: {.callout-tip title="How to read"}
+One line per cell type. A dot at +10 means patients look 10 years older than controls of the same age; the bar is the
+uncertainty. Filled dots are significant. The text on the right says whether SCZ and BD differ from each other: only then
+can an effect be called specific to one disease.
+:::
+
+::: {.callout-important title="Interpretation [to fill]"}
+- In which cell types do SCZ and BD look older, and by how many years?
+- Is the effect shared (both filled, same side) or specific (only one filled **and** a significant direct test)?
+- A wide bar that crosses 0 means "no conclusion" (not enough donors), not "no ageing-like profile".
+:::
+
+## Which hallmark drives the effect?
+
+**What we do and why.** For the cell types where the index shifts, the individual signatures show which hallmark
+(senescence, inflammation, mitochondria, myelin...) carries the effect. These are secondary tests, corrected separately.
+
+```{r fig-F05, fig.width=11, fig.height=5}
+detail <- models |>
+  filter(signature != "Ageing_index", model == "offset") |>
+  mutate(label = case_when(p_adj < alpha & validated ~ "*",
+                           p_adj < alpha ~ "+",
+                           TRUE ~ ""))
+
+if (nrow(detail) > 0) {
+  lim_d <- max(abs(detail$aging_shift), na.rm = TRUE)
+  p_F05 <- ggplot(detail, aes(signature, cell_type, fill = aging_shift)) +
+    geom_tile(colour = "white") +
+    geom_text(aes(label = label), size = 5, vjust = 0.75) +
+    facet_wrap(~ comparison, labeller = as_labeller(lab_dx)) +
+    scale_fill_shift(lim_d, "Shift towards\nolder profile\n(control SD)") +
+    labs(x = "Signature", y = "Cell type",
+         title = "Ageing shift of each signature in patients",
+         subtitle = paste0("Offset model; * adjusted p < ", alpha, " and score validated in controls; + adjusted p < ", alpha, " only"),
+         caption = "Orange: older-looking (right panel: SCZ older-looking than BD). Grey cell: signature not tested there.") +
+    theme_project() +
+    theme(axis.text.x = element_text(angle = 30, hjust = 1), panel.grid = element_blank(), legend.position = "right",
+          panel.background = element_rect(fill = "grey90"))
+  print(p_F05)
+  save_figure(p_F05, "Q5_F05_signatures_heatmap", fig_dir, width = 11, height = 5)
+}
+```
+
+**Figure Q5-F05 – Ageing shift of each signature.** Difference between patients and controls of the same age (offset
+linear model adjusted for sex and genetic ancestry), oriented so that positive values mean an older-looking profile, for each
+signature and cell type, in SCZ, BD and SCZ vs BD. \* Benjamini–Hochberg adjusted p < 0.05 and score validated in
+controls; + adjusted p < 0.05 for a score that does not follow age in controls. Grey cells: signature not tested in
+that cell type.
+
+::: {.callout-tip title="How to read"}
+Each cell is one signature in one cell type. Orange = patients look older on that hallmark. A star means the hallmark is
+a validated ageing measure **and** the effect is significant: evidence for H3. A `+` means a significant disease effect on
+a process that does not follow age in controls: interesting, but not an ageing-like effect.
+:::
+
+::: {.callout-important title="Interpretation [to fill]"}
+- In the cell types where the index shifts (F04), which hallmarks carry the effect?
+- If only the inflammation signatures move, it is an inflammatory effect of the disease (or of treatments), rather than
+  a broad ageing-like profile: Step 7 helps to tell the two apart.
+:::
+
+## Do patients change faster with age? (slope model)
+
+```{r slope}
+models |>
+  filter(model == "slope", signature == "Ageing_index") |>
+  select(cell_type, comparison, aging_shift, lower, upper, p_adj) |>
+  mutate(across(c(aging_shift, lower, upper), ~ round(.x, 3)))
+```
+
+::: {.callout-tip title="How to read"}
+`aging_shift` is here the **extra change of the index per year of age** in patients compared with controls (for
+`SCZ_vs_BD`: in SCZ compared with BD). Detecting a difference of slope needs many donors across a wide age range, so
+this test is often not significant; it is reported as a table, and as a figure only if a result is found.
+:::
+
+::: {.callout-important title="Interpretation [to fill]"}
+- An offset without a slope effect means patients look older at every age, without diverging further with age.
+:::
+
+# Step 7 – Are the genes changed by the disease the genes changed by age?
+
+**What we do and why.** The scores look at chosen gene lists. This test, close to the approach of [5], looks at
+**all genes**, without any list: in each
+cell type, it compares the effect of age on each gene (in controls) with the effect of the disease on the same gene (Q2,
+DESeq2 Wald statistic). If the genes that rise with age also rise in the disease, and the genes that fall with age also
+fall, the correlation is positive: the disease profile **resembles** the ageing profile. It helps to tell a broad
+ageing-like profile (high correlation) from a targeted effect, for example on inflammation only (low correlation).
+
+**How.** The effect of age is a linear model per gene on the pseudobulk of the controls (`expression ~ age + sex + ancestry`),
+fitted for all genes at once. The Spearman correlation with the Q2 statistic is computed over all genes tested in both.
+To know which correlations can arise by chance, the ages of the controls are shuffled `r n_perm` times (permutation test).
+This needs the Q2 cell types to have the same names as the subclasses of the preprocessing.
+
+```{r concordance, cache=TRUE, cache.extra=list(file.mtime(pseudobulk_path), file.mtime(de_path))}
+concordance <- NULL
+if (file.exists(de_path)) {
+  de <- read.csv(de_path)
+  concordance <- bind_rows(lapply(names(age_fits), function(u) {
+    if (is.null(age_fits[[u]])) return(NULL)
+    bind_rows(lapply(c(SCZ = "SCZ_vs_CTRL", BD = "BD_vs_CTRL"), function(co) {
+      d <- de[de$cell_type == u & de$contrast == co & !is.na(de$stat), ]
+      if (nrow(d) == 0) return(NULL)
+      res <- age_disease_concordance(age_fits[[u]], setNames(d$stat, d$gene), n_perm = n_perm, seed = the.seed)
+      if (is.null(res)) return(NULL)
+      cbind(cell_type = u, comparison = sub("_vs_CTRL", "", co), res)
+    }))
+  }))
+  if (nrow(concordance) > 0) {
+    concordance$p_adj <- p.adjust(concordance$p_perm, method = "BH")
+    write.csv(concordance, file.path(out_dir, "age_disease_concordance.csv"), row.names = FALSE)
+  } else {
+    cat("Note: no cell type in common between Q2 and Q5: the concordance test is skipped.\n")
+  }
+} else {
+  cat("Note: Q2 table not found, the concordance test is skipped.\n")
+}
+if (!is.null(concordance) && nrow(concordance) > 0) mutate(concordance, across(c(rho, null_low, null_high), ~ round(.x, 3)))
+```
+
+```{r fig-F06, fig.width=9, fig.height=5}
+if (!is.null(concordance) && nrow(concordance) > 0) {
+  p_F06 <- concordance |>
+    mutate(comparison = factor(comparison, levels = c("SCZ", "BD"))) |>
+    ggplot(aes(rho, cell_type, colour = comparison, group = comparison)) +
+    geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+    geom_errorbar(aes(xmin = null_low, xmax = null_high), width = 0.3, orientation = "y", colour = "grey70",
+                  position = position_dodge(width = 0.6)) +
+    geom_point(aes(shape = p_adj < alpha), size = 3, position = position_dodge(width = 0.6)) +
+    scale_colour_manual(values = c(SCZ = col_disease[["SCZ"]], BD = col_disease[["BD"]]),
+                        labels = lab_dx, name = NULL) +
+    scale_shape_manual(values = c(`FALSE` = 1, `TRUE` = 16),
+                       labels = c(`FALSE` = "not significant", `TRUE` = paste0("adjusted p < ", alpha)), name = NULL) +
+    labs(x = "Correlation between the age effect and the disease effect\n(Spearman rho, all genes)",
+         y = "Cell type",
+         title = "Concordance between the effects of age and of the disease on all genes",
+         subtitle = paste0("Age effect in controls vs disease effect (Q2); grey bar: range expected by chance (", n_perm, " permutations)"),
+         caption = "Positive: the genes changed by the disease change in the same direction as with age.") +
+    theme_project()
+  print(p_F06)
+  save_figure(p_F06, "Q5_F06_age_disease_concordance", fig_dir, width = 9, height = 5)
+}
+```
+
+**Figure Q5-F06 – Concordance between the effects of age and of the disease on gene expression.** For each cell type,
+Spearman correlation, over all genes tested in both analyses, between the effect of age in controls (t statistic of age
+in a pseudobulk linear model adjusted for sex and genetic ancestry) and the effect of the disease (DESeq2 Wald statistic, Q2), for
+SCZ (blue) and BD (red). Grey bars: 95 % range of the correlation expected by chance (ages permuted among controls).
+Filled dots: Benjamini–Hochberg adjusted permutation p < 0.05.
+
+::: {.callout-tip title="How to read"}
+A dot to the right of the grey bar means that the disease moves genes in the same direction as age, more than expected
+by chance: the disease profile resembles the ageing profile in that cell type. A dot inside the grey bar means no such
+resemblance.
+:::
+
+::: {.callout-important title="Interpretation [to fill]"}
+- In which cell types is the concordance positive? Are they the same as in F04? Agreement between the two approaches is
+  the strongest argument for an ageing-like profile.
+- Is the concordance similar in SCZ and BD (shared) or only in one disease?
+:::
+
+## Complementary test: do age and disease change the same genes? (Fisher)
+
+**What we do and why.** The correlation above uses all genes, without any threshold. Here we ask a simpler question,
+as in [5]: among the genes **significantly** changed, are the genes changed with age and the genes changed in the disease
+the **same genes**, more often than by chance? The answer is a count (for example "120 genes in common, 3 times more than
+expected"), easy to report in the text and on a slide.
+
+**How.** In each cell type, every gene tested in both analyses is placed in a 2 × 2 table:
+
+| | changed in the disease (Q2, adjusted p < `r alpha`) | not changed |
+|---|---|---|
+| **changed with age** (controls, adjusted p < `r alpha`) | a | b |
+| **not changed with age** | c | d |
+
+- The **Fisher exact test** (one-sided) asks whether box *a* is larger than expected by chance. It compares counts in a
+  table, not means; it is exact, so it stays valid when a box contains few genes. The **odds ratio** gives the size of
+  the effect: 1 = overlap expected by chance, 3 = three times more overlap than by chance.
+- Among the genes of box *a*, a **binomial test** checks whether more than half change **in the same direction** with
+  age and with the disease (50 % = chance). An overlap in opposite directions would not mean an ageing-like profile.
+
+**Why it does not replace the correlation.** The Fisher test assumes that genes are independent, which is not true
+(genes of the same pathway change together): its p-values are therefore optimistic. It also depends on the thresholds.
+The correlation with permutations (F06) keeps the correlation between genes and stays the main test; the Fisher test
+backs it up with a readable count.
+
+```{r overlap, cache=TRUE, cache.extra=list(file.mtime(pseudobulk_path), file.mtime(de_path))}
+overlap <- NULL
+if (file.exists(de_path)) {
+  overlap <- bind_rows(lapply(names(age_fits), function(u) {
+    if (is.null(age_fits[[u]])) return(NULL)
+    bind_rows(lapply(c(SCZ = "SCZ_vs_CTRL", BD = "BD_vs_CTRL"), function(co) {
+      d <- de[de$cell_type == u & de$contrast == co, ]
+      if (nrow(d) == 0) return(NULL)
+      res <- age_disease_overlap(age_fits[[u]], setNames(d$stat, d$gene), setNames(d$padj, d$gene), alpha = alpha)
+      if (is.null(res)) return(NULL)
+      cbind(cell_type = u, comparison = sub("_vs_CTRL", "", co), res)
+    }))
+  }))
+  if (nrow(overlap) > 0) {
+    overlap$p_adj_fisher    <- p.adjust(overlap$p_fisher, method = "BH")
+    overlap$p_adj_direction <- p.adjust(overlap$p_direction, method = "BH")
+    write.csv(overlap, file.path(out_dir, "age_disease_overlap_fisher.csv"), row.names = FALSE)
+    overlap |>
+      transmute(cell_type, comparison, n_age, n_disease, n_both, expected_both,
+                odds_ratio = round(odds_ratio, 2), p_adj_fisher = signif(p_adj_fisher, 2),
+                pct_same_direction, p_adj_direction = signif(p_adj_direction, 2))
+  }
+}
+```
+
+**Table – Overlap between age-associated and disease-associated genes.** `n_age`, `n_disease`: genes significant with
+age in controls and in the disease (Q2); `n_both`: genes significant in both; `expected_both`: number expected by
+chance; `odds_ratio` and `p_adj_fisher`: one-sided Fisher exact test; `pct_same_direction` and `p_adj_direction`:
+percentage of common genes changed in the same direction, binomial test against 50 %. Benjamini–Hochberg correction
+over cell types and diseases. If very few genes are significant with age (few controls), the test has little power:
+a non-significant result then means "not testable", not "no overlap".
+
+::: {.callout-important title="Interpretation [to fill]"}
+- In which cell types is the overlap larger than expected (odds ratio > 1, adjusted p < 0.05)? Are they the cell types
+  with a positive correlation in F06?
+- Do most common genes change in the same direction? For comparison, more than 75 % did in [5].
+:::
+
+# Synthesis: answer to Q5
+
+**Decision grid.** We speak of an **accelerated-ageing-like profile** in a cell type only if: (1) at least one score
+follows age in controls (F01); (2) the ageing index of patients is shifted towards an older profile at equal age (F04);
+(3) the shift is carried by more than the inflammation signatures alone (F05); (4) the concordance test is positive in
+the same cell type (F06), backed by the overlap of significant genes in the same direction (Fisher table). A specific effect also needs a significant direct SCZ vs BD test.
+
+::: {.callout-important title="Summary table [to fill after the analysis]"}
+| Element | Result | Figure |
+|---------|--------|--------|
+| Scores that follow age in controls (cell types) | | F01 |
+| Cell types older-looking in SCZ, apparent age gap (years) | | F03, F04 |
+| Cell types older-looking in BD, apparent age gap (years) | | F03, F04 |
+| Shared or specific (direct SCZ vs BD test) | | F04 |
+| Hallmarks driving the effect | | F05 |
+| Concordance of disease and age effects (all genes) | | F06 |
+| Overlap of significant genes, same direction (Fisher) | | table, Step 7 |
+| Faster change with age (slope)? | | table |
+| **Is H3 supported, according to the decision grid?** | | |
+:::
+
+**Links with the other questions.**
+
+- **Q3**: inflammation, mitochondrial and myelination pathways found in Q3 should be consistent with the scores here.
+  Q3 compares patients and controls; Q5 adds the **age** dimension.
+- **Q4**: altered intercellular communication is also a hallmark of ageing [1]; Q4 can compare young and old controls.
+- **Q1**: a change in the proportion of a cell type can be linked to its ageing index.
+
+# Limits to discuss in the report
+
+- **Cross-sectional design.** Each donor is seen once: an ageing-like profile is inferred between donors, not followed
+  over time.
+- **Not a proof of ageing.** A profile that resembles ageing can have other causes; we only describe a resemblance.
+- **Treatments and metabolic disorders.** Antipsychotics, lithium and smoking change inflammation, metabolic and myelin
+  genes. Donors with metabolic disorders (for example diabetes) are kept, as in Lee et al. [12]; these disorders are more
+  frequent in patients (partly because of antipsychotics), and are themselves associated with accelerated ageing. If the
+  information is in the metadata, a sensitivity analysis without these donors should be run; otherwise it is a limit.
+  In HBCC, diabetes is more frequent in SCZ (27 %) than in controls (7 %) and BD (9 %), and tardive dyskinesia (a
+  side effect of long antipsychotic treatment) concerns 24 % of SCZ donors (preprocessing, Table 1).
+- **Genetic ancestry.** Ancestry is strongly linked to the diagnosis (most BD donors are of European ancestry, most SCZ
+  donors of African ancestry). It is a covariate of every model, but a residual confounding cannot be excluded, mainly
+  for the direct SCZ vs BD comparison.
+- **No post-mortem interval.** The PMI is not available in the data and is not in the models.
+- **Few old donors.** Only about 36 donors are 60 or older: the effect of age is estimated mostly before 60, and the
+  slope model has little power.
+- **Survival bias and cause of death.** Patients die younger on average; the cause of death (for example suicide) can
+  affect the brain transcriptome.
+- **Lifespan signatures and our controls.** The lifespan atlas was built partly on HBCC controls [11], so these
+  signatures are not independent of our controls.
+- **Power.** With few donors per group in some cell types, the absence of an effect is not evidence of no effect; the
+  direct SCZ vs BD test has even less power.
+- **Choice of signatures.** We kept a few well-established hallmarks; others (oxidative stress, NAD+ and sirtuins,
+  proteostasis and autophagy, nutrient sensing) were not tested.
+
+**Perspective.** If an ageing-like profile driven by senescence or inflammaging were confirmed in some cell types, these
+processes are already explored as therapeutic targets in other age-related diseases: senolytics, which remove senescent
+cells, and senomorphics, which reduce their inflammatory secretions [13].
+
+# List of figures
+
+Figures are saved as `.png` in `04_FIGURES/Q5/`. Checks and intermediate results (donors, analysis units,
+coverage and overlap of the signatures, components of the index, slope model) are tables. The proposed placement
+follows the logic of a scientific article: **main** figures answer the question and test the hypothesis (slides and
+report); **supplementary** figures support them (appendix). To be confirmed with the real results.
+
+| Figure | File | What it shows | Why we need it | Proposed placement |
+|--------|------|---------------|----------------|--------------------|
+| F01 | `Q5_F01_validation_controls` | correlation of each score with age in controls | proves that our scores measure ageing (validity of the method) | Supplementary (cited in the main text) |
+| F02 | `Q5_F02_offset_slope_schema` | the two patterns and the apparent age gap | explains the models before the results | Methods slide; appendix in the report |
+| F03 | `Q5_F03_index_vs_age` | ageing index vs age per group, key cell types | the most intuitive view of the result | **Main** |
+| F04 | `Q5_F04_index_forest` | apparent age gap of SCZ and BD per cell type, with the direct SCZ vs BD test | **main test of H3** | **Main** |
+| F05 | `Q5_F05_signatures_heatmap` | ageing shift of each signature | which hallmark drives the effect | Supplementary (main in the report if the result is clear) |
+| F06 | `Q5_F06_age_disease_concordance` | concordance of the age and disease effects on all genes | independent confirmation, without gene lists | **Main** in the report; slide if the result is clear |
+
+For the slides (1–2 per question): F04, and F03 or F06. For the report: F03, F04 and F06 in the main text; F01, F02 and
+F05 in the appendix.
+
+```{r figure-files}
+sort(list.files(fig_dir, pattern = "^Q5_F.*\\.png$"))
+```
+
+# References
+
+1. López-Otín C., Blasco M. A., Partridge L., Serrano M., Kroemer G. (2023). Hallmarks of aging: an expanding
+   universe. *Cell*, 186, 243–278.
+2. Mattson M. P., Arumugam T. V. (2018). Hallmarks of brain aging: adaptive and pathological modification by
+   metabolic states. *Cell Metabolism*, 27, 1176–1199.
+3. Kaufmann T. et al. (2019). Common brain disorders are associated with heritable patterns of apparent aging of the
+   brain. *Nature Neuroscience*, 22, 1617–1623.
+4. McKinney B. C. et al. (2017). DNA methylation evidence against the accelerated aging hypothesis of schizophrenia.
+   *npj Schizophrenia*, 3, 13.
+5. Fröhlich A. S. et al. (2024). Single-nucleus transcriptomic profiling of human orbitofrontal cortex reveals
+   convergent effects of aging and psychiatric disease. *Nature Neuroscience*, 27, 2021–2032.
+6. Hao Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis (Seurat v5).
+   *Nature Biotechnology*, 42, 293–304.
+7. Saul D. et al. (2022). A new gene set identifies senescent cells and predicts senescence-associated pathways across
+   tissues. *Nature Communications*, 13, 4827.
+8. Liberzon A. et al. (2015). The Molecular Signatures Database hallmark gene set collection. *Cell Systems*, 1,
+   417–425.
+9. Galatro T. F. et al. (2017). Transcriptomic analysis of purified human cortical microglia reveals age-associated
+   changes. *Nature Neuroscience*, 20, 1162–1171.
+10. The Gene Ontology Consortium (2023). The Gene Ontology knowledgebase in 2023. *Genetics*, 224, iyad031.
+11. Yang H., Clarence T., Scott M. R. et al. (2026). Lifespan single-cell transcriptomic atlas of the human prefrontal
+    cortex. *Nature*, 657, 1003–1015. doi:10.1038/s41586-026-10271-7 (preprint: medRxiv 10.1101/2024.11.06.24316592)
+12. Lee D. et al. (2026). Single-cell atlas of transcriptomic vulnerability across brain disorders. *Nature*, 657,
+    988–1002.
+13. Gonzales M. M. et al. (2023). Senolytic therapy in mild Alzheimer's disease: a phase 1 feasibility trial. *Nature
+    Medicine*, 29, 2481–2488.
+14. Ling E. et al. (2024). A concerted neuron–astrocyte program declines in ageing and schizophrenia. *Nature*, 627,
+    604–611.
+
+# Session info
+
+```{r session-info}
+sessionInfo()
+```
