@@ -122,7 +122,7 @@ The goal is to identify **accelerated-aging-like transcriptional profiles**, wit
 ## 5. Repository Structure
 
 ```text
-PsychAD_Project/
+UMBIS01_Project/
 │
 ├── 01_DATA/
 │   └── Data references, metadata and gene sets
