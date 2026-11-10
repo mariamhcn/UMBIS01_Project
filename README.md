@@ -18,12 +18,13 @@ The project combines differential gene expression, functional enrichment, cell�
 
 ## 2. Dataset
 
-**Source:** PsychAD — Human Prefrontal Cortex Single-Cell Atlas  
-**Cohort:** HBCC  
-**Brain region:** Dorsolateral prefrontal cortex (DLPFC)  
+**Source:** PsychAD — Human Prefrontal Cortex Single-Cell Atlas
+**Cohort:** HBCC
+**Brain region:** Dorsolateral prefrontal cortex (DLPFC)
 **Technology:** Single-nucleus RNA sequencing (snRNA-seq)
 
 **Disease groups:**
+
 - Control donors
 - Schizophrenia (SCZ)
 - Bipolar disorder (BD)
@@ -40,20 +41,20 @@ Age-threshold sensitivity analyses (≥17 and ≥24 years) are planned to evalua
 
 The final donor counts and eligibility criteria will be documented after dataset preprocessing.
 
-**Dataset access:**  
+**Dataset access:**
 https://cellxgene.cziscience.com/collections/84ce6837-548d-4a1f-919f-0bc0d9a3952f
 
 ## 3. Scientific Objectives
 
 The project is organized around five complementary research questions.
 
-| Question | Objective | Main methods |
-|---|---|---|
-| Q1 — Cellular alterations | Identify neuronal and glial populations showing disease-associated changes | Cell-type composition, donor-level proportions |
-| Q2 — Differential expression | Identify shared and disease-associated transcriptional signatures | Pseudobulk, DESeq2 |
-| Q3 — Functional convergence | Determine whether distinct gene signatures converge on common biological pathways | GSEA, ORA, clusterProfiler |
-| Q4 — Cell–cell communication | Investigate changes in predicted neuronal–glial signaling networks | CellChat v2 |
-| Q5 — Transcriptomic aging | Assess whether disease-associated expression profiles resemble age-related molecular changes | Gene signature scoring, donor-level regression |
+| Question                       | Objective                                                                                    | Main methods                                   |
+| ------------------------------ | -------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Q1 — Cellular alterations     | Identify neuronal and glial populations showing disease-associated changes                   | Cell-type composition, donor-level proportions |
+| Q2 — Differential expression  | Identify shared and disease-associated transcriptional signatures                            | Pseudobulk, DESeq2                             |
+| Q3 — Functional convergence   | Determine whether distinct gene signatures converge on common biological pathways            | GSEA, ORA, clusterProfiler                     |
+| Q4 — Cell–cell communication | Investigate changes in predicted neuronal–glial signaling networks                          | CellChat v2                                    |
+| Q5 — Transcriptomic aging     | Assess whether disease-associated expression profiles resemble age-related molecular changes | Gene signature scoring, donor-level regression |
 
 Together, these analyses explore disease-associated alterations at the cellular, molecular, functional and intercellular signaling levels.
 
@@ -166,11 +167,11 @@ Exact software versions, execution instructions, required datasets and reproduci
 
 The project is conducted collaboratively, with responsibilities distributed across the main analyses.
 
-| Team member | Responsibilities |
-|---|---|
-| Myriam | Data preprocessing, donor selection and Q1 |
-| Mariam | Differential expression (Q2) and cell–cell communication (Q4) |
-| Ann-Solène | Functional enrichment (Q3) and transcriptomic aging (Q5) |
+| Team member | Responsibilities                                               |
+| ----------- | -------------------------------------------------------------- |
+| Myriam      | Data preprocessing, donor selection and Q1                     |
+| Mariam      | Differential expression (Q2) and cell–cell communication (Q4) |
+| Ann-Solène | Functional enrichment (Q3) and transcriptomic aging (Q5)       |
 
 All analyses are subject to collaborative review, methodological discussion and cross-validation.
 
