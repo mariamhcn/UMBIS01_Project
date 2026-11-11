@@ -23,12 +23,12 @@ Each step starts with a short explanation of **what we do and why**, then the co
 
 - a **legend** ("Figure Q3-Fxx"), written so that it can be copied into the report or the appendix;
 - a **"How to read"** box, to understand the figure without knowing the method;
-- an **"Interpretation"** box, to fill in with the real HBCC results (*[to fill]*), with guiding questions.
+- an **"Interpretation"** box, with the HBCC results.
 
-Every figure is saved as a `.png` (300 dpi) in `04_FIGURES/Q3/`. References are numbered in
+Every figure is saved as a `.png` (300 dpi) in `04_FIGURES/Q3_enrichment/`. References are numbered in
 square brackets and listed at the end.
-The notebook makes **7 figures** only: each one answers a part of the question. Intermediate results are given as
-tables. The list of figures, with a proposal of which ones go in the main text, is at the end of the notebook.
+Each figure answers a part of the question; all the tables are saved in `03_RESULTS/Q3_enrichment/`. The list of
+figures is at the end of the notebook.
 :::
 
 # Overview
@@ -61,13 +61,13 @@ asks which functions are altered, in SCZ, in BD, and in both.
 
 ## Two methods, used one after the other: ORA, then GSEA
 
-We follow the usual `clusterProfiler` workflow [1–3]: the official clusterProfiler book [1] and the HBC Training lesson
-on pseudobulk data [2], which is exactly our Q2 → Q3 situation.
+We follow the HBC Training lesson on pseudobulk data [1], which is exactly our Q2 → Q3 situation, with the
+`clusterProfiler` package [2].
 
 - **ORA (over-representation analysis)** takes the list of significant genes (DEGs) and asks: *does this list contain
   more genes of a given function than expected by chance?* It is simple and close to the Q2 results, but it depends on
   the significance threshold.
-- **GSEA (gene set enrichment analysis)** [4] takes **all** tested genes, ranked from the most increased to the most
+- **GSEA (gene set enrichment analysis)** [3] takes **all** tested genes, ranked from the most increased to the most
   decreased, and asks: *are the genes of a function grouped at the top or at the bottom of this ranking?* It needs no
   threshold and gives a direction (up or down). It can detect a function where many genes change a little, which is
   exactly what H1 predicts if SCZ and BD reach the same function through different genes.
@@ -83,17 +83,21 @@ Results found by **both** methods are the most reliable.
 
 ## Plan
 
-| Part | Step | What we do | Figure |
-|------|------|------------|--------|
-| Input | 1 | Check the Q2 results | table |
-| Input | 2 | Choose the gene sets | table |
-| **A – ORA** | 3 | Functions over-represented among the DEGs, SCZ and BD side by side | F01 |
-| A – ORA | 4 | Do SCZ and BD change the same genes? | table (used in F06) |
-| **B – GSEA** | 5 | Pathways shifted up or down, per cell type and disease | F02 (how to read a GSEA) |
-| B – GSEA | 6 | Shared or specific pathways, checked with the direct SCZ vs BD test | F03, F04, F05 |
-| B – GSEA | 7 | Same pathway, different genes? (direct test of H1) | F06 |
-| Synthesis | 8 | Which results are found by both methods? | table |
-| Synthesis | 9 | Focus on synaptic gene sets (SynGO) | F07 |
+| Part | Step | Question | Figure |
+|------|------|----------|--------|
+| Input | 1 | Are the Q2 results complete? | table |
+| Input | 2 | Which functions are tested? | table |
+| **A – ORA** (significant genes only) | A1 | Where does ORA find something? | F01 |
+| A – ORA | A2 | Which functions? (GO) | F02 |
+| A – ORA | A3 | Same question with Hallmark, Reactome, SynGO | F03 |
+| A – ORA | A4 | Do SCZ and BD change the same genes? | F04 |
+| **B – GSEA** (all genes) | B1 | How to read one GSEA result | F05 |
+| B – GSEA | B2 | Where? Number of shifted gene sets per cell type | F06 |
+| B – GSEA | B3 | Which gene sets? | F07 |
+| B – GSEA | B4 | Together or separately? Shared and disease-specific gene sets, direct SCZ vs BD test | F08, F09 |
+| B – GSEA | B5 | Same pathway, same genes? (direct test of H1) | F10 |
+| B – GSEA | B6 | And the synapse? (SynGO) | F11 |
+| Synthesis | – | Which results are found by both methods? Answer to Q3 | table |
 
 # Setup
 
@@ -101,8 +105,7 @@ Results found by **both** methods are the most reliable.
 |---------|----------|
 | `clusterProfiler` | ORA and GSEA (topic of a CC2 video) |
 | `org.Hs.eg.db` | human gene annotation: links gene symbols to GO terms |
-| `enrichplot` | standard enrichment figures: `dotplot`, `cnetplot`, `gseaplot2` |
-| `dplyr`, `tidyr`, `ggplot2`, `ggrepel` | tables and figures |
+| `dplyr`, `tidyr`, `ggplot2`, `patchwork` | tables and figures (`patchwork` puts several panels in one figure) |
 
 ```{r setup}
 the.seed <- 42          # GSEA uses random permutations: a fixed seed makes the results reproducible
@@ -112,9 +115,8 @@ suppressPackageStartupMessages({
   library(dplyr)
   library(tidyr)
   library(ggplot2)
-  library(ggrepel)
+  library(patchwork)
   library(clusterProfiler)
-  library(enrichplot)
   library(org.Hs.eg.db)
 })
 select <- dplyr::select # org.Hs.eg.db also has a select(): use the dplyr one for tables
@@ -133,8 +135,8 @@ All the choices are gathered in one place, so the analysis can be re-run with ot
 | `min_set_size` / `max_set_size` | 15 / 500 | very small sets give unstable results; very large ones are too vague to interpret |
 | `ranking_metric` | `stat` | DESeq2 Wald statistic = log2 fold change divided by its uncertainty. It ranks genes by how **confidently** they change, keeps the direction, and avoids favouring noisy, lowly expressed genes |
 | `simplify_cutoff` | 0.7 | GO terms that are too similar are merged, keeping the most significant one |
-| `key_celltypes` | from Q1 | cell types shown in the detailed figures (all cell types are analysed and saved) |
-| `overview_collection` | Hallmark | collection used in the overview figures: 50 well-known processes with readable names |
+| `min_genes_term` | 3 | ORA: a function must contain at least 3 significant genes of the list, as in Metascape [4]; with 1 or 2 genes, a function can look enriched by chance alone |
+| `example_celltype`, `example_set` | Micro, interferon gamma response | the GSEA result shown in detail in Step B1: shifted in both diseases, in a cell type central to the project |
 
 ```{r parameters}
 # Inputs
@@ -143,7 +145,7 @@ geneset_dir <- "../01_DATA/genesets"   # one CSV per collection (gs_name, gene_s
 
 # Outputs
 out_dir <- "../03_RESULTS/Q3_enrichment"
-fig_dir <- "../04_FIGURES/Q3"
+fig_dir <- "../04_FIGURES/Q3_enrichment"
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -156,33 +158,14 @@ simplify_cutoff     <- 0.7
 contrast_scz        <- "SCZ_vs_CTRL"
 contrast_bd         <- "BD_vs_CTRL"
 contrast_direct     <- "SCZ_vs_BD"   # direct comparison of the two disorders (provided by Q2)
-q1_path             <- "../03_RESULTS/Q1_composition/Q1_retained_subclasses.txt"   # cell types retained in Q1
-key_celltypes       <- if (file.exists(q1_path)) readLines(q1_path) else
-                         c("Micro", "Oligo", "EN_L5_6_NP", "EN_L6_IT_1", "EN_L6_IT_2", "EN_L6B", "EN_L6_CT")
-key_celltypes       <- key_celltypes[nzchar(key_celltypes)]
-overview_collection <- "Hallmark"
+min_genes_term      <- 3                  # ORA: minimum number of significant genes in a function
+example_celltype    <- "Micro"                                # Step B1: example of a GSEA result
+example_set         <- "HALLMARK_INTERFERON_GAMMA_RESPONSE"
 
-# Short labels for the three comparisons, and their full names for the legends
+# Short labels for the three comparisons
 label_contrast <- function(x) {
   factor(dplyr::recode(x, !!contrast_scz := "SCZ", !!contrast_bd := "BD", !!contrast_direct := "SCZ vs BD"),
          levels = c("SCZ", "BD", "SCZ vs BD"))
-}
-lab_disease <- c(SCZ = "SCZ vs controls", BD = "BD vs controls", "SCZ vs BD" = "SCZ vs BD (direct)")
-
-# NES colour scale: purple = shifted down, orange = shifted up
-# (not blue / red, which already mean SCZ / BD in every figure)
-scale_fill_nes <- function(lim) {
-  scale_fill_gradient2(low = "#5e3c99", mid = "white", high = "#e66101", midpoint = 0,
-                       limits = c(-lim, lim), name = "NES")
-}
-# Adjusted p-value scale of the enrichplot dot plots: dark purple = most significant
-scale_padj <- list(
-  scale_colour_gradient(low = "#5b1f75", high = "#e2a9f1", name = "Adjusted p-value"),
-  scale_fill_gradient(low = "#5b1f75", high = "#e2a9f1", name = "Adjusted p-value")
-)
-scale_colour_nes <- function(lim) {
-  scale_colour_gradient2(low = "#5e3c99", mid = "grey90", high = "#e66101", midpoint = 0,
-                         limits = c(-lim, lim), name = "NES")
 }
 ```
 
@@ -197,8 +180,8 @@ and the ORA needs them as the background ("universe").
 ```{r load-de}
 de <- load_de_results(de_path)   # stops with a clear message if a column is missing
 
-cell_types    <- sort(unique(de$cell_type))
-key_celltypes <- intersect(key_celltypes, cell_types)
+cell_types <- sort(unique(de$cell_type))
+cell_order <- order_cell_types(cell_types)   # excitatory neurons, inhibitory neurons, glia, vascular cells
 
 deg_counts <- de |>
   mutate(disease = label_contrast(contrast)) |>
@@ -207,21 +190,10 @@ deg_counts <- de |>
             up       = sum(padj < alpha & log2FoldChange > 0, na.rm = TRUE),
             down     = sum(padj < alpha & log2FoldChange < 0, na.rm = TRUE),
             .groups  = "drop")
-deg_counts
+write.csv(deg_counts, file.path(out_dir, "deg_counts.csv"), row.names = FALSE)
 ```
 
-::: {.callout-tip title="How to read"}
-One row per cell type and comparison. `n_tested` = number of genes analysed (expressed enough in that cell type to be
-tested); `up` / `down` = number of genes significantly increased / decreased (adjusted p < `r alpha`). For
-`SCZ vs BD`, "up" means higher in SCZ than in BD. The DEGs themselves are described in Q2; here we only check that
-there is enough signal for the enrichment.
-:::
-
-::: {.callout-important title="Interpretation [to fill]"}
-- Which cell types have the most DEGs in SCZ? In BD? Is it consistent with Q1?
-- When a list has fewer than 5 genes, ORA cannot be run on it; GSEA (Part B) can still find pathway changes there.
-- Few donors or few nuclei mean less power: note it as a limit.
-:::
+The number of significant genes per cell type and comparison is saved in `deg_counts.csv` and shown in Figure F01 (A).
 
 **Quick check of the gene ranking.** The GSEA ranks genes by the Wald statistic. If Q2 worked well, most genes do not
 change, so the statistic should be centred on 0 (median close to 0). A median far from 0 would point to a problem in Q2
@@ -240,6 +212,13 @@ de |>
 ::: {.callout-tip title="How to read"}
 `median_stat` should be close to 0. `q05` and `q95` give the range of 90 % of the genes: a wider range means a stronger
 response to the disease.
+:::
+
+::: {.callout-important title="Interpretation"}
+- The median statistic stays between −0.8 and +0.4 in every cell type and comparison: no cell type is strongly shifted
+  as a whole, so the ranking can be used for GSEA.
+- The largest shift is in EN_L2_3_IT (median −0.5 in SCZ vs controls, −0.8 in SCZ vs BD): many genes slightly lower in
+  SCZ in this cell type. We keep it in mind when reading its GSEA results.
 :::
 
 # Step 2 – Gene sets: which functions are tested?
@@ -266,7 +245,7 @@ collections <- list(GO_BP    = NULL,
                     SynGO    = read_geneset_file(file.path(geneset_dir, "Q3_syngo.csv")))
 if (is.null(collections$SynGO)) {
   collections$SynGO <- NULL   # removes the empty entry
-  cat("Note: SynGO file not found, Step 9 will be skipped.\n")
+  cat("Note: SynGO file not found, Step B6 will be skipped.\n")
 }
 
 msigdb_like <- collections[!vapply(collections, is.null, logical(1))]
@@ -290,102 +269,50 @@ expressed in the cortex (for example liver or immune genes). GO is not shown: `c
 automatically.
 :::
 
-::: {.callout-important title="Interpretation [to fill]"}
-- Is the coverage good for synaptic sets? It should be, in brain tissue.
-- If a collection has poor coverage, interpret it with more caution.
+::: {.callout-important title="Interpretation"}
+- The coverage is good: a typical gene set has 95 % (Hallmark), 94 % (Reactome) and 97 % (SynGO) of its genes tested
+  in Q2.
+- No Hallmark or SynGO set is below 50 %; 22 of the 1,615 Reactome pathways are, and are read with caution.
 :::
 
 # Part A – Over-representation analysis (ORA)
 
-**How ORA works.** Take the DEGs of one cell type and one gene set. If the set contains 2 % of all tested genes but
-10 % of the DEGs, it is over-represented. A hypergeometric test (a one-sided Fisher test) says whether this excess is
-larger than chance. `clusterProfiler` reports it as `GeneRatio` (DEGs in the set / all DEGs) against `BgRatio` (tested
-genes in the set / all tested genes).
+**Part A asks the simplest question first.** Q2 gave us, for each cell type, the list of genes that are significantly
+increased or decreased in patients. If these genes are not random, many of them should belong to the same biological
+function. Over-representation analysis (ORA) checks this, list by list. We use four lists per cell type (SCZ up, SCZ
+down, BD up, BD down), because up and down genes may point to opposite functions.
+
+**How ORA works.** Take the significant genes of one list and one function (a gene set, for example "oxidative
+phosphorylation"). If the function contains 2 % of all tested genes but 10 % of the significant genes, it is
+**over-represented** ("enriched"): it appears more often than chance would predict. A hypergeometric test (a one-sided
+Fisher test) says whether this excess is larger than chance. `clusterProfiler` reports it as `GeneRatio` (significant
+genes in the function / significant genes of the list) against `BgRatio` (tested genes in the function / all tested
+genes).
 
 **Our choices.**
 
 - Up- and down-regulated genes are tested **separately**: otherwise we could not tell whether a function goes up or down.
 - The background (**universe**) is the set of genes tested in Q2 for that cell type, not the whole genome. With the
-  whole genome, every brain function would look enriched, only because genes not expressed in the brain can never be DEGs.
-- `compareCluster()` runs the ORA on the four lists of a cell type (SCZ up, SCZ down, BD up, BD down) together, so SCZ
-  and BD can be compared on the same figure.
+  whole genome, every brain function would look enriched, only because genes not expressed in the brain can never be
+  significant.
+- `compareCluster()` runs the ORA on the four lists of a cell type together, so SCZ and BD can be compared.
 - Lists with fewer than 5 genes are skipped.
+- A function is kept only if it contains **at least `r min_genes_term` significant genes** of the list, as in Metascape
+  [4]. With 1 or 2 genes, a function can look enriched by chance alone (one gene out of one is "100 %"), and one or two
+  genes cannot show that a whole function is affected.
 
-# Step 3 – Which functions are over-represented among the DEGs?
-
-## GO Biological Process
-
-```{r ora-go, cache=TRUE, cache.extra=tools::md5sum(de_path)}
-ora_go <- list()
-for (ct in cell_types) {
-  de_ct    <- de[de$cell_type == ct, ]
-  lists    <- make_deg_lists(de_ct, alpha, c(SCZ = contrast_scz, BD = contrast_bd))
-  universe <- unique(de_ct$gene)
-  res <- run_ora_compare(lists, universe, term2gene = NULL, alpha = alpha,
+```{r ora-run, cache=TRUE, cache.extra=list(tools::md5sum(de_path), min_genes_term)}
+# GO Biological Process: enrichGO through compareCluster, then similar terms merged with simplify()
+ora_go_table <- bind_rows(lapply(cell_types, function(ct) {
+  de_ct <- de[de$cell_type == ct, ]
+  res <- run_ora_compare(make_deg_lists(de_ct, alpha, c(SCZ = contrast_scz, BD = contrast_bd)),
+                         unique(de_ct$gene), term2gene = NULL, alpha = alpha,
                          min_size = min_set_size, max_size = max_set_size)
-  if (!is.null(res)) ora_go[[ct]] <- simplify_go(res, cutoff = simplify_cutoff)
-}
-
-ora_go_table <- bind_rows(lapply(names(ora_go), function(ct) {
-  cbind(cell_type = ct, as.data.frame(ora_go[[ct]]))
+  if (is.null(res)) return(NULL)
+  cbind(cell_type = ct, as.data.frame(simplify_go(res, cutoff = simplify_cutoff)))
 }))
-if (nrow(ora_go_table) > 0) {
-  write.csv(ora_go_table, file.path(out_dir, "ora_go_bp.csv"), row.names = FALSE)
-  count(ora_go_table, cell_type, Cluster) |>
-    pivot_wider(names_from = Cluster, values_from = n, values_fill = 0)
-}
-```
 
-::: {.callout-tip title="How to read"}
-Number of significant GO terms per cell type and gene list, after merging similar terms. A missing column means that
-the list had fewer than 5 genes or no significant term.
-:::
-
-**Why merge GO terms.** GO is organised as a tree: "chemical synaptic transmission" is inside "synaptic signalling",
-so the same genes give many almost identical terms. `simplify()` merges terms whose similarity is above
-`r simplify_cutoff` and keeps the most significant one.
-
-```{r fig-F01, fig.width=10, fig.height=7}
-for (ct in intersect(key_celltypes, names(ora_go))) {
-  p <- dotplot(clean_result_names(ora_go[[ct]]), showCategory = 5, label_format = 45) +
-    labs(x = "Gene list (number of DEGs in brackets)",
-         y = "GO Biological Process term",
-         size = "Gene ratio", colour = "Adjusted p-value", fill = "Adjusted p-value",
-         title = paste0(ct, ": GO terms over-represented among the DEGs"),
-         subtitle = "ORA on GO Biological Process (similar terms merged), 5 most significant terms per gene list",
-         caption = "Gene ratio = fraction of the list's DEGs that belong to the term.") +
-    scale_padj +
-    theme_project() +
-    theme(axis.text.x = element_text(angle = 30, hjust = 1), legend.position = "right")
-  print(p)
-  save_figure(p, paste0("Q3_F01_ORA_GO_", ct), fig_dir, width = 10, height = 7)
-}
-```
-
-**Figure Q3-F01 – GO Biological Process terms over-represented among the DEGs (one figure per key cell type).**
-Over-representation analysis (`compareCluster`, `enrichGO`) of up- and down-regulated DEGs (adjusted p < 0.05) in SCZ
-and BD, against all genes tested in the same cell type. Redundant terms were merged (`simplify`, cutoff 0.7). Dot size:
-gene ratio; colour: adjusted p-value (Benjamini–Hochberg).
-
-::: {.callout-tip title="How to read"}
-Columns = the four gene lists of the cell type; rows = GO terms. A dot means the term is over-represented in that list.
-Bigger dot = larger part of the list in the term; redder dot = more significant. A row with dots in both `SCZ_down`
-and `BD_down` (or both `_up` columns) is a function changed in the same way by both diseases.
-:::
-
-::: {.callout-important title="Interpretation [to fill]"}
-- Are the **same terms** found in SCZ and BD lists of the same direction? This is a first sign of convergence.
-- In neurons, are synaptic terms found among down-regulated genes? In glia, inflammatory or immune terms among
-  up-regulated genes?
-- Note 2–3 terms per cell type to discuss in the report, with a few of their genes (column `geneID` of
-  `ora_go_bp.csv`).
-:::
-
-## Hallmark, Reactome and SynGO
-
-The same ORA is run on the other collections, with `enricher()`.
-
-```{r ora-curated, cache=TRUE, cache.extra=tools::md5sum(de_path)}
+# Hallmark, Reactome and SynGO: enricher through compareCluster
 ora_curated_table <- bind_rows(lapply(names(msigdb_like), function(coll) {
   bind_rows(lapply(cell_types, function(ct) {
     de_ct <- de[de$cell_type == ct, ]
@@ -397,39 +324,149 @@ ora_curated_table <- bind_rows(lapply(names(msigdb_like), function(coll) {
   }))
 }))
 
-if (nrow(ora_curated_table) > 0) {
-  write.csv(ora_curated_table, file.path(out_dir, "ora_curated.csv"), row.names = FALSE)
+# Keep only the functions supported by at least min_genes_term significant genes
+ora_go_table      <- filter(ora_go_table, Count >= min_genes_term)
+ora_curated_table <- filter(ora_curated_table, Count >= min_genes_term)
+
+write.csv(ora_go_table, file.path(out_dir, "ora_go_bp.csv"), row.names = FALSE)
+write.csv(ora_curated_table, file.path(out_dir, "ora_curated.csv"), row.names = FALSE)
+```
+
+The full ORA results (all functions, all cell types, with their genes in the column `geneID`) are saved in
+`03_RESULTS/Q3_enrichment/ora_go_bp.csv` and `ora_curated.csv`. The notebook shows them as figures.
+
+# Step A1 – Where does ORA find something?
+
+**What we do and why.** Before looking at the functions themselves, we count, for each cell type, the significant
+genes (A) and the number of functions ORA finds among them (B). This tells us where Part A has something to say.
+
+```{r fig-F01, fig.width=13, fig.height=8.5}
+p_F01 <- plot_ora_overview(deg_counts, ora_go_table, cell_order)
+p_F01
+save_figure(p_F01, "Q3_F01_ORA_overview", fig_dir, width = 13, height = 8.5)
+```
+
+**Figure Q3-F01 – Significant genes and functions found by ORA, per cell type.** (A) Number of genes significantly
+increased (orange) or decreased (purple) in SCZ and in BD compared with controls (DESeq2, adjusted p < 0.05). (B) Number
+of GO Biological Process terms over-represented (ORA, adjusted p < 0.05, at least `r min_genes_term` genes, similar
+terms merged) in each of the four lists.
+
+::: {.callout-tip title="How to read"}
+(A) One row per cell type: bars to the right = genes increased in patients, to the left = genes decreased. (B) Same
+rows, one column per list: the number of functions found in that list. A grey box means that ORA found no function,
+even if the list contains many genes.
+:::
+
+::: {.callout-important title="Interpretation"}
+- All 23 cell types have significant genes, from 56 (VLMC) to about 2,900 (EN_L2_3_IT).
+- Yet ORA finds functions in only part of the cell types, and usually in only one or two of the four lists.
+- Large lists can give nothing: EN_L3_5_IT_3 has about 1,300 significant genes and no function; EN_L2_3_IT has
+  1,438 genes decreased in SCZ and no function.
+- Many genes change, but they are rarely concentrated enough in one known function for ORA to see it.
+:::
+
+# Step A2 – Which functions? (GO Biological Process)
+
+**What we do and why.** For each cell type, we show the 3 most significant functions of each list. One figure per
+family of cell types (excitatory neurons, inhibitory neurons, glial cells, vascular cells), one panel per cell type, so
+that each figure can be read on its own in the report or the slides.
+
+```{r fig-F02}
+F02_files <- save_ora_family_figures(ora_go_table, "GO Biological Process", "Q3_F02_ORA_GO",
+                                     cell_order, fig_dir)
+```
+
+::: {.panel-tabset}
+
+```{r fig-F02-show, results="asis", echo=FALSE}
+# one tab per family of cell types
+for (family in names(F02_files)) {
+  cat("\n## ", family, " {.unnumbered .unlisted}\n\n", sep = "")
+  cat("![](", F02_files[[family]], ")\n\n", sep = "")
 }
 ```
 
-```{r ora-curated-table}
-# 3 most significant sets per collection, cell type and list
-ora_curated_table |>
-  group_by(collection, cell_type, Cluster) |>
-  slice_min(p.adjust, n = 3, with_ties = FALSE) |>
-  mutate(set = clean_set_name(Description)) |>
-  select(collection, cell_type, Cluster, set, GeneRatio, BgRatio, p.adjust)
-```
+:::
+
+**Figure Q3-F02 – Functions over-represented among the significant genes (GO Biological Process), one panel per cell
+type.** One figure per family of cell types (tabs). For each cell type, the 3 most significant GO terms of each list
+(ORA, `enrichGO` through `compareCluster`, adjusted p < 0.05, at least `r min_genes_term` genes, similar terms merged
+with `simplify`, cutoff `r simplify_cutoff`). Dot size: gene ratio; colour: −log10(adjusted p). Cell types without any
+function are not shown (see F01 B).
 
 ::: {.callout-tip title="How to read"}
-For each collection, cell type and gene list, the 3 most significant sets. `GeneRatio` = DEGs in the set / DEGs in the
-list; `BgRatio` = tested genes in the set / all tested genes. A set is enriched when `GeneRatio` is clearly larger than
-`BgRatio`.
+Click on a tab to choose the family of cell types. In each panel (A, B, C...), the columns are the four lists and the
+rows are functions. A dot means that the function is over-represented in that list. Bigger dot = larger share of the
+list in the function; darker = more significant. A function with a dot in both `SCZ up` and `BD up` (or both `down`)
+is changed in the same way by both diseases.
 :::
 
-::: {.callout-important title="Interpretation [to fill]"}
-- Do the Hallmark and Reactome results tell the same story as GO?
-- Any SynGO term in the neuronal down-regulated lists?
+::: {.callout-important title="Interpretation"}
+- **Energy production by mitochondria** (oxidative phosphorylation, ATP synthesis) is increased in SCZ in deep-layer
+  neurons (EN_L6B, EN_L6_CT, EN_L6_IT_1), and decreased in BD in astrocytes.
+- **Protein folding**, a stress response, is increased in SCZ in microglia and in vascular cells (Endo, VLMC).
+- **Synaptic functions are rare**: only synapse organisation (down in SCZ, EN_L3_5_IT_2) and neurotransmitter secretion
+  (down in BD, IN_SST).
+- **The same function is almost never found in SCZ and BD in the same cell type**: the only case is "cell migration",
+  up in both in astrocytes. At this level, there is little sign of convergence.
+- In microglia, the genes increased in BD give terms named after muscle (myoblast fusion). They come from genes that
+  also act outside muscle: we read them with caution.
 :::
 
-# Step 4 – Do SCZ and BD change the same genes?
+# Step A3 – Same question with Hallmark, Reactome and SynGO
 
-**What we do and why.** Before comparing functions, we measure how much the two diseases share at the **gene** level.
-Each gene of a cell type is classified as a DEG in both diseases in the same direction (shared), in one disease only,
-or in both with opposite directions. The overlap is summarised by the **Jaccard index**: shared DEGs / all DEGs
-(0 = no gene in common, 1 = identical lists). H1 predicts a low overlap of genes, but a larger overlap of functions
-(Steps 6–7). Q2 already describes shared and specific DEGs; here we only compute the value that Figure F06 compares
-with the pathway level.
+**What we do and why.** GO is very detailed. The three other collections give complementary views: Hallmark groups
+the results into 50 well-known processes, Reactome describes signalling and metabolic pathways, and SynGO is limited to
+the synapse. The figures have the same layout as F02.
+
+```{r fig-F03}
+F03_files <- lapply(setNames(names(msigdb_like), names(msigdb_like)), function(coll) {
+  save_ora_family_figures(filter(ora_curated_table, collection == coll), coll,
+                          paste0("Q3_F03_ORA_", coll), cell_order, fig_dir)
+})
+```
+
+::: {.panel-tabset}
+
+```{r fig-F03-show, results="asis", echo=FALSE}
+# one tab per collection
+for (coll in names(F03_files)) {
+  cat("\n## ", coll, " {.unnumbered .unlisted}\n\n", sep = "")
+  if (length(F03_files[[coll]]) == 0) cat("No over-represented function in any cell type.\n\n")
+  for (f in F03_files[[coll]]) cat("![](", f, ")\n\n", sep = "")
+}
+```
+
+:::
+
+**Figure Q3-F03 – Functions over-represented among the significant genes (Hallmark, Reactome, SynGO).** One tab per
+collection, one figure per family of cell types, one panel per cell type. ORA with `enricher` through
+`compareCluster`, adjusted p < 0.05, at least `r min_genes_term` genes; 3 most significant sets per list.
+
+::: {.callout-tip title="How to read"}
+Same reading as F02. Click on a tab to choose the collection; the figures of the different families follow each other.
+:::
+
+::: {.callout-important title="Interpretation"}
+- **Hallmark** groups the results into a few well-known processes: inflammation (TNFA signalling via NFKB, interferon
+  gamma, IL6), low oxygen (hypoxia) and growth signalling (mTORC1). They appear in glial cells (Astro, Micro, OPC,
+  Oligo: mostly BD up) and vascular cells (Endo, PC: SCZ up). These are the **same processes in both diseases**, but
+  rarely in the same cell type and list.
+- **Reactome** confirms GO: mitochondrial respiration up in SCZ in deep-layer neurons, heat-stress response up in SCZ in
+  vascular cells. It also finds a synaptic signal: GABA receptor activation and synaptic transmission are down in BD in
+  IN_VIP.
+- **SynGO**, the synaptic collection, gives almost no result: **ORA is nearly blind to the synaptic part of our
+  question.**
+:::
+
+# Step A4 – Do SCZ and BD change the same genes?
+
+**What we do and why.** Before comparing functions between the two diseases, we measure how much they share at the
+**gene** level. Each significant gene of a cell type is classified as significant in both diseases in the same
+direction (shared), in one disease only, or in both with opposite directions. The overlap is summarised by the
+**Jaccard index**: shared genes / all significant genes (0 = no gene in common, 1 = identical lists). H1 predicts a low
+overlap of genes, but a larger overlap of functions (Part B). Q2 already describes shared and specific genes; here we
+compute the value that Figure F09 compares with the pathway level.
 
 ```{r deg-overlap}
 deg_status <- de |>
@@ -454,37 +491,73 @@ for (g in c("shared", "SCZ_only", "BD_only", "opposite")) if (!g %in% names(deg_
 deg_overlap <- deg_overlap |>
   mutate(n_DEG = shared + SCZ_only + BD_only + opposite,
          jaccard_DEG = round(shared / n_DEG, 2))
-deg_overlap
+write.csv(deg_overlap, file.path(out_dir, "deg_overlap.csv"), row.names = FALSE)
 ```
 
+```{r fig-F04, fig.width=10, fig.height=7.5}
+p_F04 <- plot_deg_overlap(deg_overlap, cell_order)
+p_F04
+save_figure(p_F04, "Q3_F04_DEG_overlap", fig_dir, width = 10, height = 7.5)
+```
+
+**Figure Q3-F04 – Overlap of the significant genes of SCZ and BD, per cell type.** For each cell type, share of its
+significant genes (DESeq2, adjusted p < 0.05, SCZ or BD vs controls) that are significant in SCZ only, in BD only, in
+both with the same direction, or in both with opposite directions. J = Jaccard index (shared in the same direction /
+all significant genes); number of significant genes in brackets.
+
 ::: {.callout-tip title="How to read"}
-Number of genes per cell type that are DEGs in both diseases with the same direction (`shared`), in one disease only
-(`SCZ_only`, `BD_only`), or in both with opposite directions (`opposite`). `jaccard_DEG` = shared / all DEGs.
+One bar per cell type, split into four colours: blue = SCZ only, red = BD only, purple = shared with the same
+direction, orange = shared with opposite directions. The larger the purple part (and J), the more the two diseases
+change the same genes.
 :::
 
-::: {.callout-important title="Interpretation [to fill]"}
-- Is the gene-level overlap low (J close to 0)? In which cell types is it highest? Keep these values: they are shown
-  again in Figure F06.
+::: {.callout-important title="Interpretation"}
+- The two diseases share **very few genes**: J is below 0.10 in 19 of the 23 cell types.
+- The highest values are in PC (0.19), Astro (0.13), EN_L3_5_IT_3 (0.11) and Micro (0.10).
+- Opposite changes are almost absent: when a gene changes in both diseases, it goes the same way.
 :::
+
+# What Part A tells us, and why we need Part B
+
+At the gene level, SCZ and BD look different (F04). ORA finds functions in only part of the lists, rarely the same in
+both diseases, and almost no synaptic function (F01–F03). But ORA has a blind spot: it only uses the genes above the
+significance threshold. If a disease changes **many genes of a function a little**, none of them passes the threshold
+and ORA sees nothing. This is exactly what H1 predicts: two diseases reaching the same function through different,
+modest changes. Part B therefore uses a method that looks at **all** genes, without a threshold: GSEA. This is also the
+approach of the PsychAD study, which tested gene sets on the statistics of all genes [7].
+
 
 # Part B – Gene set enrichment analysis (GSEA)
 
-**How GSEA works.** All tested genes are ranked from the most up-regulated to the most down-regulated (Wald statistic).
-For each gene set, the method walks down the ranking: a running score goes up each time it meets a gene of the set and
-goes down otherwise. If the genes of the set are grouped at the top, the score reaches a high positive peak (the set is
-shifted **up** in the disease); at the bottom, a negative peak (shifted **down**). This peak is normalised for the size
-of the set, giving the **NES** (normalised enrichment score): its sign gives the direction, its size the strength.
-Random permutations give the p-value. The genes before the peak, which drive the result, form the **leading edge**.
+**Part B looks at all genes, without a threshold.** Part A only used the genes above the significance threshold. GSEA
+uses every tested gene, so it can see a function in which many genes change a little.
+
+**How GSEA works.** All tested genes of a cell type are ranked from the most increased to the most decreased in
+patients (DESeq2 Wald statistic). For one gene set, we look at where its genes fall in this ranking. If they are grouped
+at the top, the set is **shifted up** in the disease; at the bottom, **shifted down**; if they are scattered, nothing
+happens. Technically, the method walks down the ranking with a running score that goes up at each gene of the set and
+down otherwise; the peak of this score is the enrichment score [3].
+
+**Which number we read, and why.** GSEA gives four values for each gene set:
+
+| Value | What it says | Why we do not read it alone |
+|-------|--------------|-----------------------------|
+| ES (enrichment score) | the peak of the running score: are the genes of the set grouped at the top or at the bottom? | it depends on the size of the set, so a set of 20 genes cannot be compared with a set of 400 |
+| **NES** (normalised enrichment score) | the same score, corrected for the size of the set | **it is the only score that can be compared between gene sets, cell types and diseases** |
+| adjusted p-value | is this grouping stronger than chance (random permutations, Benjamini–Hochberg correction)? | it says whether the result is reliable, not its direction or its strength |
+| leading edge | the genes before the peak, which drive the result | used in Step B5 |
+
+We read the **NES for the direction and the strength** (orange = shifted up, purple = shifted down) and the **adjusted
+p-value to know whether the shift is significant** (the stars of the figures). The NES is the right summary here
+because the whole question is a comparison: SCZ against BD, and one cell type against another.
 
 **Our choices.**
 
 - `gseGO()` for GO, `GSEA()` for Hallmark, Reactome and SynGO.
 - All tested sets are kept (`pvalueCutoff = 1`), so SCZ and BD can be compared on exactly the same sets; the 0.05
   threshold is applied afterwards.
-- `eps = 0` to compute very small p-values exactly; fixed seed for reproducibility.
-- The same GSEA is run on the direct `SCZ_vs_BD` comparison, used in Step 6.
-
-# Step 5 – Which pathways are shifted, in which cell types?
+- `eps = 1e-10` (default value): p-values smaller than 10⁻¹⁰ are reported as 10⁻¹⁰, which does not change any conclusion; fixed seed for reproducibility.
+- The same GSEA is run on the direct `SCZ_vs_BD` comparison (Step B4).
 
 ```{r gsea, cache=TRUE, cache.extra=tools::md5sum(de_path)}
 gsea_all <- lapply(names(collections), function(coll) {
@@ -503,72 +576,130 @@ write.csv(gsea_all, file.path(out_dir, "gsea_all.csv"), row.names = FALSE)
 
 gsea_counts <- gsea_all |>
   group_by(collection, cell_type, disease) |>
-  summarise(up   = sum(p.adjust < alpha & NES > 0),
-            down = sum(p.adjust < alpha & NES < 0),
-            .groups = "drop")
-gsea_counts
+  summarise(n_tested = n(),
+            up       = sum(p.adjust < alpha & NES > 0),
+            down     = sum(p.adjust < alpha & NES < 0),
+            .groups  = "drop")
+write.csv(gsea_counts, file.path(out_dir, "gsea_counts.csv"), row.names = FALSE)
 ```
 
-::: {.callout-tip title="How to read"}
-Number of significant gene sets (adjusted p < `r alpha`) per collection, cell type and comparison: `up` = sets whose
-genes are grouped among up-regulated genes (NES > 0), `down` = among down-regulated genes (NES < 0).
-:::
+The full results (every gene set, cell type and comparison, with NES, adjusted p-value and leading-edge genes) are saved
+in `gsea_all.csv`, and the number of shifted sets per cell type in `gsea_counts.csv`.
 
-::: {.callout-important title="Interpretation [to fill]"}
-- Which cell types show the most pathway changes? Is it the same ranking as for the DEGs (Step 1)? A cell type with
-  few DEGs but many shifted pathways shows many small, coordinated changes, which only GSEA can detect.
-:::
+# Step B1 – How to read one GSEA result
 
-## Reading one GSEA result in detail
+**What we do and why.** Before looking at summaries, we look at one result in detail, to see what the NES and the
+leading edge are. We take a result that matters for the rest of the notebook: the **interferon gamma response in
+microglia, in SCZ** (shifted in the same direction in SCZ and BD, in a cell type central to the project).
 
-**What we do and why.** Before looking at summaries, we look at one result in detail to see what an NES and a leading
-edge are. We take the most significant Hallmark set.
+```{r fig-F05, fig.width=10, fig.height=8}
+ex_hit <- gsea_all |>
+  filter(collection == "Hallmark", cell_type == example_celltype, disease == "SCZ", ID == example_set)
+ex_ranks <- make_ranked_list(de[de$cell_type == example_celltype & de$contrast == contrast_scz, ], ranking_metric)
+ex_genes <- collections$Hallmark$gene_symbol[collections$Hallmark$gs_name == example_set]
 
-```{r fig-F02, fig.width=9, fig.height=7}
-top_hit <- gsea_all |>
-  filter(collection == overview_collection, disease %in% c("SCZ", "BD")) |>
-  slice_min(p.adjust, n = 1, with_ties = FALSE)
-
-top_hit |> select(cell_type, disease, ID, setSize, NES, p.adjust)
-
-example_ranks <- make_ranked_list(de[de$cell_type == top_hit$cell_type &
-                                     de$contrast == top_hit$contrast, ], ranking_metric)
-example_gsea <- run_gsea_object(example_ranks, collections[[overview_collection]],
-                                min_set_size, max_set_size, the.seed)
-p_F02 <- gseaplot2(example_gsea, geneSetID = top_hit$ID, color = "#8e3fb0")
-# gseaplot2 returns 3 stacked panels: add the titles and readable axis names
-p_F02[[1]] <- p_F02[[1]] +
-  labs(y = "Running enrichment score",
-       title = paste0(clean_set_name(top_hit$ID), " in ", top_hit$cell_type, ", ", top_hit$disease, " vs controls"),
-       subtitle = paste0("GSEA enrichment plot: NES = ", round(top_hit$NES, 2),
-                         ", adjusted p = ", signif(top_hit$p.adjust, 2))) +
-  theme(plot.title = element_text(face = "bold", colour = "#3849a2", size = 13),
-        plot.subtitle = element_text(colour = "grey25"))
-p_F02[[3]] <- p_F02[[3]] +
-  labs(x = "Rank of the gene (left: most up-regulated, right: most down-regulated)",
-       y = "Ranking statistic\n(Wald)")
-p_F02
-save_figure(p_F02, "Q3_F02_GSEA_example", fig_dir, width = 9, height = 7)
+p_F05 <- plot_gsea_example(ex_ranks, ex_genes,
+                           title = paste0(clean_set_name(example_set), " in ", example_celltype, ", SCZ vs controls"),
+                           nes = ex_hit$NES, padj = ex_hit$p.adjust)
+p_F05
+save_figure(p_F05, "Q3_F05_GSEA_example", fig_dir, width = 10, height = 8)
 ```
 
-**Figure Q3-F02 – Example of a GSEA result.** Enrichment plot (`gseaplot2`) of the most significant Hallmark set.
-Top: running enrichment score along the ranked gene list (its peak is the enrichment score). Middle: position of each
-gene of the set in the ranking. Bottom: ranking statistic (DESeq2 Wald statistic), from up-regulated (left) to
-down-regulated (right) genes.
+**Figure Q3-F05 – How to read a GSEA result.** Hallmark "interferon gamma response" in microglia, SCZ vs controls.
+(A) Running enrichment score along the ranked list of all tested genes; its peak is the enrichment score, normalised
+into the NES. (B) Position of the genes of the set in the ranking. (C) Ranking statistic (DESeq2 Wald statistic), from
+the genes most increased in patients (left) to the most decreased (right). Shaded: leading edge.
 
 ::: {.callout-tip title="How to read"}
-- A peak on the **left** (positive score): the set's genes are grouped among the up-regulated genes. A dip on the
-  **right**: among the down-regulated genes.
-- The vertical bars show where the set's genes are: concentrated at one end = strong enrichment.
-- The genes between the start of the list and the peak form the **leading edge**.
+- (C) shows all genes, ranked; (B) shows where the genes of the set fall in this ranking.
+- If they are grouped on the **left**, the running score (A) climbs to a positive peak: the set is shifted **up**. On
+  the **right**, the score dips: the set is shifted **down**.
+- The shaded genes, before the peak, form the **leading edge**: they drive the result.
 :::
 
-::: {.callout-important title="Interpretation [to fill]"}
-- Which set, cell type and disease is the strongest result? Is it expected from the literature?
-- Is it carried by many genes (wide peak) or by a few strongly changed genes (sharp peak)?
+::: {.callout-important title="Interpretation"}
+The genes of the interferon gamma response are concentrated on the left, among the genes increased in patients, so the
+score climbs to a peak: the interferon response is shifted up in microglia in SCZ (NES = `r round(ex_hit$NES, 2)`,
+adjusted p = `r signif(ex_hit$p.adjust, 2)`). The shaded genes before the peak are the ones that drive this result.
 :::
 
-# Step 6 – SCZ vs BD: shared or specific pathways?
+# Step B2 – Where? Number of shifted gene sets per cell type
+
+**What we do and why.** We count, for each cell type and disease, the gene sets significantly shifted up or down. This
+is the GSEA counterpart of Figure F01 (A): it tells us which cell types are the most affected at the level of functions.
+
+```{r fig-F06}
+F06_files <- lapply(setNames(nm = c("Hallmark", "GO_BP", "Reactome")), function(coll) {
+  save_figure(plot_gsea_counts(gsea_all, coll, cell_order, alpha), paste0("Q3_F06_GSEA_counts_", coll),
+              fig_dir, width = 10, height = 7.5)
+})
+```
+
+::: {.panel-tabset}
+
+```{r fig-F06-show, results="asis", echo=FALSE}
+show_figures_in_tabs(F06_files)   # one tab per collection
+```
+
+:::
+
+**Figure Q3-F06 – Number of gene sets shifted in patients, per cell type.** GSEA, adjusted p < 0.05, SCZ vs controls
+(left) and BD vs controls (right). Orange: sets shifted up (NES > 0); purple: shifted down (NES < 0). One tab per
+collection (Hallmark: 50 sets; GO Biological Process; Reactome).
+
+::: {.callout-tip title="How to read"}
+One row per cell type. Bars to the right count the gene sets whose genes are grouped among the genes increased in
+patients; bars to the left, among the decreased genes. Compare with F01 (A), which counts single genes.
+:::
+
+::: {.callout-important title="Interpretation"}
+- GSEA finds shifted gene sets in **all 23 cell types**, including those where ORA found nothing (F01).
+- **Almost all of them are shifted up.**
+- The most affected cell types differ between the two diseases. In SCZ, these are upper-layer neurons (EN_L2_3_IT) and
+  CGE interneurons (IN_VIP, IN_PVALB_CHC); in BD, deep-layer neurons (EN_L6B, EN_L6_IT_1, EN_L6_IT_2). Glial cells
+  (Micro, OPC) and vascular cells (PC) are affected in both.
+- EN_L6B has few significant genes (F01) but 29 shifted Hallmark sets in BD: many small, coordinated changes, which only
+  GSEA can see.
+:::
+
+# Step B3 – Which gene sets?
+
+**What we do and why.** We now name the gene sets. To keep the figure readable, we show the **30 gene sets significant
+in the largest number of cell types** (in SCZ or BD). Rows with similar profiles are placed next to each other
+(hierarchical clustering). All the results are in `gsea_all.csv`.
+
+```{r fig-F07}
+F07_files <- lapply(setNames(nm = c("Hallmark", "GO_BP", "Reactome")), function(coll) {
+  save_figure(plot_gsea_heatmap(gsea_all, coll, cell_order, n_sets = 30, alpha = alpha),
+              paste0("Q3_F07_NES_heatmap_", coll), fig_dir, width = 17, height = 10)
+})
+```
+
+::: {.panel-tabset}
+
+```{r fig-F07-show, results="asis", echo=FALSE}
+show_figures_in_tabs(F07_files)   # one tab per collection
+```
+
+:::
+
+**Figure Q3-F07 – Gene sets shifted in SCZ (A) and BD (B).** NES (colour) of the 30 gene sets significant in the
+largest number of cell types, per cell type grouped by family. Orange: shifted up; purple: shifted down; * adjusted
+p < 0.05. One tab per collection.
+
+::: {.callout-tip title="How to read"}
+Read the figure row by row: a row with the same colour, and stars, in panels A and B is a function changed in the same
+way in both diseases. A row orange in one panel and purple in the other is a function changed in opposite directions.
+:::
+
+::: {.callout-important title="Interpretation"}
+- The **same processes** come up in both diseases and in many cell types, almost always shifted up: interferon
+  responses, hypoxia, mTORC1 signalling, protein secretion, cell cycle (E2F targets, mitotic spindle), P53 pathway.
+- Main exceptions: oxidative phosphorylation is shifted up in SCZ in upper-layer neurons, but down in BD in
+  interneurons and astrocytes; TNFA signalling via NFKB goes up mainly in vascular cells.
+:::
+
+# Step B4 – Together or separately? Shared and disease-specific gene sets
 
 **What we do and why.** For each cell type and gene set, we put the SCZ and BD results side by side and classify the
 set. A pathway significant in SCZ but not in BD is not necessarily specific to SCZ: BD may show the same change, but
@@ -585,6 +716,10 @@ also significant.
 | SCZ only (or BD only), not confirmed | significant in one disease only, direct test not significant | seen in one disease, but no evidence of a difference |
 | Not significant | significant in neither | no evidence |
 
+We also compare the **whole profiles**, beyond the significant sets: the Spearman correlation (rho) of the NES of all
+tested sets in SCZ and in BD. rho close to 1 means that the two diseases shift the same functions in the same
+direction, even below the significance threshold.
+
 ```{r compare}
 paired <- gsea_all |>
   group_by(collection) |>
@@ -592,313 +727,190 @@ paired <- gsea_all |>
   ungroup() |>
   classify_pathways(alpha = alpha)
 
-# Add the direct SCZ vs BD test, if this comparison is in the Q2 table
+# Add the direct SCZ vs BD test
 direct <- gsea_all |>
   filter(contrast == contrast_direct) |>
   select(collection, cell_type, ID, NES_direct = NES, p.adjust_direct = p.adjust)
-has_direct <- nrow(direct) > 0
-if (has_direct) {
-  paired <- paired |>
-    left_join(direct, by = c("collection", "cell_type", "ID")) |>
-    mutate(differs_SCZ_BD = !is.na(p.adjust_direct) & p.adjust_direct < alpha)
-} else {
-  paired$differs_SCZ_BD <- NA
-  cat("Note: no SCZ_vs_BD comparison in the Q2 table, specific pathways cannot be confirmed.\n")
-}
-
-# Final category, with the confirmation by the direct test
 paired <- paired |>
-  mutate(group = case_when(
-    category == "shared_concordant" ~ "Shared, same direction",
-    category == "shared_opposite"   ~ "Shared, opposite directions",
-    category == "SCZ_specific" & !has_direct ~ "SCZ only",
-    category == "BD_specific"  & !has_direct ~ "BD only",
-    category == "SCZ_specific" & differs_SCZ_BD  ~ "SCZ only, confirmed",
-    category == "SCZ_specific" & !differs_SCZ_BD ~ "SCZ only, not confirmed",
-    category == "BD_specific"  & differs_SCZ_BD  ~ "BD only, confirmed",
-    category == "BD_specific"  & !differs_SCZ_BD ~ "BD only, not confirmed",
-    TRUE ~ "Not significant"))
-
+  left_join(direct, by = c("collection", "cell_type", "ID")) |>
+  mutate(differs_SCZ_BD = !is.na(p.adjust_direct) & p.adjust_direct < alpha,
+         group = case_when(
+           category == "shared_concordant" ~ "Shared, same direction",
+           category == "shared_opposite"   ~ "Shared, opposite directions",
+           category == "SCZ_specific" & differs_SCZ_BD  ~ "SCZ only, confirmed",
+           category == "SCZ_specific" & !differs_SCZ_BD ~ "SCZ only, not confirmed",
+           category == "BD_specific"  & differs_SCZ_BD  ~ "BD only, confirmed",
+           category == "BD_specific"  & !differs_SCZ_BD ~ "BD only, not confirmed",
+           TRUE ~ "Not significant"))
 write.csv(paired, file.path(out_dir, "gsea_scz_vs_bd.csv"), row.names = FALSE)
 
-count(paired, collection, group) |>
-  pivot_wider(names_from = group, values_from = n, values_fill = 0)
-```
-
-```{r fig-F03, fig.width=11, fig.height=6}
-col_group <- c("Shared, same direction" = "#8e3fb0", "Shared, opposite directions" = "#f1a340",
-               "SCZ only, confirmed" = "#2166ac", "SCZ only, not confirmed" = "#a6c8e6", "SCZ only" = "#2166ac",
-               "BD only, confirmed" = "#b2182b", "BD only, not confirmed" = "#f0a8a8", "BD only" = "#b2182b")
-
-p_F03 <- paired |>
-  filter(group != "Not significant") |>
-  count(collection, cell_type, group) |>
-  mutate(group = factor(group, levels = names(col_group))) |>
-  ggplot(aes(cell_type, n, fill = group)) +
-  geom_col(width = 0.75) +
-  facet_wrap(~ collection, scales = "free_y") +
-  scale_fill_manual(values = col_group, name = NULL) +
-  guides(fill = guide_legend(nrow = 2)) +
-  labs(x = "Cell type", y = "Number of significant gene sets",
-       title = "Shared and disease-specific pathways per cell type",
-       subtitle = paste0("GSEA, gene sets significant (adjusted p < ", alpha, ") in at least one disease vs controls"),
-       caption = "Confirmed = also significant in the direct SCZ vs BD comparison; light colours = seen in one disease only, without evidence of a difference.") +
-  theme_project() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-p_F03
-save_figure(p_F03, "Q3_F03_pathway_categories", fig_dir, width = 11, height = 6)
-```
-
-**Figure Q3-F03 – Shared and disease-specific pathways per cell type.** Number of gene sets significantly shifted
-(GSEA, Benjamini–Hochberg adjusted p < 0.05) in at least one disease compared with controls, per collection and cell
-type: shared with the same direction (purple), shared with opposite directions (orange), significant in SCZ only (blue)
-or BD only (red). Dark blue / dark red: also significant in the direct SCZ vs BD comparison (confirmed difference);
-light blue / light red: no significant difference in the direct comparison.
-
-::: {.callout-tip title="How to read"}
-Each bar counts the altered pathways of a cell type. A large purple part means that many functions are changed in the
-same way in both diseases: this is where SCZ and BD converge. Only the **dark** blue and red parts are pathways that
-truly differ between the two disorders; the light parts are seen in one disease only, but we cannot say that the two
-diseases differ.
-:::
-
-::: {.callout-important title="Interpretation [to fill]"}
-- In which cell types are shared pathways the majority?
-- What fraction of the "only" pathways is confirmed? A small fraction means that SCZ and BD are more similar than the
-  comparisons with controls suggest (part of the difference is a difference in power).
-- Any pathway shared with opposite directions? It would be worth discussing.
-:::
-
-**Which pathways differ most between SCZ and BD?**
-
-```{r direct-top}
-if (has_direct) {
-  paired |>
-    filter(differs_SCZ_BD) |>
-    arrange(p.adjust_direct) |>
-    mutate(set = clean_set_name(Description)) |>
-    select(collection, cell_type, set, NES_SCZ, NES_BD, NES_direct, p.adjust_direct, group) |>
-    head(15)
-}
-```
-
-::: {.callout-tip title="How to read"}
-The 15 pathways with the most significant direct SCZ vs BD test. `NES_direct` > 0: higher in SCZ than in BD; < 0:
-higher in BD. A "shared, same direction" pathway can also appear here: both disorders change it in the same direction,
-but with a different strength.
-:::
-
-::: {.callout-important title="Interpretation [to fill]"}
-- Which functions truly differ between SCZ and BD, and in which cell types?
-:::
-
-## Do SCZ and BD have similar profiles overall?
-
-**What we do and why.** Beyond significant sets, we compare the NES of **all** tested sets in SCZ and in BD with a
-Spearman correlation (rho). A rho close to 1 means that the two diseases shift the same functions in the same direction,
-even below the significance threshold.
-
-```{r nes-correlation}
 nes_cor <- paired |>
   group_by(collection, cell_type) |>
-  summarise(spearman_rho = round(cor(NES_SCZ, NES_BD, method = "spearman"), 2),
-            n_sets       = n(),
-            .groups = "drop")
-nes_cor
+  summarise(spearman_rho = round(cor(NES_SCZ, NES_BD, method = "spearman"), 2), n_sets = n(), .groups = "drop")
+write.csv(nes_cor, file.path(out_dir, "nes_correlation_scz_bd.csv"), row.names = FALSE)
 ```
 
-```{r fig-F04, fig.width=11, fig.height=8}
-scatter_data <- paired |>
-  filter(collection == overview_collection) |>
-  left_join(nes_cor, by = c("collection", "cell_type")) |>
-  mutate(panel = paste0(cell_type, " (rho = ", spearman_rho, ")"),
-         group = factor(group, levels = c(names(col_group), "Not significant")))
-lim_sc <- max(abs(c(scatter_data$NES_SCZ, scatter_data$NES_BD)), na.rm = TRUE)
-to_label <- scatter_data |>
-  filter(group == "Shared, same direction") |>
-  group_by(cell_type) |>
-  slice_min(pmax(p.adjust_SCZ, p.adjust_BD), n = 2, with_ties = FALSE) |>
-  ungroup()
-
-p_F04 <- ggplot(scatter_data, aes(NES_SCZ, NES_BD, colour = group)) +
-  geom_hline(yintercept = 0, colour = "grey75") +
-  geom_vline(xintercept = 0, colour = "grey75") +
-  geom_abline(linetype = "dashed", colour = "grey50") +
-  geom_point(size = 2, alpha = 0.85) +
-  geom_text_repel(data = to_label, aes(label = clean_set_name(Description, 30)),
-                  size = 2.8, colour = "black", min.segment.length = 0, seed = the.seed) +
-  facet_wrap(~ panel) +
-  coord_equal(xlim = c(-lim_sc, lim_sc), ylim = c(-lim_sc, lim_sc)) +
-  scale_colour_manual(values = c(col_group, "Not significant" = "grey85"), name = NULL) +
-  guides(colour = guide_legend(nrow = 2, override.aes = list(size = 3))) +
-  labs(x = "NES in SCZ vs controls", y = "NES in BD vs controls",
-       title = "NES of the Hallmark processes in SCZ and in BD",
-       subtitle = paste0("GSEA on MSigDB ", overview_collection, ": each dot is a gene set; rho = Spearman correlation of the NES"),
-       caption = "Dashed line: same NES in both diseases. Labels: the 2 most significant shared sets per cell type.") +
-  theme_project()
-p_F04
-save_figure(p_F04, "Q3_F04_NES_scatter_Hallmark", fig_dir, width = 11, height = 8)
+```{r fig-F08, fig.width=14, fig.height=8.5}
+p_F08 <- plot_shared_specific(paired, "Hallmark", cell_order)
+p_F08
+save_figure(p_F08, "Q3_F08_shared_specific", fig_dir, width = 14, height = 8.5)
 ```
 
-**Figure Q3-F04 – Comparison of the pathway profiles of SCZ and BD.** Normalised enrichment score (NES) of each
-MSigDB Hallmark set in SCZ vs controls (x) and in BD vs controls (y), per cell type. Colours give the category of Figure
-F03. The Spearman correlation (rho) of the NES over all sets is given in each panel title. Dashed line: identity.
+**Figure Q3-F08 – Shared and disease-specific gene sets, and similarity of the SCZ and BD profiles.** (A) Hallmark
+gene sets significant (GSEA, adjusted p < 0.05) in at least one disease compared with controls, per cell type and
+category: shared with the same direction (purple), shared with opposite directions (orange), SCZ only (blue) or BD only
+(red); dark = confirmed by the direct SCZ vs BD test, light = not confirmed. (B) Spearman correlation of the NES of all
+tested gene sets between SCZ and BD, per cell type and collection.
 
 ::: {.callout-tip title="How to read"}
-Each dot is a process. Top right: up in both diseases; bottom left: down in both; the two other corners: opposite
-directions. Dots close to the dashed diagonal change in the same way in SCZ and BD. A high rho means similar profiles
-overall.
+(A) A large purple part means that many functions are changed in the same way in both diseases. Only the **dark** blue
+and red parts are gene sets that truly differ between the two disorders; the light parts are seen in one disease only,
+without evidence of a difference. (B) A dot close to 1 means that the two diseases have the same profile in that cell
+type; close to 0, unrelated profiles.
 :::
 
-::: {.callout-important title="Interpretation [to fill]"}
-- Do the dots follow the diagonal (high rho)? In which cell types?
-- Which processes are the purple (shared) dots? Name the 2–3 most relevant ones for the report.
+::: {.callout-important title="Interpretation"}
+- (A) In astrocytes, microglia, OPC and pericytes, most significant gene sets are **shared**. In neurons, gene sets
+  significant in one disease only dominate: SCZ-only sets are mostly in upper-layer neurons and interneurons, BD-only
+  sets in deep-layer neurons (EN_L6B, EN_L6_IT_1, EN_L6_IT_2).
+- (B) The whole profiles are most alike in Astro, Micro, OPC and PC (rho 0.67–0.83 with Hallmark), and less in neurons
+  (rho 0.04–0.51). The three collections agree.
+- At the gene level (Q2), the fold changes of SCZ and BD correlate only modestly (rho 0.19–0.54); at the pathway level,
+  the correlation is higher in 18 of 23 cell types, most of all in glia (Astro 0.24 → 0.78, OPC 0.26 → 0.67): the
+  convergence is stronger at the level of functions than of genes, as H1 predicts.
 :::
 
-## The main pathways at a glance
+**Which gene sets truly differ between SCZ and BD?** The direct comparison, on the same gene sets as F07.
 
-```{r fig-F05, fig.width=12, fig.height=10}
-top_sets <- paired |>
-  filter(category != "not_significant") |>
-  mutate(best_padj = pmin(p.adjust_SCZ, p.adjust_BD)) |>
-  group_by(collection, ID) |>
-  summarise(best_padj = min(best_padj), .groups = "drop") |>
-  group_by(collection) |>
-  slice_min(best_padj, n = 30, with_ties = FALSE) |>
-  ungroup()
-
-heat_data <- gsea_all |>
-  semi_join(top_sets, by = c("collection", "ID")) |>
-  mutate(signif = ifelse(p.adjust < alpha, "*", ""))
-
-# Main collection (Hallmark) for the main text, GO for the appendix; SynGO has its own figure (F07)
-for (coll in intersect(c(overview_collection, "GO_BP"), unique(heat_data$collection))) {
-  d <- filter(heat_data, collection == coll)
-  # order the rows so that sets with similar profiles are next to each other
-  wide <- d |>
-    filter(disease %in% c("SCZ", "BD")) |>
-    mutate(column = paste(disease, cell_type)) |>
-    select(ID, column, NES) |>
-    pivot_wider(names_from = column, values_from = NES, values_fill = 0)
-  row_order <- if (nrow(wide) > 2) wide$ID[hclust(dist(as.matrix(wide[, -1])))$order] else wide$ID
-  set_labels <- setNames(clean_set_name(d$Description, 55), d$ID)
-  lim <- max(abs(d$NES), na.rm = TRUE)
-
-  p <- d |>
-    mutate(ID = factor(ID, levels = row_order)) |>
-    ggplot(aes(cell_type, ID, fill = NES)) +
-    geom_tile(colour = "white") +
-    geom_text(aes(label = signif), size = 4, vjust = 0.75) +
-    facet_wrap(~ disease, labeller = as_labeller(lab_disease)) +
-    scale_fill_nes(lim) +
-    scale_y_discrete(labels = set_labels) +
-    labs(x = "Cell type", y = NULL,
-         title = paste0("Main pathways altered in SCZ and BD (", coll, ")"),
-         subtitle = paste0("GSEA NES of the ", length(row_order), " most significant sets; * adjusted p < ", alpha),
-         caption = "Orange: set shifted up; purple: shifted down. Right panel: direct comparison (orange = higher in SCZ than in BD).") +
-    theme_project() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1), panel.grid = element_blank(),
-          legend.position = "right")
-  print(p)
-  save_figure(p, paste0("Q3_F05_NES_heatmap_", coll), fig_dir, width = 12, height = 2.5 + 0.25 * length(row_order))
-}
+```{r fig-F09, fig.width=10, fig.height=10}
+p_F09 <- plot_gsea_heatmap(gsea_all, "Hallmark", cell_order, n_sets = 30, alpha = alpha, diseases = "SCZ vs BD",
+                           title = "Gene sets that differ between SCZ and BD (Hallmark)",
+                           subtitle = "Direct comparison of the two diseases, same gene sets as F07; * adjusted p < 0.05")
+p_F09
+save_figure(p_F09, "Q3_F09_direct_SCZ_vs_BD", fig_dir, width = 10, height = 10)
 ```
 
-**Figure Q3-F05 – Main pathways altered in SCZ and BD (Hallmark for the main text, GO Biological Process for the appendix).** Normalised enrichment score (NES,
-colour) of the 30 most significant gene sets of the collection, per cell type (columns), in SCZ vs controls (left), BD
-vs controls (middle) and SCZ vs BD (right). Rows are ordered by hierarchical clustering of the SCZ and BD profiles.
+**Figure Q3-F09 – Gene sets that differ between SCZ and BD.** NES of the direct SCZ vs BD comparison (patients compared
+with each other) for the 30 Hallmark sets of F07. Orange: higher in SCZ than in BD; purple: higher in BD than in SCZ;
 \* adjusted p < 0.05.
 
 ::: {.callout-tip title="How to read"}
-Read the figure row by row: a row with the same colour and a star in the left and middle panels is a function changed
-in the same way in both diseases. A star in the right panel means the two diseases differ for that function in that
-cell type.
+Only the stars matter for a conclusion: they mark a gene set that differs significantly between the two diseases in
+that cell type. Without a star, the two diseases cannot be told apart for that set.
 :::
 
-::: {.callout-important title="Interpretation [to fill]"}
-- Which rows are coloured the same, with stars, in both disease panels? These are the shared functions to highlight.
-- Where are the stars of the direct test? Do they match the "confirmed" pathways of Figure F03?
+::: {.callout-important title="Interpretation"}
+- The confirmed differences follow the split of F08. Protein secretion, MYC targets and the unfolded protein response
+  are higher in SCZ in upper-layer neurons and interneurons.
+- Hypoxia, mTORC1 and TNFA signalling are higher in BD in deep-layer neurons (EN_L6B, EN_L6_CT, EN_L6_IT_1).
+- In vascular cells (Endo, VLMC), many processes are higher in SCZ.
 :::
 
-# Step 7 – Same pathway, different genes? (direct test of H1)
+# Step B5 – Same pathway, same genes? (direct test of H1)
 
-**What we do and why.** For a pathway changed in the same direction in both diseases, we look at the genes that drive
-it (the leading edge) in SCZ and in BD, and measure their overlap with the Jaccard index:
+**What we do and why.** For a pathway shifted in the same direction in both diseases, we look at the genes that drive it
+(its leading edge) in SCZ and in BD, and measure their overlap with the Jaccard index:
 
 $$
 J = \frac{\text{genes driving the pathway in both diseases}}{\text{genes driving it in at least one disease}}
 $$
 
-J = 0: completely different genes; J = 1: the same genes. H1 predicts that shared pathways are reached through partly
-different genes, so a J lower than 0.5, and lower than or similar to the gene-level overlap of the DEG lists (Step 4).
+J = 0: completely different genes; J = 1: the same genes. For example, the interferon gamma response in microglia
+(F05) has 187 tested genes; 90 drive it in SCZ and 65 in BD, 46 of them in both: J = 46 / 109 = 0.42.
+
+To judge whether J is large, we need a reference: if each disease picked its driving genes **at random** inside the
+pathway, they would still share some genes by coincidence. With a genes in SCZ and b in BD among the n genes of the
+pathway, they would share on average a × b / n genes; this gives the **J expected by chance** (0.25 in the example).
+For each cell type, we compare the observed and expected J of its shared pathways with a **paired two-sided Wilcoxon
+signed-rank test**: paired, because both values come from the same pathway; non-parametric, because J is bounded
+between 0 and 1 and not normally distributed. P-values are corrected over the 23 cell types (Benjamini–Hochberg).
 
 ```{r leading-edge}
 shared <- paired |>
   filter(category == "shared_concordant") |>
-  add_leading_edge_overlap()
-
+  add_leading_edge_overlap() |>
+  add_expected_jaccard(gsea_all)
 write.csv(shared, file.path(out_dir, "shared_sets_leading_edge.csv"), row.names = FALSE)
 
-shared |>
-  mutate(set = clean_set_name(Description)) |>
-  select(collection, cell_type, set, NES_SCZ, NES_BD, leading_edge_jaccard) |>
-  arrange(leading_edge_jaccard) |>
-  head(15)
+le_test <- test_leading_edge(shared)
+write.csv(le_test, file.path(out_dir, "leading_edge_test.csv"), row.names = FALSE)
 ```
 
-```{r fig-F06, fig.width=10, fig.height=6}
-if (nrow(shared) > 0) {
-  n_shared  <- count(shared, cell_type, name = "n_sets")
-  le_data   <- shared |>
-    left_join(n_shared, by = "cell_type") |>
-    mutate(label = paste0(cell_type, "\n(", n_sets, " sets)"))
-  deg_point <- deg_overlap |>
-    semi_join(le_data, by = "cell_type") |>
-    left_join(n_shared, by = "cell_type") |>
-    mutate(label = paste0(cell_type, "\n(", n_sets, " sets)"))
-
-  p_F06 <- ggplot(le_data, aes(label, leading_edge_jaccard)) +
-    geom_boxplot(outlier.shape = NA, fill = "#e2a9f1", colour = "#8e3fb0", width = 0.6) +
-    geom_jitter(aes(colour = collection), width = 0.15, alpha = 0.7, size = 1.6) +
-    geom_point(data = deg_point, aes(y = jaccard_DEG, shape = "Overlap of the DEG lists (Step 4)"),
-               colour = "black", fill = "#f1a340", size = 4) +
-    geom_hline(yintercept = 0.5, linetype = "dashed", colour = "grey50") +
-    scale_shape_manual(values = c("Overlap of the DEG lists (Step 4)" = 23), name = NULL) +
-    scale_colour_brewer(palette = "Dark2", name = "Collection") +
-    coord_cartesian(ylim = c(0, 1)) +
-    labs(x = "Cell type (number of shared pathways)",
-         y = "Overlap of the driving genes\nin SCZ and BD (Jaccard index)",
-         title = "Overlap of the genes driving the pathways shared by SCZ and BD",
-         subtitle = "Leading-edge overlap of the pathways altered in the same direction in both disorders (GSEA)",
-         caption = "0 = different genes, 1 = same genes. Dashed line: J = 0.5. Diamond: overlap of the DEG lists of the same cell type.") +
-    theme_project() +
-    guides(colour = guide_legend(order = 1), shape = guide_legend(order = 2))
-  print(p_F06)
-  save_figure(p_F06, "Q3_F06_leading_edge_overlap", fig_dir, width = 10, height = 6)
-} else {
-  cat("Note: no shared pathway, the leading-edge comparison cannot be done.\n")
-}
+```{r fig-F10, fig.width=14, fig.height=10}
+p_F10 <- plot_leading_edge(shared, le_test, cell_order, alpha = alpha, seed = the.seed)
+p_F10
+save_figure(p_F10, "Q3_F10_leading_edge_overlap", fig_dir, width = 14, height = 10)
 ```
 
-**Figure Q3-F06 – Overlap of the genes driving the pathways shared by SCZ and BD.** For each gene set significantly
-shifted in the same direction in SCZ and BD (GSEA, adjusted p < 0.05 in both), Jaccard index between the leading-edge
-genes of the two diseases (dots, coloured by collection; boxes: median and interquartile range per cell type). The
-diamond gives, for comparison, the Jaccard index of the DEG lists of the same cell type (Step 4). Dashed line:
-J = 0.5.
+**Figure Q3-F10 – Overlap of the genes driving the pathways shared by SCZ and BD.** For each pathway shifted in the
+same direction in both diseases (GO, Hallmark, Reactome), Jaccard index between its leading-edge genes in SCZ and in BD
+(purple), and the value expected if each disease picked its driving genes at random inside the pathway (grey). One dot
+per pathway. (A) Excitatory neurons, (B) inhibitory neurons, (C) glial cells, (D) vascular cells; in brackets, the
+number of shared pathways. Paired two-sided Wilcoxon signed-rank test per cell type, Benjamini–Hochberg adjusted
+(ns: not significant; \* < 0.05; \*\* < 0.01; \*\*\* < 0.001; \*\*\*\* < 0.0001).
 
 ::: {.callout-tip title="How to read"}
-Each dot is a pathway changed in the same way in both diseases in one cell type. Low dots: the two diseases reach this
-pathway through different genes. High dots: through the same genes. The diamond shows how much the DEG lists overlap.
+Each dot is one shared pathway. For each cell type, the grey box is what chance alone would give, the purple box what
+we observe. A purple box above the grey one, with stars on the bracket, means that SCZ and BD share more driving genes
+than chance would predict. The higher the purple box, the more the two diseases use the same genes.
 :::
 
-::: {.callout-important title="Interpretation [to fill]"}
-- Are most dots below 0.5? Then shared pathways are reached through partly different genes: **H1 is supported**.
-- Are the pathways shared even where the DEG overlap (diamond) is low? This is the convergence H1 predicts.
-- Close to 1? SCZ and BD share the same genes for these functions: convergence at the gene level too.
-- Pick one example pathway with a low overlap and list a few SCZ-only and BD-only driving genes for the report.
+::: {.callout-important title="Interpretation"}
+- In 20 of the 23 cell types, the observed overlap is significantly **higher than chance** (median J ≈ 0.4 against
+  ≈ 0.2). The three non-significant cell types (EN_L5_6_NP, IN_LAMP5_LHX6, IN_PVALB_CHC) have only 2 to 6 shared
+  pathways.
+- It is also far higher than the overlap of the significant genes (J ≈ 0.05, F04): the very low gene overlap of Part A
+  comes largely from the significance threshold.
+- But J ≈ 0.4 is far from 1: about 60 % of the driving genes are seen in one disease only.
+- The shared pathways therefore rest on **a common core of genes, plus genes specific to each disease**.
+- Limit: pathways overlap (especially in GO), so they are not fully independent and the p-values are somewhat
+  optimistic; the result holds because the observed value is above the expected one in 97 to 100 % of the pathways of
+  almost every cell type.
 :::
 
-# Step 8 – Which results are found by both methods?
+# Step B6 – And the synapse? (SynGO)
+
+**What we do and why.** The question asks specifically about synaptic and neurotransmission pathways, for three
+reasons: (1) the common genetic risk of SCZ is concentrated in genes of neurons and of synaptic organisation,
+differentiation and transmission [8]; (2) the genetic risk of BD is enriched in synaptic signalling genes, in neurons of
+the prefrontal cortex [9]; (3) bulk cortex studies report decreased neuronal and synaptic gene modules in SCZ [10]. We
+use SynGO, a database of synaptic genes curated by experts [6], more reliable for the synapse than GO, whose synaptic
+terms are numerous, redundant and partly predicted automatically. We use SynGO release 1.3: the two top-level terms
+("synapse" and "process in the synapse") and their direct children (for example presynapse, postsynapse, synaptic
+signalling, synapse organisation); each term includes the genes of its sub-terms. Terms with fewer than
+`r min_set_size` tested genes are left out by GSEA.
+
+```{r fig-F11, fig.width=11, fig.height=12}
+p_F11 <- plot_gsea_heatmap(gsea_all, "SynGO", cell_order, n_sets = 20, alpha = alpha,
+                           diseases = c("SCZ", "BD", "SCZ vs BD"), side_by_side = FALSE,
+                           title = "Synaptic gene sets (SynGO) in SCZ and BD",
+                           subtitle = "All SynGO sets significant in at least one cell type; * adjusted p < 0.05")
+p_F11
+save_figure(p_F11, "Q3_F11_SynGO", fig_dir, width = 11, height = 12)
+```
+
+**Figure Q3-F11 – Synaptic gene sets (SynGO) in SCZ and BD.** NES of the SynGO gene sets, per cell type grouped by
+family: (A) SCZ vs controls, (B) BD vs controls, (C) direct SCZ vs BD comparison (orange = higher in SCZ than in BD).
+\* adjusted p < 0.05.
+
+::: {.callout-tip title="How to read"}
+Same reading as F07: orange = synaptic genes grouped among the genes increased in patients, purple = among the decreased
+genes. Compare panels A and B column by column; a star in panel C means that the two diseases differ for that synaptic
+function in that cell type.
+:::
+
+::: {.callout-important title="Interpretation"}
+- The synapse is where the two diseases **diverge most**, and where the cell types matter most.
+- In SCZ, presynaptic processes and synapse organisation are shifted **up** in upper-layer neurons and interneurons,
+  whereas synaptic signalling and the postsynapse are shifted **down** in deep-layer neurons (EN_L6B, EN_L6_CT,
+  EN_L6_IT_1, EN_L6_IT_2).
+- In BD, synaptic signalling, presynapse and postsynapse are shifted **down** in upper-layer neurons (EN_L3_5_IT) and in
+  interneurons (IN_SST, IN_VIP).
+- The direct test confirms the difference in several neurons (EN_L5_6_NP, IN_PVALB_CHC, IN_VIP).
+- In glial cells, synaptic sets are shifted down in SCZ (Astro, Micro, Oligo).
+:::
+
+# Which results are found by both methods?
 
 **What we do and why.** A pathway found by ORA (with a threshold on genes) **and** by GSEA (without threshold) is more
 reliable. For each cell type and disease, we compare the significant sets of the two methods.
@@ -933,92 +945,71 @@ Number of significant sets found by both methods (`both`), by ORA only or by GSE
 merged with `simplify()`, so the GO overlap is a lower bound.
 :::
 
-::: {.callout-important title="Interpretation [to fill]"}
-- Prefer the pathways found by both methods in the report: they are the most robust.
-- Many `GSEA_only` pathways = small coordinated changes that do not pass the DEG threshold: expected under H1.
-- `ORA_only` pathways are often driven by a few strongly changed genes.
+::: {.callout-important title="Interpretation"}
+- About 60 % of the functions found by ORA are also found by GSEA: the two methods agree on the strongest results.
+- GSEA finds many more functions than ORA (`GSEA_only`), as expected: many small, coordinated changes do not pass the
+  significance threshold of the genes.
+- The functions found by both methods are the most robust and are preferred in the report (for example, in Hallmark:
+  interferon responses in astrocytes and microglia; hypoxia, mTORC1 and TNFA signalling in glial and vascular cells).
 :::
 
-# Step 9 – Focus on synaptic gene sets (SynGO)
+# Conclusion
 
-**What we do and why.** The question asks specifically about synaptic and neurotransmission pathways. SynGO is a
-database of synaptic genes curated by experts, so it tests this part directly. In the literature, synaptic genes are
-mostly down-regulated in excitatory and inhibitory neurons in SCZ [7] (single-nucleus DLPFC); evidence
-is scarcer for BD. Glial cells are not expected to show SynGO changes: for them, myelination and inflammation are more
-relevant (also followed in Q5). We use SynGO release 1.3: the two top-level terms ("synapse" and "process in the
-synapse") and their direct children (for example presynapse, postsynapse, synaptic signalling, synapse organisation);
-each term includes the genes of its sub-terms. Terms with fewer than `r min_set_size` tested genes are left out by GSEA.
-
-```{r fig-F07, fig.width=10, fig.height=5}
-if ("SynGO" %in% names(collections)) {
-  syngo_res <- gsea_all |>
-    filter(collection == "SynGO") |>
-    mutate(set = clean_set_name(Description, 50))
-  lim_s <- max(abs(syngo_res$NES), na.rm = TRUE)
-
-  p_F07 <- ggplot(syngo_res, aes(cell_type, set)) +
-    geom_point(aes(size = -log10(p.adjust), colour = NES)) +
-    geom_point(data = filter(syngo_res, p.adjust < alpha), aes(size = -log10(p.adjust)),
-               shape = 1, colour = "black", stroke = 0.8) +
-    facet_wrap(~ disease, labeller = as_labeller(lab_disease)) +
-    scale_colour_nes(lim_s) +
-    scale_size_continuous(name = "-log10(adjusted p)", range = c(1.5, 8)) +
-    labs(x = "Cell type", y = "SynGO term",
-         title = "Synaptic gene sets (SynGO) per cell type",
-         subtitle = "GSEA on SynGO synaptic gene sets (expert-curated)",
-         caption = paste0("Black ring: adjusted p < ", alpha, ". Purple: shifted down; orange: shifted up (right panel: higher in SCZ than in BD).")) +
-    theme_project() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "right")
-  print(p_F07)
-  save_figure(p_F07, "Q3_F07_SynGO", fig_dir, width = 10, height = 3 + 0.35 * n_distinct(syngo_res$set))
-
-  paired |>
-    filter(collection == "SynGO") |>
-    select(cell_type, ID, NES_SCZ, p.adjust_SCZ, NES_BD, p.adjust_BD, group) |>
-    arrange(cell_type, pmin(p.adjust_SCZ, p.adjust_BD))
-} else {
-  cat("Note: SynGO file not available yet, see 01_DATA/genesets/README.md\n")
-}
-```
-
-**Figure Q3-F07 – Synaptic gene sets (SynGO) per cell type.** GSEA results of the SynGO gene sets, per cell type, in
-SCZ vs controls, BD vs controls and SCZ vs BD. Colour: NES (purple = shifted down, orange = shifted up); size:
-−log10 adjusted p-value; black ring: adjusted p < 0.05.
-
-::: {.callout-tip title="How to read"}
-Each dot is a synaptic gene set in one cell type. Big purple dots with a ring in neurons would mean that synaptic genes
-are significantly decreased. The table below gives the values and the category of Figure F03.
-:::
-
-::: {.callout-important title="Interpretation [to fill]"}
-- Are synaptic sets down-regulated (NES < 0) in neurons, in both diseases? Is it significant?
-- Stronger in excitatory or in inhibitory neurons?
-- Do we reproduce the SCZ result of Ruzicka et al. [7]? What do we add for BD?
-:::
-
-# Synthesis: answer to Q3
-
-::: {.callout-important title="Summary table [to fill after the analysis]"}
+::: {.callout-important title="Summary table"}
 | Element | Result | Figure |
 |---------|--------|--------|
-| Main functions over-represented among the DEGs, per cell type | | F01 |
-| Cell types with the most pathway changes | | table, Step 5 |
-| Main shared functions (same direction in SCZ and BD) | | F03, F05 |
-| Functions that truly differ between SCZ and BD (direct test) | | F03, F05 |
-| Are the overall pathway profiles of SCZ and BD similar? | | F04 |
-| Gene-level overlap vs overlap of the genes driving shared pathways | | F06 |
-| Results found by both ORA and GSEA | | table, Step 8 |
-| Synaptic sets: direction and cell types | | F07 |
-| **Is H1 supported?** | | F06 |
+| Main functions over-represented among the significant genes (ORA) | mitochondrial energy production up in SCZ in deep-layer neurons; protein folding up in SCZ in microglia and vascular cells; few synaptic functions; almost never the same function in SCZ and BD | F02, F03 |
+| Cell types with the most pathway changes | SCZ: upper-layer neurons (EN_L2_3_IT), CGE interneurons, glial and vascular cells; BD: deep-layer neurons (EN_L6B, EN_L6_IT), glial cells, pericytes | F06 |
+| Main shared functions (same direction in SCZ and BD) | interferon responses, IL6/STAT3 and TNFA signalling, hypoxia, mTORC1, protein secretion, cell cycle; almost always shifted up; mostly in Astro, Micro, OPC and PC | F07, F08 |
+| Functions that truly differ between SCZ and BD (direct test) | protein secretion, MYC targets, unfolded protein response higher in SCZ in upper-layer neurons and interneurons; hypoxia, mTORC1, TNFA signalling higher in BD in deep-layer neurons; synaptic sets | F08, F09, F11 |
+| Are the overall pathway profiles of SCZ and BD similar? | yes in Astro, Micro, OPC and PC (rho 0.67–0.83); much less in neurons (rho 0.04–0.51) | F08 (B) |
+| Gene-level overlap vs overlap of the genes driving shared pathways | significant genes: J ≈ 0.05; genes driving the shared pathways: J ≈ 0.4, twice the value expected by chance (≈ 0.2), significant in 20 of 23 cell types | F04, F10 |
+| Results found by both ORA and GSEA | about 60 % of the ORA functions are also found by GSEA | table |
+| Synaptic sets: direction and cell types | SCZ: up in upper-layer neurons and interneurons, down in deep-layer neurons; BD: down in upper-layer neurons and interneurons; glia: down in SCZ | F11 |
+| **Is H1 supported?** | **partly**: shared functions through partly shared genes, but only in glial and vascular cells; the two disorders differ at the synapse | F08, F10, F11 |
 :::
+
+**Answer to Q3.** SCZ and BD share few significant genes (F04), but they converge on common biological functions (F07,
+F08). The convergence is strongest in glial and vascular cells: in astrocytes, microglia, OPC and pericytes, most
+altered gene sets are shared and the whole profiles are similar (rho 0.67–0.83). The shared functions are mainly
+inflammatory (interferon responses, IL6/STAT3, TNFA signalling), stress-related (hypoxia, protein folding) and
+growth-related (mTORC1). These shared pathways rest on a common core of driving genes, twice larger than expected by
+chance, plus genes specific to each disease (F10). Neurons, and above all the synapse, are where the two disorders
+diverge (F11).
+
+**In one sentence:** SCZ and BD converge on inflammatory and stress pathways in glial and vascular cells, through partly
+shared genes, but diverge at the synapse of cortical neurons.
+
+**Is H1 supported?** Partly. SCZ and BD do affect the same functions through only partly shared genes, as H1 predicts.
+But this convergence is limited to glial and vascular cells; for the synaptic functions targeted by the question, the
+two disorders differ.
+
+**Our results in the light of the literature.** A partial convergence is what the genetics predict. SCZ and BD are the
+pair of brain disorders with the highest shared heritability in the PsychAD atlas, yet their transcriptomic similarity
+is only moderate, and lower than their genetic overlap would suggest [7]. Our results locate this partial convergence:
+it is found in glial and vascular cells, not in neurons.
+
+The shared glial signal is mostly inflammatory. This agrees with the astrocyte gene module increased in both disorders
+in bulk cortex [10], and with the increase of inflammation in the DLPFC in SCZ, weaker in BD and mostly IL6/STAT3 [11],
+as in our data. Part of the shared stress signal is probably not specific to SCZ and BD: protein folding is one of the
+signatures shared by all eight brain disorders of the PsychAD atlas [7].
+
+At the synapse, our SCZ results reproduce the layer pattern of the largest single-nucleus study of SCZ [12]: synaptic
+gene sets decreased in deep-layer excitatory neurons, but increased in upper-layer neurons. In astrocytes, the decrease
+of cholesterol homeostasis and synaptic gene sets in SCZ matches the synaptic neuron–astrocyte program, which declines
+in SCZ and with age [13]; this links Q3 to Q5. For BD, single-cell data are scarce; the decrease we observe at the
+synapse fits the enrichment of BD genetic risk in synaptic signalling genes [9], as for SCZ [8]. Finally, the decrease
+of oxidative phosphorylation in BD agrees with the mitochondrial module decreased in both disorders [10]; its increase
+in SCZ upper-layer neurons does not, and may reflect the cell-type resolution of our data.
 
 **Links with the other questions.**
 
-- **Q2**: shared genes vs shared functions: is the convergence stronger at the pathway level?
-- **Q4**: shared pathways involving ligands, receptors or neurotransmission can be checked in the CellChat results.
-- **Q5**: inflammation and myelination pathways found here are also followed as ageing signatures.
+- **Q1 (composition)**: Microglia are fewer in both disorders (Q1), yet they share inflammatory pathways in SCZ and BD (F07, F08); this shift in expression is measured within the cell type, so it is not a consequence of the change in number.
+- **Q2 (genes)**: The convergence is stronger at the level of functions than of genes: SCZ–BD similarity is higher for pathways than for fold changes in 18 of 23 cell types (F08).
+- **Q4 (communication)**: Shared glial inflammatory signalling (interferon, IL6, TNF) and divergent synaptic signalling are the candidates to check in CellChat.
+- **Q5 (ageing)**: Inflammation, oxidative phosphorylation and the decrease of cholesterol and synaptic genes in SCZ astrocytes [13] are hallmarks of brain ageing, tested in Q5.
 
-# Limits to discuss in the report
+# Limits 
 
 - **Dependence on Q2.** The enrichment inherits every bias of the DE analysis (covariates, number of donors per cell
   type).
@@ -1028,30 +1019,35 @@ are significantly decreased. The table below gives the values and the category o
 - **RNA is not activity.** A pathway shifted at the RNA level does not prove a change in protein activity.
 - **Medication.** Antipsychotics (SCZ) and lithium or mood stabilisers (BD) can change synaptic and metabolic genes on
   their own. A pathway that differs between SCZ and BD may reflect the treatment rather than the disease.
+- **Almost all gene sets are shifted up.** Hypoxia, mTORC1 and stress pathways are up in most cell types. Part of
+  this may be technical, because agonal factors such as hypoxia strongly modify post-mortem expression profiles [14],
+  and stress signatures are shared by all brain disorders [7].
+- **Bulk vs single cell.** Most published studies used bulk tissue; a difference with them may come from cell
+  composition, not from expression within a cell type.
+- **Ancestry.** In Q2, the SCZ results do not hold in donors of African ancestry only; ancestry is unbalanced between
+  groups, and Q3 inherits this limit.
 - **Power.** A disease with fewer donors has fewer significant pathways: "specific" may mean "not detected". The direct
   SCZ vs BD test limits this risk, but it has less power than the comparisons with controls, and a non-significant
   direct test does not prove that the two diseases are identical.
 
 # List of figures
 
-All figures are saved as `.png` in `04_FIGURES/Q3/`. We kept only the figures
-that answer a part of the question; intermediate results (numbers of DEGs, numbers of shifted pathways, ORA vs GSEA
-agreement...) are tables, because they are checks rather than results. The proposed placement follows the logic of a
-scientific article: **main** figures answer the question and test the hypothesis (slides and report);
-**supplementary** figures support them (appendix). To be confirmed with the real results.
+All figures are saved as `.png` in `04_FIGURES/Q3_enrichment/`. Every table is saved in
+`03_RESULTS/Q3_enrichment/`.
 
-| Figure | File | What it shows | Why we need it | Proposed placement |
-|--------|------|---------------|----------------|--------------------|
-| F01 | `Q3_F01_ORA_GO_<cell type>` | GO terms over-represented among the DEGs, per key cell type | first answer to "which functions?", close to the Q2 genes (ORA step of the workflow) | Supplementary; one cell type in the report if the result is clear |
-| F02 | `Q3_F02_GSEA_example` | one GSEA result in detail | lets the reader (and the jury) understand NES and leading edge, used in all the next figures | Supplementary (or methods slide) |
-| F03 | `Q3_F03_pathway_categories` | shared vs specific pathways per cell type, specific ones checked by the direct SCZ vs BD test | answers "shared or specific?" with the right test | **Main** |
-| F04 | `Q3_F04_NES_scatter_Hallmark` | NES in SCZ against NES in BD for every process | shows whether the two profiles are similar overall, beyond significant pathways | Supplementary (main if the correlation is a key result) |
-| F05 | `Q3_F05_NES_heatmap_Hallmark` / `_GO_BP` | the main pathways in SCZ, BD and SCZ vs BD | names the pathways that are shared and those that differ | **Main** (Hallmark); GO version supplementary |
-| F06 | `Q3_F06_leading_edge_overlap` | overlap of the genes driving the shared pathways, compared with the DEG overlap | **direct test of H1**: same function, different genes? | **Main** |
-| F07 | `Q3_F07_SynGO` | synaptic gene sets per cell type | answers the synaptic part of the question | **Main** (report); slide if the result is clear |
-
-For the slides (1–2 per question): F05 (which pathways) and F06 (H1). For the report: F03, F05, F06 and F07 in the
-main text; F01, F02, F04 and F05-GO in the appendix.
+| Figure | File | What it shows | Why we need it |
+|--------|------|---------------|----------------|
+| F01 | `Q3_F01_ORA_overview` | significant genes and functions found by ORA, per cell type | shows where ORA has something to say, and its limits |
+| F02 | `Q3_F02_ORA_GO_<family>` | GO functions over-represented among the significant genes, one panel per cell type | first answer to "which functions?", close to the Q2 genes |
+| F03 | `Q3_F03_ORA_<collection>_<family>` | same with Hallmark, Reactome and SynGO | checks that the GO results hold with other collections |
+| F04 | `Q3_F04_DEG_overlap` | share of significant genes common to SCZ and BD | the gene-level overlap that H1 compares with the pathway level |
+| F05 | `Q3_F05_GSEA_example` | one GSEA result in detail | lets the reader understand the NES and the leading edge, used in all the next figures |
+| F06 | `Q3_F06_GSEA_counts_<collection>` | number of gene sets shifted up or down, per cell type and disease | answers "where?": which cell types are the most affected at the level of functions |
+| F07 | `Q3_F07_NES_heatmap_<collection>` | the 30 gene sets significant in the most cell types, in SCZ and BD | answers "which functions?", and shows the shared ones |
+| F08 | `Q3_F08_shared_specific` | shared vs specific gene sets per cell type, and similarity of the whole profiles | answers "together or separately?" with the right test |
+| F09 | `Q3_F09_direct_SCZ_vs_BD` | direct SCZ vs BD comparison of the gene sets of F07 | names the functions that truly differ between the two diseases |
+| F10 | `Q3_F10_leading_edge_overlap` | overlap of the genes driving the shared pathways, observed vs chance | **direct test of H1**: same function, same genes? |
+| F11 | `Q3_F11_SynGO` | synaptic gene sets in SCZ, BD and SCZ vs BD | answers the synaptic part of the question |
 
 ```{r figure-files}
 # Files actually created by this run
@@ -1060,22 +1056,36 @@ sort(list.files(fig_dir, pattern = "^Q3_F.*\\.png$"))
 
 # References
 
-1. Yu G. *Biomedical Knowledge Mining using GOSemSim and clusterProfiler* (official clusterProfiler book): GO
-   over-representation (`enrichGO`), GO GSEA (`gseGO`), `simplify()`, `compareCluster()` and the `enrichplot` figures.
-   <https://yulab-smu.top/biomedical-knowledge-mining-book/>
-2. HBC Training (Harvard Chan Bioinformatics Core). *Functional analysis of pseudobulk DE*: ORA with `enrichGO`, then
+1. HBC Training (Harvard Chan Bioinformatics Core). *Functional analysis of pseudobulk DE*: ORA with `enrichGO`, then
    GSEA with `GSEA()` and MSigDB gene sets from `msigdbr`, on pseudobulk DESeq2 results from single-cell data.
    <https://hbctraining.github.io/Pseudobulk-for-scRNAseq-Quarto/lessons/10_functional_analysis_pseudobulk.html>
-3. Wu T. et al. (2021). clusterProfiler 4.0: a universal enrichment tool for interpreting omics data. *The Innovation*,
+2. Wu T. et al. (2021). clusterProfiler 4.0: a universal enrichment tool for interpreting omics data. *The Innovation*,
    2, 100141.
-4. Subramanian A. et al. (2005). Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide
+3. Subramanian A. et al. (2005). Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide
    expression profiles. *PNAS*, 102, 15545–15550.
+4. Zhou Y. et al. (2019). Metascape provides a biologist-oriented resource for the analysis of systems-level datasets.
+   *Nature Communications*, 10, 1523. Default enrichment filters: p < 0.01, minimum count of 3, enrichment factor > 1.5.
 5. Liberzon A. et al. (2015). The Molecular Signatures Database hallmark gene set collection. *Cell Systems*, 1,
    417–425.
 6. Koopmans F. et al. (2019). SynGO: an evidence-based, expert-curated knowledge base for the synapse. *Neuron*, 103,
    217–234.
-7. Ruzicka W. B. et al. (2024). Single-cell multi-cohort dissection of the schizophrenia transcriptome. *Science*, 384,
-   eadg5136.
+7. Lee D. et al. (2026). Single-cell atlas of transcriptomic vulnerability across brain disorders (PsychAD). *Nature*,
+   657, 988–1002. <https://doi.org/10.1038/s41586-025-09573-z>
+8. Trubetskoy V. et al. (2022). Mapping genomic loci implicates genes and synaptic biology in schizophrenia. *Nature*,
+   604, 502–508.
+9. Mullins N. et al. (2021). Genome-wide association study of more than 40,000 bipolar disorder cases provides new
+   insights into the underlying biology. *Nature Genetics*, 53, 817–829.
+10. Gandal M. J. et al. (2018). Shared molecular neuropathology across major psychiatric disorders parallels polygenic
+    overlap. *Science*, 359, 693–697.
+11. Lanz T. A. et al. (2019). Postmortem transcriptional profiling reveals widespread increase in inflammation in
+    schizophrenia: a comparison of prefrontal cortex, striatum, and hippocampus among matched tetrads of controls with
+    subjects diagnosed with schizophrenia, bipolar or major depressive disorder. *Translational Psychiatry*, 9, 151.
+12. Ruzicka W. B. et al. (2024). Single-cell multi-cohort dissection of the schizophrenia transcriptome. *Science*, 384,
+    eadg5136.
+13. Ling E. et al. (2024). A concerted neuron–astrocyte program declines in ageing and schizophrenia. *Nature*, 627,
+    604–611.
+14. Tomita H. et al. (2004). Effect of agonal and postmortem factors on gene expression profile: quality control in
+    microarray analyses of postmortem human brain. *Biological Psychiatry*, 55, 346–352.
 
 # Session info
 
