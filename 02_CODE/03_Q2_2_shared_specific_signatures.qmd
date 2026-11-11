@@ -1,0 +1,578 @@
+---
+title: "Q2 | Shared and distinct transcriptional signatures"
+subtitle: "PsychAD — Cross-disease comparison of schizophrenia and bipolar disorder"
+author: "Mariam H. - Ann-Solène A., Myriam S."
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 2
+    toc-location: right
+    number-sections: true
+    code-fold: false
+    code-copy: true
+    code-overflow: wrap
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+  message: false
+  error: false
+---
+
+<style>
+  h1, h2 { color: #354AA1; }
+  h2 {border-bottom: 2px solid #DCE2F9; padding-bottom: 6px;}
+  h3 { color: #B66A24; }
+  #title-block-header {
+    background: #F7F8FC;
+    border-left: 5px solid #DF812B;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 28px; }
+</style>
+
+```{r setup}
+
+suppressPackageStartupMessages({
+  library(ggplot2)
+  library(knitr)
+  library(here)})
+
+source(here::here("02_CODE", "R", "utils_figures.R"))
+
+col_q2 <- unname(project_colours$Q2["dark"])
+col_groups <- c(Control = "grey60", col_disease[c("SCZ", "BD")])
+
+theme_set(theme_project(base_size = 11) + theme(plot.title = element_text(hjust = 0.5)))
+
+fig_dir <- here::here("04_FIGURES", "Q2")
+dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
+
+```
+
+# Overview
+
+## Research objectives
+
+**Research question :** Do schizophrenia (SCZ) and bipolar disorder (BD) share cell-type-specific transcriptional alterations in the human prefrontal cortex ?
+
+The previous Q2 notebook performed donor-level pseudobulk differential expression analysis using DESeq2, adjusted for age, sex and genetic ancestry.
+
+Three contrasts were analyzed across 23 eligible cell subclasses :
+
+- SCZ versus Control,
+- BD versus Control,
+- SCZ versus BD.
+
+This notebook is using this results in order to investigate shared and distinct transcriptional signatures accross psychiatric diagnoses.
+
+No additional differential expression models are fitted. Existing gene-level estimates are compared within each cell subclass.
+
+:::{.callout-important title = "Interpretation framework"} 
+A gene significant in SCZ versus Controls but not in BD versus Controls is not necessarily specific to schizophrenia. 
+
+Statistical significant depends on effect size, variability and sample size. Disease-associated signatures are first described according to their significance patterns, while the direct contrast between SCZ and BD is examined separately to assess evidence for diagnostic-related differences.
+:::
+
+# Input validation
+
+## Load DESeq2 summary
+
+The analysis uses the complete subclass-specific DESeq2 results generated in the first Q2 notebook.
+
+Original gene-level statistics and adjusted p-values are preserved. No additional filtering or multiple-testing correction is performed before the cross-disease comparisons.
+
+```{r load_q2_results}
+
+#Primary Q2 results
+q2_dir <- here::here("03_RESULTS", "Q2")
+deg_dir <- file.path(q2_dir, "DEG")
+
+#Consolidated export for Q3 (different directory)
+q3_dir <- here::here("03_RESULTS", "Q2_pseudobulk_DE")
+
+#Cross-disease comparison outputs
+comparison_dir <- file.path(q2_dir, "cross_disease")
+dir.create(comparison_dir, recursive = TRUE, showWarnings = FALSE)
+
+#Load summary produced by Q2 notebook 01
+summary_file <- file.path(q2_dir, "Q2_DESeq2_summary.csv")
+
+stopifnot(file.exists(summary_file), dir.exists(deg_dir))
+
+q2_summary <- read.csv(summary_file)
+
+cat("Summary loaded:", nrow(q2_summary), "comparisons\n")
+cat("Subclasses:", length(unique(q2_summary$Subclass)), "\n")
+
+
+required_contrasts <- c("SCZ_vs_Control", "BD_vs_Control", "SCZ_vs_BD")
+eligible_subclasses <- sort(unique(q2_summary$Subclass))
+expected <-  expand.grid(Subclass = eligible_subclasses, Contrast = required_contrasts, stringsAsFactors = FALSE)
+
+summary_keys <- paste(q2_summary$Subclass, q2_summary$Contrast, sep = "__")
+expected_keys <-paste(expected$Subclass, expected$Contrast, sep = "__")
+
+stopifnot(nrow(q2_summary) == 69L, length(eligible_subclasses) == 23L, !anyDuplicated(summary_keys), setequal(summary_keys, expected_keys))
+
+knitr::kable(data.frame(Characteristic = c("Eligible subclasses", "Diagnostic contrasts", "Subclass-level comparisons"), Value = c(length(eligible_subclasses), length(required_contrasts), nrow(q2_summary))), caption = "Input summary for cross-disease comparison")
+
+```
+
+## Verify gene-level files
+
+Before loading the results, each expected CSV file is checked for existence, non-zero file size and a readable header.
+
+```{r validate_deg_files}
+
+expected_files <- file.path(deg_dir, paste0(expected$Subclass, "_", expected$Contrast, ".csv"))
+
+required_columns <- c("gene", "log2FoldChange", "padj")
+
+check_file <- function(f) {
+  if (!file.exists(f)) {return("Missing")}
+
+  size <- file.info(f)$size
+
+  if (is.na(size) || size == 0) {return("Empty")}
+
+  tryCatch({
+    x <- read.csv(f, nrows = 1, check.names = FALSE)
+    #Identify missing columns
+    missing_cols <- setdiff(required_columns, names(x))
+    if (length(missing_cols) > 0) {
+      return(paste("Missing columns:", paste(missing_cols, collapse = ", ")))}
+    #Ensure at least one data row exists
+    if (nrow(x) == 0L) {return("No data rows")}
+    NA_character_
+  }, error = function(e) {paste("Unreadable:", conditionMessage(e))})}
+
+issues <- vapply(expected_files, check_file, character(1), USE.NAMES = FALSE)
+
+bad_files <- data.frame(File = expected_files, Issue = issues)
+bad_files <- bad_files[!is.na(bad_files$Issue), , drop = FALSE]
+
+if (nrow(bad_files) > 0) {print(bad_files)
+  stop("Some DESeq2 result files failed validation.")}
+
+cat("Validation successful:", length(expected_files), "DESeq2 files available.\n")
+
+```
+
+:::{.callout-note title = "Expected results"} 
+The input should contain **23 cell subclasses**, **3 diagnostic contrasts** and **69 readable gene-level CSV files**.
+
+This validation step let us check if there are any incomplete outputs left from the execution of previous Q2 notebook.
+:::
+
+# Shared transcriptional signatures
+
+Now we will perform the first true biological analysis: identifying, for each subclass, the genes whose expression changes are significant in both disorders.
+
+We distinguish five categories:
+
+- **Shared concordant** -> Significant in SCZ and BD, with log2FC values of the same sign
+- **Shared opposite** -> Significant in both, with log2FC values of opposite signs
+- **SCZ significant only** -> Significant in SCZ but not in BD
+- **BD significant only** -> Significant in BD but not in SCZ
+- **Neither significant** -> Not significant in either comparison
+
+Genes for which a comparison is not possible (due to a missing padj) are placed in a sixth category, ‘Not comparable’. This prevents them from being incorrectly regarded as insignificant.
+
+
+## Gene-level comparison strategy
+
+:::{.callout-note title = "Strategy"} 
+For each cell subclass, gene-level results from the SCZ versus Control and BD versus Control contrasts are matched using gene identifiers.
+
+Genes are classified based on their adjusted p-values (FDR < 0.05) and direction of their log2 fold change.
+
+The direct comparison between SCZ and BD is retained to support further investigations of diagnostic differences.
+:::
+
+## Compute shared and diagnosis-associated signatures
+
+```{r}
+
+read_contrast <- function(sc, contrast, suffix){
+  f <- file.path(deg_dir, paste0(sc, "_", contrast, ".csv"))
+  x <- read.csv(f, check.names = FALSE)
+  stopifnot(!anyDuplicated(x$gene), all(c("gene", "log2FoldChange", "padj") %in% names(x)))
+  out <- x[ , c("gene", "log2FoldChange", "padj")]
+  names(out) <- c("gene", paste0("lfc_", suffix), paste0("padj_", suffix))
+  out}
+
+signature_summaries <-list()
+
+for (sc in eligible_subclasses) {
+  scz <- read_contrast(sc, "SCZ_vs_Control", "SCZ")
+  bd <- read_contrast(sc, "BD_vs_Control", "BD")
+  direct <- read_contrast(sc, "SCZ_vs_BD", "Direct")
+  dat <- Reduce(
+    function(x, y) merge(x, y, by = "gene", sort = FALSE),
+    list(scz, bd, direct))
+  #All contrasts share the same genes
+  stopifnot(nrow(dat) == nrow(scz),
+            nrow(dat) == nrow(bd),
+            nrow(dat) == nrow(direct))
+  #Comparable genes
+  comparable <- (is.finite(dat$lfc_SCZ) &
+                   is.finite(dat$lfc_BD) &
+                   is.finite(dat$padj_SCZ) &
+                   is.finite(dat$padj_BD))
+  sig_scz <- comparable & dat$padj_SCZ < 0.05
+  sig_bd <- comparable & dat$padj_BD < 0.05
+  both_sig <- sig_scz & sig_bd
+  
+  same_direction <- (sign(dat$lfc_SCZ) == sign(dat$lfc_BD))
+  
+  #Assign mutually exclusive categories
+  dat$signature_class <- "Not comparable"
+  dat$signature_class[comparable] <- "Neither significant"
+  dat$signature_class[sig_scz & !sig_bd] <- "SCZ significant only"
+  dat$signature_class[sig_bd & !sig_scz] <- "BD significant only"
+  dat$signature_class[both_sig & same_direction] <- "Shared concordant"
+  dat$signature_class[both_sig & !same_direction] <- "Shared opposite"
+  
+  #Correlation among genes with finite effects
+  finite_lfc <- is.finite(dat$lfc_SCZ) & is.finite(dat$lfc_BD)
+  
+  lfc_cor <-  if (sum(finite_lfc) >= 3){
+    suppressWarnings(cor(
+      dat$lfc_SCZ[finite_lfc],
+      dat$lfc_BD[finite_lfc],
+      method = "spearman"))
+  } else {NA_real_}
+  
+  #Subclass-level summary
+  signature_summaries[[sc]] <- data.frame(
+    Subclass = sc,
+    Genes_total = nrow(dat),
+    Genes_comparable = sum(comparable),
+    Shared_concordant = sum(dat$signature_class == "Shared concordant"),
+    Shared_opposite = sum(dat$signature_class == "Shared opposite"),
+    SCZ_only = sum(dat$signature_class == "SCZ significant only"),
+    BD_only = sum(dat$signature_class == "BD significant only"),
+    Neither = sum(dat$signature_class == "Neither significant"),
+    Not_comparable = sum(dat$signature_class == "Not comparable"),
+    Spearman_LFC = lfc_cor, 
+    Direct_SCZ_BD_DEG = sum(dat$padj_Direct < 0.05, na.rm = TRUE))
+  
+  #Save gene-level comparison to do downstream plots
+  saveRDS(dat, file.path(comparison_dir, paste0(sc, "_comparison.rds")))
+  rm(scz, bd, direct, dat)
+  invisible(gc(verbose = FALSE))}
+
+signature_summary <-do.call(rbind, signature_summaries)
+rownames(signature_summary) <- NULL
+
+stopifnot(nrow(signature_summary) == 23L)
+
+write.csv(signature_summary, file.path(comparison_dir, "Q2_shared_signature_summary.csv"), row.names = FALSE)
+  
+```
+
+## Summary of shared signatures
+
+```{r shared_signature_summary}
+
+top_shared <- head(signature_summary[
+  order(signature_summary$Shared_concordant, decreasing = TRUE),
+  c("Subclass", "Shared_concordant", "Shared_opposite", "SCZ_only", "BD_only", "Direct_SCZ_BD_DEG", "Spearman_LFC")], 10)
+
+knitr::kable(top_shared, digits = 3, caption = "Top 10 cell subclasses ranked by the number of concordant shared DEGs")
+
+cat("Subclasses analyzed : ", nrow(signature_summary))
+
+```
+
+::: {.callout-note title="How to interpret these categories"}
+The cross-disease comparison identified overlapping transcriptional signatures between schizophrenia (SCZ) and bipolar disorder (BD), with marked differences across cell subclasses.
+
+The highest number of concordant shared differentially expressed genes was observed in **EN_L2_3_IT excitatory neurons (192 genes)**, followed by **astrocytes (183 genes)**, **pericytes (144 genes)** and **EN_L3_5_IT_3 excitatory neurons (124 genes)**.
+
+In contrast, **shared significant genes with opposite directions of regulation were uncommin among the leading subclasses**, with only 2 identified for EN_L2_3_IT, one in astrocyte and two in endothelial cells.
+
+The distribution of diagnosis-associated significance patterns also differed across populations. EN_L2_3_IT neurons showed 2 261 significant genes only in SCZ comparison, wheread astrocytes showed 908 significant genes only in BD comparison.
+
+**These findings suggest that schizophrenia and bipolar disorder exhibit both shared and distinct patterns of detectable transcriptional alterations.**
+
+Genes significant in only one disease versus control can not automitacally be considered disease specific. Moreover, genes lacking an adjusted p-value in either contrast were excluded from the analysis. **Direct SCZ-BD comparisons and effect-size concordance analyses are required** before drawing any conclusion regarding diagnostic specificity.
+:::
+
+
+```{r shared_deg_figure}
+
+plot_shared <- signature_summary[order(signature_summary$Shared_concordant, decreasing = TRUE), , drop = FALSE]
+
+#Order subclasses by shared DEG count
+plot_shared$Subclass <- factor(plot_shared$Subclass, levels = rev(plot_shared$Subclass))
+
+p_shared <- ggplot(plot_shared,aes(x = Subclass, y = Shared_concordant)) +
+  geom_col(fill = unname(project_colours$Q2["dark"]),width = 0.7) +
+  geom_text(aes(label = Shared_concordant), hjust = -0.2, size = 3.2) +
+  coord_flip() +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(title = "Q2-F04 - Shared transcriptional signatures",
+    subtitle = "Concordant DEGs significant in both SCZ and BD",
+    x = "Cell subclass",
+    y = "Number of concordant shared DEGs") +
+  theme_project(base_size = 11) +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
+
+save_figure(p = p_shared, name = "Q2_F04_Shared_DEGs_by_subclass", dir = fig_dir, width = 10, height = 8)
+
+p_shared
+
+```
+
+::: {.callout-note title="Interpretation"}
+Shared concordant DEGs were detected across multiple neuroncal and non-neuronal cell-subclasses. This indicates partial overlapping transcriptional alterations between SCZ and BD.
+
+The highest number of concordant shared DEGs was observed in **EN_L2_3_IT excitatory neurons (192 genes)**, followed by **astrocytes (183 genes)**, **pericytes (144 genes)** and **EN_L3_5_IT_3 excitatory neurons (124 genes)**.
+
+Other neuronal and glial subclasses exhibited smaller shared signatures, including microglia, EN_L3_5_IT_2 neurons and endothelial cells. No concordant genes were found in VLMC and IN_LAMP5_LHX6.
+
+This suggets that shared disease-associated transcriptional signatures are distributed all accross cell subclasses, rather than being restricted to a distinct neuronal or glial population.
+
+However, the number of shared DEGs depends on statitiscal power, gene expression and number of detectable genes. Consequently, larger DEG overlaps should not simply be interepreted as stronger biological similarity between disorders. Complementary comparison of gene-level effect sizes if therefore needed.
+:::
+
+```{r effect_size_concordance}
+knitr::kable(signature_summary[order(signature_summary$Spearman_LFC, decreasing = TRUE),
+    c("Subclass", "Spearman_LFC", "Shared_concordant", "Shared_opposite", "Direct_SCZ_BD_DEG")], digits = 3, caption = "Cross-disease effect-size concordance across cell subclasses.")
+```
+
+::: {.callout-note title="Interpretation"}
+Gene-level effect size comparisons showed positive but heteregeneous correlation between SCZ and BD associated transcriptional changes across all 23 eligible cell subclasses.
+
+Spearman correlations ranged from 0.192 to 0.535, showing weak to moderate concordance in estimated log2 fold changes. 
+
+**The strongest correlation was observed in microglia (0.535)**, followed by EN_L6B excitatory neurons (0.463) and pericytes (0.407).
+
+Interestingly, the subclasses with the largest numbers of concordant shared DEGs did not exhibit the strongest genome-wide effect size correlations (EN_L2_3_IT neurons and astrocytes results).
+
+This highlights an relevant distinction between significant gene overlap and trancriptome wide effect size concordance. DEG overlap focuses on genes meeting statistical significance thresholds in both disorders, while Spearman correlations summarize the relative consistency of estimated effects accross a much larger set of genes.
+
+Direct SCZ-BD contrast identified differences in selected subclasses : EN_L2_3_IT (164 DEGs), endothelilal cells (108 DEGs) and microglia (47 DEGs).
+
+All this results indicate that SCZ and BD exhibit partially shared transcriptional signatures, with varying degrees of concordance and diagnostic differentiation across the cell subclasses.
+
+Still, these correlations remain descriptive. Observed correlations should not be interpreted as definitive evidence of shared causal mechanisms.
+:::
+
+
+
+```{r effect_size_concordance_figure}
+
+corr_plot <- signature_summary[order(signature_summary$Spearman_LFC, decreasing = TRUE), , drop = FALSE]
+corr_plot$Subclass <- factor(corr_plot$Subclass, levels = rev(corr_plot$Subclass))
+
+#Figure Q2-F05
+p_corr <- ggplot(corr_plot, aes(x = Subclass, y = Spearman_LFC)) +
+  geom_col(fill = unname(project_colours$Q2["dark"]), width = 0.7) +
+  geom_text(aes(label = sprintf("%.3f", Spearman_LFC)), hjust = -0.15, size = 3) +
+  coord_flip() +
+  scale_y_continuous(limits = c(0, 0.65), breaks = seq(0, 0.6, by = 0.1)) +
+  labs(
+    title = "Q2-F05 - Cross-disease effect-size concordance",
+    subtitle = "Spearman correlation of gene-level log2 fold changes",
+    x = "Cell subclass",
+    y = "Spearman correlation (rho)") +
+  theme_project(base_size = 11) +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
+
+save_figure(p = p_corr, name = "Q2_F05_Effect_size_concordance", dir = fig_dir, width = 10, height = 8)
+
+p_corr
+
+```
+
+::: {.callout-note title="Interpretation"}
+Cross-disease effect size correlations were **positive across all 23 eligible cell subclasses ranging from 0.192 to 0.535**.
+
+Strongest concordance was observed in **microglia** followed by EN_L6B excitatory neurons and pericytes.
+
+In contrast, EN_L2_3_IT neurons and astrocytes exhibited modest correlations despite having the highest numbers of concordant shared DEGs.
+
+These findings demonstate that **the number of shared significant genes does not reflect the overall degree of transcriptional effect size concordance**.
+
+The results suggest heterogeneous molecular similarities between SCZ and BD across cell subclasses, with microglia showing the strongest relative concordance among analyzed populations.
+:::
+
+
+# Gene-level comparison of disease effects
+
+## SCZ versus BD effect-size scatterplots
+
+Complementary to subclass-level correlation analysis, gene-level log2 fold changes are compared in three populations : microglia, EN_L2_3_IT excitatory neurons and astrocytes.
+
+These populations were selected to illustrete distinct combinations of significant-gene overlap and transcriptome effect size concordance.
+
+```{r cross_disease_scatterplot}
+
+selected_subclasses <- c("Micro", "EN_L2_3_IT", "Astro")
+
+scatter_list <- lapply(selected_subclasses, function(sc) {
+  dat <- readRDS(file.path(comparison_dir, paste0(sc, "_comparison.rds")))
+  keep <- is.finite(dat$lfc_SCZ) & is.finite(dat$lfc_BD)
+  data.frame(Subclass = sc, lfc_SCZ = dat$lfc_SCZ[keep], lfc_BD = dat$lfc_BD[keep], signature_class = dat$signature_class[keep])})
+
+scatter_data <- do.call(rbind, scatter_list)
+scatter_data$Subclass <- factor(scatter_data$Subclass, levels = selected_subclasses)
+
+scatter_data$shared <- scatter_data$signature_class %in% c("Shared concordant", "Shared opposite")
+
+axis_limit <- quantile(abs(c(scatter_data$lfc_SCZ, scatter_data$lfc_BD)), probs = 0.995, na.rm = TRUE)
+axis_limit <- max(1, min(6, ceiling(axis_limit)))
+
+#Figure Q2-F06
+p_scatter <- ggplot() + 
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey50", linewidth = 0.4) +
+  geom_hline(yintercept = 0, colour = "grey85") +
+  geom_vline(xintercept = 0, colour = "grey85") +
+  geom_point(data = scatter_data[!scatter_data$shared, ], aes(x = lfc_SCZ, y = lfc_BD), colour = "grey65", alpha = 0.12, size = 0.45) +
+  geom_point(data = scatter_data[scatter_data$shared, ], aes(x = lfc_SCZ, y = lfc_BD, colour = signature_class), size = 1.2, alpha = 0.8) +
+  scale_colour_manual(
+    values = c("Shared concordant" = unname(project_colours$Q2["dark"]), "Shared opposite" = unname(col_disease["BD"])), name = "Shared DEG category") +
+  facet_wrap(~ Subclass, nrow = 1) +
+  coord_fixed(xlim = c(-axis_limit, axis_limit), ylim = c(-axis_limit, axis_limit), ratio = 1) +
+  labs(title = "Q2-F06 - Gene-level cross-disease concordance",
+    subtitle = "Comparison of disease-associated log2 fold changes",
+    x = "SCZ vs Control (log2FC)",
+    y = "BD vs Control (log2FC)") +
+  theme_project(base_size = 11) +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5), strip.text = element_text(face = "bold"))
+
+save_figure(p = p_scatter, name = "Q2_F06_Cross_disease_scatterplots", dir = fig_dir, width = 13, height = 5.5)
+
+p_scatter
+
+```
+
+::: {.callout-note title="Interpretation"}
+The three selected subclasses illustrate distinct relationships between significant-gene overlap and genome-wide transcriptional concordance.
+
+**Microglia** exhibited the strongest correlation between SCZ and BD associated effect, despite having only 74 concordant shared DEGs.
+
+In contrast, **EN_L2_3_IT neurons** and **astrocytes** showed considerable overlap in significant genes (192 and 183 matching common DEGs, respectively), but lower transcriptome-wide correlations (rho = 0.262 and 0.245, respectively).
+
+This suggests that a large group of jointly significant genes can co-exist with moderate overlap across the transcriptome.
+
+The highlighted genes represent candidates for shared transcriptional changes. Nevertheless, their shared significance in the two ‘disease versus control’ contrasts does not imply equivalent effect sizes or identical underlying biological mechanisms.
+
+These results underscore the importance of supplementing DEG overlap analyses with direct comparisons between diagnostic groups.
+
+NB : The axes are zoomed for readability. Genes outside the displayed range remain included in the previously calculated correlation statistics.
+:::
+
+# Direct diagnostic differences
+
+## Significant genes in the SCZ versus BD contrast
+
+To identify evidence of transcriptional differences between SCZ and BD, direct contrast is examined independently of the overlap-based categories.
+
+```{r direct_disease_comparison}
+
+direct_results <- signature_summary[order(signature_summary$Direct_SCZ_BD_DEG, decreasing = TRUE),
+  c("Subclass",
+    "Shared_concordant",
+    "SCZ_only",
+    "BD_only",
+    "Direct_SCZ_BD_DEG"),
+  drop = FALSE]
+
+knitr::kable(head(direct_results, 10), caption = "Top 10 cell subclasses by the number of significant genes in the direct SCZ versus BD contrast")
+
+write.csv(direct_results, file.path(comparison_dir, "Q2_direct_SCZ_vs_BD_summary.csv"), row.names = FALSE)
+
+```
+
+::: {.callout-note title="Interpretation"}
+The direct SCZ versus BD comparison revealed substantial differences in the number of significant genes across cell subclasses.
+
+The strongest direct diagnostic differences were detected in **EN_L2_3_IT (164 DEGs)**, followed by **endothelial cells (108 DEGs)**, and **microglia (47 DEGs)**.
+
+In comparison, astrocytes showed only 5 significant genes in the direct comparison, despite having 183 concordant shared DEGs in the disease versus control analysis.
+
+These results shows the coexistence of shared transcriptional signatures and detectable differences between the two diseases. EN_L2_3_IT neurons and endothelilal cells emerge as important populations for incestigating potential disease-associated distinctions.
+
+Interpretation of these results remains limited by the unequal donor representation, ancestry imbalance and potentially unmeasured confounding factors.
+:::
+
+
+# Reproducibility
+
+The cross-disease analysis reuses the gene-level DESeq2 results generated in the primary Q2 notebook. No additional differential expression models were fitted.
+
+Subclass-specific comparison tables and summary statistics were saved separately from the original DESeq2 results.
+
+```{r cross_disease_outputs}
+#| echo: false
+#| message: false
+#| warning: false
+
+#Verify all 23 subclasses were analyzed
+stopifnot(nrow(signature_summary) == 23L,
+  all(c(
+    "Shared_concordant",
+    "Shared_opposite",
+    "SCZ_only",
+    "BD_only",
+    "Spearman_LFC",
+    "Direct_SCZ_BD_DEG") %in% names(signature_summary)))
+
+#Save final summary
+write.csv(signature_summary, file.path(comparison_dir, "Q2_shared_signature_summary.csv"), row.names = FALSE)
+
+#Save analysis parameters
+comparison_metadata <- list(
+  analysis = "Cross-disease transcriptional signatures",
+  subclasses = eligible_subclasses,
+  contrasts = required_contrasts,
+  FDR_threshold = 0.05,
+  correlation_method = "Spearman",
+  input_source = "Primary Q2 DESeq2 results")
+
+saveRDS(comparison_metadata, file.path(comparison_dir, "Q2_cross_disease_metadata.rds"))
+
+#Record R environment
+writeLines(capture.output(sessionInfo()), file.path(comparison_dir, "Q2_cross_disease_sessionInfo.txt"))
+
+```
+
+# Conclusion
+
+:::{.callout-note title = "Conclusion"}
+This notebook investigated shared and distinct transcriptional alterations between SCZ and BD across 23 eligible cell subclassses of the human prefrontal cortex, using gene-level results from the primary donor-level pseudobulk DESeq2 analysis of the PsychAD HBCC cohort [1].
+
+**Shared transcriptional signatures were identified across neuronal and non-neuronal populations.** The highest numbers of concordant shared DEGs were observed in EN_L2_3_IT, astrocytes, pericytes and EN_L3_5_IT_3 neurons. Shared significant genes with opposite direction were uncommon.
+
+These observations are consistent with previous evidence of molecular convergence between SCZ and BD. Gandal et al. (2018) identified overlapping cortical gene-expression alterations in SCZ and BD (and other psychiatric disorders) [2]. Their findings also implicated neuronal and astroglial transcriptional activity, supporting the relevance of both neuronal and non-neuronal population in this analysis.
+
+The involvement of excitatory neurons is consistent with what Ruzicka et al. (2024) reported : cell type specific transcriptional alterations in schizophrenia, particularly within excitatory neuronal populations of the prefrontal cortex [3].
+
+This distinction indicates that significant gene overlap and transcriptome wide concordance capture different aspects of molecular similarity. Such heterogeneity is compatible with the founding of Lee et al. (2026), whose PsychAD atlas described shared and distinct transcriptional vulnerabilities across brain disorders.
+
+**Direct SCZ versus BD comparisons revealed additional diagnostic differences**, particularly in EN_L2_3_IT neurons (164 DEGs), endothelilal cells (108 DEGs) and microglia. Astrocytes showed only 5 significant genes in the direct comparison, despite having 183 concordant shared DEGs.
+
+These observations suggest that **shared and divergent transcriptional alterations can coexist within the same cell subclass**. This is consistent with what was found in the literature [2, 4].
+
+Still, several limitations must be considered. SCZ and BD case control comparisons share the same control cohort, while differences in statistical power, donor representation and genetic ancestry may affet the estimated disease associations. Genes significant in only one disease versus control contrast can not directly be classified as disease-specific and absence of significance in direct comparison also does not equal to equivalence.
+
+Overall, our results support **heterogeneous and partially overlapping cell subclass specific transcriptional signatures between SCZ and BD**, consistent with previous transcriptomic studies found in the literature.
+
+The next step of this analysis is to investigate whether these candidate shared and divergent signatures converge on common biological processes though downstream functional enrichment analyses (Q3). Such analyses will be necessary before drawing conclusions about molecular pathways that may be involved in both disorders.
+:::
+
+
+# Bibliography
+
+[1] Fullard, J. F., et al. (2025). Population-scale cross-disorder atlas of the human prefrontal cortex at single-cell resolution. Scientific Data, 12(1), 954. https://doi.org/10.1038/s41597-025-04687-5
+
+[2] Gandal, M. J. et al. (2018). Shared molecular neuropathology across major psychiatric disorders parallels polygenic overlap. Science, 359(6376), 693‑697. https://doi.org/10.1126/science.aad6469
+
+[3] Ruzicka, W. B., et al. (2024). Single-cell multi-cohort dissection of the schizophrenia transcriptome. Science, 384(6698), eadg5136. https://doi.org/10.1126/science.adg5136
+
+[4] Lee, D., et al. (2026). Single-cell atlas of transcriptomic vulnerability across brain disorders. Nature, 657(8133), 988‑1002. https://doi.org/10.1038/s41586-025-09573-z
