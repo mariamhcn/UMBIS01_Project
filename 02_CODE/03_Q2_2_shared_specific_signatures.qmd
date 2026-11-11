@@ -1,6 +1,6 @@
 ---
-title: "Q2 | Shared and distinct transcriptional signatures"
-subtitle: "PsychAD — Cross-disease comparison of schizophrenia and bipolar disorder"
+title: "Q2 - Shared and distinct transcriptional signatures"
+subtitle: "PsychAD - Cross-disease comparison of schizophrenia and bipolar disorder"
 author: "Mariam H. - Ann-Solène A., Myriam S."
 format:
   html:
@@ -57,7 +57,7 @@ dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 
 **Research question :** Do schizophrenia (SCZ) and bipolar disorder (BD) share cell-type-specific transcriptional alterations in the human prefrontal cortex ?
 
-The previous Q2 notebook performed donor-level pseudobulk differential expression analysis using DESeq2, adjusted for age, sex and genetic ancestry.
+**Relationship with Q2_1 : ** The first Q2 notebook identifies disease-associated differential expression separately within each cell subclass, the present analysis compares these results across diagnoses to determine where transcriptional effects converge, diverge or differ significantly between SCZ and BD.
 
 Three contrasts were analyzed across 23 eligible cell subclasses :
 
@@ -68,6 +68,7 @@ Three contrasts were analyzed across 23 eligible cell subclasses :
 This notebook is using this results in order to investigate shared and distinct transcriptional signatures accross psychiatric diagnoses.
 
 No additional differential expression models are fitted. Existing gene-level estimates are compared within each cell subclass.
+
 
 :::{.callout-important title = "Interpretation framework"} 
 A gene significant in SCZ versus Controls but not in BD versus Controls is not necessarily specific to schizophrenia. 
@@ -327,6 +328,12 @@ p_shared
 
 ```
 
+::: {.callout-note title="How to read Figure Q2-F04"}
+Each bar represents the number of genes significantly differentially expressed in both SCZ and BD versus controls (FDR < 0.05), with changes in the same direction.
+
+Cell subclasses are ranked by the number of concordant shared DEGs, from highest to lowest. Longer bars indicate greater overlap between the two disorders.
+:::
+
 ::: {.callout-note title="Interpretation"}
 Shared concordant DEGs were detected across multiple neuroncal and non-neuronal cell-subclasses. This indicates partial overlapping transcriptional alterations between SCZ and BD.
 
@@ -388,6 +395,14 @@ save_figure(p = p_corr, name = "Q2_F05_Effect_size_concordance", dir = fig_dir, 
 p_corr
 
 ```
+
+::: {.callout-note title="How to read Figure Q2-F05"}
+Each bar represents the Spearman correlation between gene-level log2 fold changes estimated for SCZ versus Control and BD versus Control within one cell subclass.
+
+Correlations were calculated using genes with finite effect estimates in both contrasts, independently of their statistical significance.
+
+Higher positive correlations indicate greater consistency in the ranking of gene-level transcriptional effects between the two disorders.
+:::
 
 ::: {.callout-note title="Interpretation"}
 Cross-disease effect size correlations were **positive across all 23 eligible cell subclasses ranging from 0.192 to 0.535**.
@@ -451,6 +466,18 @@ p_scatter
 
 ```
 
+::: {.callout-note title="How to read Figure Q2-F06"}
+Each point represents a gene with finite log2 fold-change estimates in both disease-versus-control contrasts.
+
+The horizontal axis represents the estimated effect in SCZ versus Control, while the vertical axis represents the estimated effect in BD versus Control.
+
+Grey points represent other genes; orange points highlight significant shared genes with concordant directions, and red points highlight significant shared genes with opposite directions.
+
+The dashed diagonal indicates equal estimated effects in both disorders. Points in the upper-right and lower-left quadrants have concordant directions, whereas points in the other two quadrants have opposite directions.
+
+The axes are zoomed for readability. Genes outside the displayed range remain included in the previously calculated correlation statistics.
+:::
+
 ::: {.callout-note title="Interpretation"}
 The three selected subclasses illustrate distinct relationships between significant-gene overlap and genome-wide transcriptional concordance.
 
@@ -464,7 +491,6 @@ The highlighted genes represent candidates for shared transcriptional changes. N
 
 These results underscore the importance of supplementing DEG overlap analyses with direct comparisons between diagnostic groups.
 
-NB : The axes are zoomed for readability. Genes outside the displayed range remain included in the previously calculated correlation statistics.
 :::
 
 # Direct diagnostic differences
@@ -502,7 +528,7 @@ Interpretation of these results remains limited by the unequal donor representat
 :::
 
 
-# Reproducibility
+# Save cross-disease results and outputs
 
 The cross-disease analysis reuses the gene-level DESeq2 results generated in the primary Q2 notebook. No additional differential expression models were fitted.
 
@@ -537,10 +563,31 @@ comparison_metadata <- list(
 
 saveRDS(comparison_metadata, file.path(comparison_dir, "Q2_cross_disease_metadata.rds"))
 
-#Record R environment
-writeLines(capture.output(sessionInfo()), file.path(comparison_dir, "Q2_cross_disease_sessionInfo.txt"))
-
 ```
+
+# Links with the other project questions
+
+The cross-disease analysis provides a complementary interpretation of the transcriptomic alterations identified in Q2_1 and establishes several connections with the other questions of the PsychAD project.
+
+| Project question | Contribution of Q2 | Perspective |
+|---|---|---|
+| **Q1 - Cell-type composition** | Shared transcriptional signatures were identified in microglia, excitatory neurons and other cell subclasses. | Compare expression changes with alterations in cell population proportions. |
+| **Q3 - Functional enrichment** | Complete DESeq2 statistics and shared or distinct gene signatures are available for SCZ and BD. | Investigate whether different genes converge on common biological processes and synaptic pathways. |
+| **Q4 - Cell–cell communication** | Shared and diagnosis-associated transcriptional alterations were detected in neuronal, glial and vascular-associated subclasses. | Examine whether these populations participate in conserved or altered inferred signaling networks. |
+| **Q5 - Transcriptomic ageing** | Disease-associated expression estimates were generated for each cell subclass, with age included as a covariate. | Investigate the relationship between disease-associated changes and ageing-related transcriptional programs. |
+
+## Overall contribution of Q2
+
+Together, the two Q2 notebooks establish three complementary levels of evidence :
+
+1. **Differential expression : ** which genes show disease-associated changes within each cell subclass.
+2. **Shared transcriptional signatures : ** which significant changes are detected in both disorders and in which directions.
+3. **Direct diagnostic differences : ** which genes provide statistical evidence of differences between SCZ and BD.
+
+These results provide a gene-level framework for interpreting the biological processes investigated in Q3, the inferred signaling networks examined in Q4, and the ageing-associated transcriptional patterns studied in Q5.
+
+They support the investigation of **partially overlapping but heterogeneous molecular alterations** across psychiatric diagnoses, without assuming that shared expression changes necessarily imply shared mechanisms or that disease-associated signatures are causally related to the disorders.
+
 
 # Conclusion
 
@@ -567,7 +614,7 @@ The next step of this analysis is to investigate whether these candidate shared 
 :::
 
 
-# Bibliography
+# References
 
 [1] Fullard, J. F., et al. (2025). Population-scale cross-disorder atlas of the human prefrontal cortex at single-cell resolution. Scientific Data, 12(1), 954. https://doi.org/10.1038/s41597-025-04687-5
 
@@ -576,3 +623,12 @@ The next step of this analysis is to investigate whether these candidate shared 
 [3] Ruzicka, W. B., et al. (2024). Single-cell multi-cohort dissection of the schizophrenia transcriptome. Science, 384(6698), eadg5136. https://doi.org/10.1126/science.adg5136
 
 [4] Lee, D., et al. (2026). Single-cell atlas of transcriptomic vulnerability across brain disorders. Nature, 657(8133), 988‑1002. https://doi.org/10.1038/s41586-025-09573-z
+
+
+# Session info
+
+```{r reproducibility}
+
+sessionInfo()
+
+```

@@ -63,71 +63,143 @@ Cited references are listed at the end. \:::
 
 # Overview
 
-## Study objective and data provenance
+## Research question and objectives
 
-*Research question : Do schizophrenia and bipolar disorder share cell-type specific transcriptional alterations in the human prefrontal cortex, and could these changes affect neuronal-glial signaling and ageing-associated transcriptional profiles ?*
+*Central research question : Do schizophrenia and bipolar disorder share cell-type specific transcriptional alterations in the human prefrontal cortex, and could these changes affect neuronal-glial signaling and ageing-associated transcriptional profiles ?*
 
-*Q2 research question :Do schizophrenia and bipolar disorder share cell-type-specific transcriptional alterations in the human prefrontal cortex ?*
+*Q2 research question : Do schizophrenia and bipolar disorder share cell-type-specific transcriptional alterations in the human prefrontal cortex ?*
 
-**Objective of Q2 :** To identify and compare disease-associated differential gene expression within individual neuronal and glial subclasses.
+**Objective of Q2 :** To identify and compare disease-associated differential gene expression within individual neuronal and non neuronal cell subclasses and to investigate the degree of transcriptional convergence and divergence between SCZ and BD.
 
-**Study design :** HBCC cohort, 224 donors, 27 cell subclasses
+The analysis is divided into two complementary notebooks:
 
-**Analysis :** Donor-level pseudobulk differential expression using DESeq2
+- **Q2_1 — Pseudobulk differential expression : ** identification of differentially expressed genes using donor-level pseudobulk DESeq2 models.
+- **Q2_2 — Shared and distinct signatures : ** gene-level comparison of SCZ- and BD-associated transcriptional alterations using the results of Q2_1.
 
-Schizophrenia (SCZ) and bipolar disorder (BD) share genetic susceptibility but may exhibit distinct molecular alterations across glial and neuronal populations. Assessing these changes at the cell-subclass level can help identify transcriptional signatures that are shared between diagnoses or associated with either disorder \[1\].
+The present notebook focuses on the first component: differential expression modelling, quality assessment and sensitivity analyses.
 
-The previous analyses established the eligible HBCC donor cohort and investigated disease-associated changes in cell-subclasses composition (Q1). The present analysis addresses the following question : **does gene expression differ between diagnoses within the same cellular population ?**
+## Links with previous analyses
 
-Differential expression will be evaluated separately for :
+Schizophrenia (SCZ) and bipolar disorder (BD) are complex psychiatric conditions with partially overlapping genetic susceptibility and molecular features. However, their transcriptional alterations may differ across neuronal, glial and vascular-associated populations [1].
 
-- SCZ versus controls
-- BD versus controls,
-- SCZ vs BD.
+The previous notebooks established the biological and analytical framework for investigating these differences.
 
-The donor is considered as the biological replicate to avoid pseudoreplication, following established recommendations found in the literature \[2\].
+**Preprocessing - Cohort selection and pseudobulk aggregation.** The PsychAD HBCC cohort was restricted to 224 eligible adult donors (121 controls, 49 SCZ and 54 BD). Raw RNA counts were aggregated for each donor and annotated cell subclass to create pseudobulk expression profiles.
 
-The differential expression results will be used for functional enrichment analysis (Q3 - GSEA).
+This aggregation preserves donors as biological replicates and avoids treating individual nuclei from the same person as independent observations [2].
+
+**Q1 - Cell-type composition.** The composition analysis identified a lower relative abundance of microglia in both SCZ and BD, with stronger evidence of robustness in SCZ following ancestry-restricted analyses. A reduction in oligodendrocyte proportions was also detected in BD, although this finding appeared more sensitive to potential confounding.
+
+These results suggest that some cellular populations may be differentially represented across diagnoses. However, **changes in cellular abundance do not necessarily imply corresponding changes in gene expression**, and transcriptional alterations may occur even when cell proportions remain unchanged.
+
+Q2 provides a complementary perspective by investigating molecular differences **within each cell subclass**, rather than differences in the relative abundance of those populations.
+
+This distinction is essential for separating cell-composition effects from cell-subclass-specific transcriptional signatures.
+
+## Why donor-level pseudobulk differential expression ?
+
+Single-nucleus RNA sequencing provides expression profiles for thousands of nuclei across multiple cellular populations.
+
+However, nuclei originating from the same donor share biological and technical characteristics, including genetic background, age and sample preparation. Treating them as statistically independent replicates may lead to inflated significance and false discoveries [2].
+
+To address this issue, gene counts are aggregated at the **donor x cell-subclass level**, generating one pseudobulk profile per donor and subclass.
+
+Differential expression is then analysed using DESeq2, which models RNA sequencing counts through a negative binomial framework and estimates gene-specific dispersion [3,4].
+
+This approach allows us to :
+
+- Identify genes associated with SCZ relative to controls.
+- Identify genes associated with BD relative to controls.
+- Directly test transcriptional differences between SCZ and BD.
+- Compare disease-associated changes across neuronal and non-neuronal subclasses.
+- Generate complete gene-level statistics for downstream cross-disease and functional analyses.
+
+The analysis includes age, sex and genetic ancestry as covariates to account for important sources of variation between donors.
+
 
 ## Input data and analytical strategy
 
-The input pseudobulk matrix was generated in `04_pseudobulk.R` during preprocessing from the PsychAD HBCC cohort.
+The main input is the pseudobulk count matrix generated during preprocessing from the PsychAD HBCC cohort.
 
-| Input            | Description                                            |
-|------------------|--------------------------------------------------------|
-| Cohort           | 224 selected donors aged ≥20 years                     |
-| Cell populations | 27 annotated subclasses                                |
-| Count matrix     | 34,176 genes × 6,048 donor–subclass profiles           |
-| Metadata         | Donor, diagnosis, age, sex, ancestry and nucleus count |
+| Input characteristic | Description |
+|---|---|
+| Cohort | 224 donors aged 20 years or older |
+| Diagnostic groups | Control (121), SCZ (49), BD (54) |
+| Cell populations | 27 annotated subclasses |
+| Count matrix | 34,176 genes × 6,048 donor–subclass profiles |
+| Expression values | Raw, non-negative integer counts |
+| Metadata | Donor, subclass, nucleus count, diagnosis, age, sex and ancestry |
 
-For each selected donor x cell subclasses, raw gene counts were summed across all nuclei. The resulting matrix was constructed using all nuclei retained for each donor.
+The matrix was generated using all available nuclei from the selected donors, unlike the smaller Seurat subsample used for visualization and Q4.
 
-The input consists of :
+The pseudobulk object contains :
 
-- `counts`: a sparse gene-by-pseudobulk count matrix,
-- `description` : donor identity, subclass, nucleus count, diagnosis, age, sex and genetic ancestry.
+- `counts` : a sparse matrix of raw gene counts.
+- `description` : metadata corresponding to each donor–subclass profile.
 
-No additional cell-level normalization, integration or re-aggregation is performed here. Differential expression will be done using DESeq2 which models RNA-seq counts though a negative binomial framework. The count matrix will directly be used for DESeq2 after sample and gene filtering \[3\].
+Before differential expression modelling, donor–subclass profiles are required to contain at least **20 nuclei**, and eligible subclasses must be represented by at least **10 donors in each diagnostic group**.
 
-::: {.callout-important title="Warning"}
-Before defining the differential expression model, we verify that the pseudobulk count matrix and its metadata are internally consistent. These checks ensure that each expression profile is associated with the correct donor and biological question.
+Genes with fewer than 10 total counts across the retained samples of a subclass are excluded before DESeq2 fitting.
 
-Also, an important consideration is the unequal distribution of genetic ancestry and age diagnostic groups. Covariate balance and model identifiability will be assessed before differential expression testing.
-:::
+Three diagnostic contrasts are analysed:
+
+1. **SCZ versus Control**
+2. **BD versus Control**
+3. **SCZ versus BD**
+
+Statistical significance is evaluated using an adjusted p-value threshold of **FDR < 0.05**, with DESeq2 independent filtering performed for each contrast.
+
+## Statistical considerations and sensitivity analyses
+
+Several limitations must be considered when interpreting disease-associated expression differences.
+
+**Genetic ancestry imbalance.** The distribution of genetic ancestry differs considerably between the three diagnostic groups. In particular, BD donors are predominantly of European ancestry, while SCZ donors are predominantly of African ancestry. Genetic ancestry is therefore included as a covariate in the statistical model.
+
+**Unequal donor representation.** The number of donors contributing to individual cell subclasses differs across groups, potentially affecting statistical power and the detection of significant genes.
+
+**Unmeasured confounding.** Technical and clinical variables, including some post-mortem characteristics and treatment-related factors, are not available in the pseudobulk metadata used here.
+
+**Multiple testing.** FDR correction is performed within each subclass–contrast comparison, rather than globally across all comparisons.
+
+To assess the robustness of the primary findings, complementary sensitivity analyses are included:
+
+- **Ancestry-restricted models : ** comparison of selected diagnostic groups within major ancestry categories in astrocytes.
+- **Age-threshold sensitivity : ** repetition of the DESeq2 workflow after increasing the minimum donor age from 20 to 24 years.
+
+These analyses evaluate the stability of the findings under alternative sample selections but do not constitute independent validation.
+
+## Expected outputs and downstream integration
+
+The primary DESeq2 results are saved in `03_RESULTS/Q2/`, including complete gene-level tables, significant DEG lists, Wald-statistic rankings and model summaries.
+
+A consolidated file, `01_DATA/processed/de_results_all.csv`, is generated for downstream Q3 analyses.
+
+The results also provide the foundation for the second Q2 notebook, `03_Q2_2_shared_specific_signatures.qmd`, which investigates shared and distinct transcriptional signatures between SCZ and BD.
+
+**Q3 - Functional enrichment : ** complete gene-level statistics are used to investigate biological pathways through ORA and GSEA.
+
+**Q4 - Cell–cell communication : ** disease-associated expression patterns will help contextualize inferred ligand–receptor interactions and neuronal-glial signaling networks.
+
+**Q5 - Transcriptomic ageing : ** disease-associated expression changes can be examined in relation to ageing-associated transcriptional programs.
 
 ## Analysis plan
 
 | Step | Analysis | Main output |
-|------------------------|------------------------|------------------------|
-| 1 | Load and validate the pseudobulk input | Data integrity and cohort summary |
-| 2 | Define eligible samples and subclasses | Donor counts and filtering report |
-| 3 | Assess covariate balance | Age, sex and ancestry diagnostics |
-| 4 | Define the statistical model | DESeq2 design and contrasts |
-| 5 | Perform differential expression | Gene-level results for each contrast |
-| 6 | Evaluate model quality | Statistical diagnostics |
-| 7 | Export results | Complete DEG tables and Q3 inputs |
+|---|---|---|
+| 1 | Input data validation | Count matrix and metadata integrity |
+| 2 | Sample eligibility and subclass selection | Eligible donor–subclass profiles |
+| 3 | Covariate balance and potential confounding | Diagnostic-group characteristics |
+| 4 | Statistical design and identifiability | Adjusted DESeq2 model |
+| 5 | Astrocyte pilot differential expression | Three diagnostic contrasts |
+| 6 | Statistical quality assessment | Normalization, PCA and dispersion |
+| 7 | Differential expression across subclasses | Complete gene-level results |
+| 8 | Ancestry-restricted sensitivity analyses | Robustness in selected subgroups |
+| 9 | Age-threshold sensitivity analysis | Comparison between age thresholds |
+| 10 | Reproducibility and downstream outputs | Q2 results and Q3 export |
 
-Detailed comparison between the two diseases and controls will be addressed in the second Q2 notebook `Q2_02_Cross_Disease_Comparison.qmd`.
+The next notebook will extend this analysis by comparing effect sizes, shared significant genes and direct diagnostic differences between SCZ and BD.
+
+
 
 # Input data validation
 
@@ -135,7 +207,7 @@ Detailed comparison between the two diseases and controls will be addressed in t
 
 ```{r load_pseudobulk}
 
-input_file <- here::here("03_RESULTS", "pseudobulk", "pseudobulk_HBCC_224donors.rds")
+input_file <- here::here("01_DATA", "processed", "pseudobulk_HBCC_224donors.rds")
 pb <- readRDS(input_file)
 counts <- pb$counts
 meta <- pb$description
@@ -220,6 +292,14 @@ eligibility$Eligible <- apply(eligibility[, c("Control", "SCZ", "BD")], 1, min) 
 knitr::kable(eligibility, caption = "Eligible donors per subclass and diagnosis after minimum nucleus count filter")
   
 ```
+
+::: {.callout-tip title="Interpretation"}
+After applying the minimum nucleus and donor-count criteria, **23 of the 27 cell subclasses remained eligible** for differential expression analysis.
+
+Four subclasses (Adaptive, EN_L5_ET, PVM and SMC) were excluded due to insufficient representation across diagnostic groups.
+
+The retained populations include neuronal, glial and vascular-associated subclasses, allowing cell-subclass-specific comparisons across a broad range of cortical cell populations.
+:::
 
 ## Summary of eligible populations
 
@@ -428,6 +508,8 @@ The astrocyte pilot includes 215 donor-level pseudobulk profiles (118 controls, 
 ## Fit the model and extract three contrasts
 
 ```{r deseq2_astro}
+#| message: false
+#| warning: false
 
 dds_astro <- DESeq2::DESeqDataSetFromMatrix(countData = count_data, colData = col_data[, c("age", "sex", "ancestry_model", "group")], design = design_formula)
 
@@ -499,6 +581,17 @@ knitr::kable(aggregate(cbind(n_nuclei, library_size, size_factor) ~ group, data 
 summary(sample_qc$size_factor)
 
 ```
+
+::: {.callout-tip title="Interpretation"}
+Astrocyte pseudobulk samples showed differences in library size and nucleus counts across diagnostic groups.
+
+SCZ samples had higher median nucleus counts (664) and library sizes (4.95 million counts) than controls (459.5 nuclei; 3.11 million counts) and BD samples (458 nuclei; 3.59 million counts).
+
+DESeq2 size factors also differed between groups, highlighting the importance of accounting for sequencing depth and RNA composition before differential expression testing.
+
+These descriptive differences do not, by themselves, indicate biological changes in gene expression or demonstrate a normalization failure.
+:::
+
 
 ## Sample-level PCA (Exploratory)
 
@@ -733,7 +826,7 @@ The original contrast names are converted to the common Q2–Q3 nomenclature (`S
 #| message: false
 #| warning: false
 
-q3_dir <- file.path("..", "03_RESULTS", "Q2_pseudobulk_DE")
+q3_dir <- file.path("..", "01_DATA", "processed")
 dir.create(q3_dir, recursive = TRUE, showWarnings = FALSE)
 
 q3_file <- file.path(q3_dir, "de_results_all.csv")
@@ -967,6 +1060,14 @@ knitr::kable(design_24, caption = "Model identifiability after restricting the c
 stopifnot(all(design_24$Full_rank))
 ```
 
+::: {.callout-tip title="Interpretation"}
+All **23 eligible subclasses retained full-rank design matrices** after restricting the analysis to donors aged 24 years or older.
+
+For each subclass, the model matrix contained eight parameters and had a rank of eight, indicating that the adjusted DESeq2 model remained identifiable despite the reduction in cohort size.
+
+However, full-rank models do not guarantee balanced diagnostic groups or eliminate potential confounding, particularly regarding genetic ancestry.
+:::
+
 ## Differential expression analysis at age \>= 24
 
 The DESeq2 workflow is repeated for the 23 eligible subclasses. All three contrasts are retained, and results are saved separately from the primary analysis to prevent overwriting.
@@ -1082,36 +1183,7 @@ In astrocytes, the number of significant genes shifted from 463 to 564 for the S
 Overall, these results suggest that the **estimated transcriptional effects are largely robust to the minimum age threshold** applied to the various cell subclasses analyzed. However, given the significant overlap between the two cohorts, this analysis does not constitute an independent validation. Furthermore, the stability observed with respect to the age criterion does not rule out the possibility of confounding factors, such as genetic ancestry or other unmeasured variables.
 :::
 
-# Reproducibility and downstream outputs
-
-```{r reproducibility}
-#| echo: false
-#| message: false
-#| warning: false
-
-analysis_metadata <- list(
-  cohort_donors = length(unique(meta_q2$donor)),
-  eligible_subclasses = eligible_subclasses,
-  nuclei_min = nuclei_min,
-  donors_min_per_group = donors_min_per_group,
-  design = deparse(design_formula),
-  contrasts = contrast_definitions,
-  FDR_threshold = 0.05,
-  gene_prefilter_total_counts = 10,
-  ancestry_regrouping = rare_ancestries)
-
-saveRDS(analysis_metadata, file.path(q2_dir, "Q2_analysis_metadata.rds"))
-
-write.csv(meta_q2, file.path(q2_dir, "Q2_retained_samples.csv"), row.names = FALSE)
-write.csv(design_check, file.path(q2_dir, "Q2_design_validation.csv"), row.names = FALSE)
-
-writeLines(capture.output(sessionInfo()), file.path(q2_dir, "Q2_sessionInfo.txt"))
-
-cat("Q2 analysis outputs saved in:", q2_dir)
-
-```
-
-# Final conclusion
+# Conclusion
 
 :::{.callout-note title = "Conclusion"} 
 This notebook provided a donor-level pseudobulk differential expression workflow for SCZ and BD in the PsychAD cohort.
@@ -1146,3 +1218,13 @@ The next notebook `04_Q2_02_shared_specific_signature.qmd`, will investigate con
 [3] Love, M. I., Huber, W., & Anders, S. (2014). Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology, 15(12), 550. https://doi.org/10.1186/s13059-014-0550-8
 
 [4] Love, M. I., et al. (Bioconductor). Analyzing RNA-seq data with DESeq2 (package vignette). https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html
+
+
+# Session info
+
+```{r reproducibility}
+
+sessionInfo()
+
+```
+
