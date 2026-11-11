@@ -202,7 +202,7 @@ donors <- donors_from_nuclei(meta)
 donors$age <- parse_age(donors$development_stage)
 
 nrow(donors)                                        # expected: 300 donors
-unique(donors$development_stage[is.na(donors$age)]) # must be empty: every age format is read
+unique(donors$development_stage[is.na(donors$age)]) # only "unknown" is expected here: one donor without age, excluded by E6
 summary(donors$age)
 ```
 
@@ -770,7 +770,17 @@ marker_table[!marker_table$match, ]                                # markers tha
 exceptions.
 
 ::: {.callout-important title="Interpretation"}
-[to fill after the first render with the real data]
+- **67 of 77 marker genes are highest in their expected subclass**, including all 18 markers of the non-neuronal
+  subclasses chosen by the authors and 31 of the 34 neuronal markers of their Figure 2d: our data reproduce the
+  diagonal of Figure 2d of [1], which confirms both our reading of the file and the annotation of the authors.
+- The three exceptions from Figure 2d are near misses. *THEMIS* is highest in EN_L6_IT_2 rather than EN_L6_IT_1, but it
+  marks both L6 IT subclasses, as in Figure 2d. *TRPC3* and *MAFB* are highest in a non-neuronal subclass (pericytes,
+  perivascular macrophages), but among neurons they mark their own subclass (Figure PP-F05).
+- The markers of the primate taxonomy [5] agree less well (18 of 25), mostly because some of them mark broader groups
+  than our subclasses: *LHX6* marks all the interneurons of one developmental origin (SST, PVALB, LAMP5_LHX6), *ADARB2*
+  and *RELN* those of the other origin (VIP, ADARB2, LAMP5_RELN), and *FEZF2* all deep-layer neurons. *SYT6* and *CCN2*
+  are highest in a non-neuronal subclass (microglia, VLMC), but among neurons they mark EN_L6_CT and EN_L6B
+  (Figure PP-F05). *PCDH8* does not mark EN_L2_3_IT in our data.
 :::
 
 ```{r fig-PP-F07, fig.width=8, fig.height=7}
