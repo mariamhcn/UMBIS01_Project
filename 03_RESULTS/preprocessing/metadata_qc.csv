@@ -1,0 +1,5 @@
+"column","positive_in_column","positive_in_text","positive_in_both","discordant"
+"Schizophrenia",56,56,56,0
+"Bipolar_Disorder",69,69,69,0
+"ASCVD_status",40,40,40,0
+"Tardive_dyskinesia",28,14,3,36
