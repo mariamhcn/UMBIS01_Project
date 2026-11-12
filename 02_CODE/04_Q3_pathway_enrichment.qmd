@@ -83,21 +83,21 @@ Results found by **both** methods are the most reliable.
 
 ## Plan
 
-| Part | Step | Question | Figure |
-|------|------|----------|--------|
-| Input | 1 | Are the Q2 results complete? | table |
-| Input | 2 | Which functions are tested? | table |
-| **A – ORA** (significant genes only) | A1 | Where does ORA find something? | F01 |
-| A – ORA | A2 | Which functions? (GO) | F02 |
-| A – ORA | A3 | Same question with Hallmark, Reactome, SynGO | F03 |
-| A – ORA | A4 | Do SCZ and BD change the same genes? | F04 |
-| **B – GSEA** (all genes) | B1 | How to read one GSEA result | F05 |
-| B – GSEA | B2 | Where? Number of shifted gene sets per cell type | F06 |
-| B – GSEA | B3 | Which gene sets? | F07 |
-| B – GSEA | B4 | Together or separately? Shared and disease-specific gene sets, direct SCZ vs BD test | F08, F09 |
-| B – GSEA | B5 | Same pathway, same genes? (direct test of H1) | F10 |
-| B – GSEA | B6 | And the synapse? (SynGO) | F11 |
-| Synthesis | – | Which results are found by both methods? Answer to Q3 | table |
+The notebook follows three stages, summarised below: each box is a step and a question, with the figure that answers
+it.
+
+```{r fig-reasoning, echo=FALSE, fig.width=12, fig.height=8}
+# Drawn here, before the setup, so the reader sees the logic first; saved in 04_FIGURES in the setup
+suppressPackageStartupMessages(library(ggplot2))
+source("scripts/utils_figures.R")
+source("scripts/utils_enrichment.R")
+p_reasoning <- plot_reasoning()
+p_reasoning
+```
+
+**How the notebook answers Q3.** We first look at the significant genes of Q2 (Part A, ORA), then at all genes, ranked
+(Part B, GSEA), and finally compare SCZ and BD (Part B, steps B4 to B6). Steps 1 and 2 (the Q2 results and the gene sets
+tested) come before Part A; the conclusion gathers all the answers.
 
 # Setup
 
@@ -150,6 +150,7 @@ out_dir <- "../03_RESULTS/Q3_enrichment"
 fig_dir <- "../04_FIGURES/Q3_enrichment"
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
+save_figure(p_reasoning, "Q3_reasoning", fig_dir, width = 12, height = 8)   # diagram of the Overview
 
 # Analysis choices
 alpha               <- 0.05
