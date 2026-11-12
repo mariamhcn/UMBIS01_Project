@@ -27,7 +27,7 @@ Each step starts with a short explanation of **what we do and why**, then the co
 
 The donors and the numbers of nuclei come from the preprocessing (notebook `01_preprocessing.qmd`). The composition
 test runs in this notebook (a few seconds); the test function is in `scripts/utils_composition.R`. Figures are saved as `.png`
-(300 dpi) in `04_FIGURES/Q1/`. References are numbered in square brackets and listed at the end.
+(300 dpi) in `04_FIGURES/Q1_composition/`. References are numbered in square brackets and listed at the end.
 :::
 
 # Overview
@@ -109,7 +109,7 @@ pre_dir  <- "../03_RESULTS/preprocessing"     # E7 table
 
 # Outputs
 out_dir <- "../03_RESULTS/Q1_composition"
-fig_dir <- "../04_FIGURES/Q1"
+fig_dir <- "../04_FIGURES/Q1_composition"
 for (d in c(out_dir, fig_dir)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
 
 # Analysis choices
