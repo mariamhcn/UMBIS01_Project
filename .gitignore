@@ -1,0 +1,16 @@
+# Système / R
+.DS_Store
+.Rhistory
+.Rproj.user/
+
+# Données (recréées par le code)
+01_DATA/raw/
+01_DATA/processed/*.rds
+
+# Artefacts de rendu Quarto
+*_cache/
+*_files/
+*.rmarkdown
+
+# Trop gros pour GitHub (>100 Mo), recréé par le notebook Q3
+03_RESULTS/Q3_enrichment/gsea_all.csv
