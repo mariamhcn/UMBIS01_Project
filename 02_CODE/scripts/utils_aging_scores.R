@@ -1,9 +1,18 @@
 # Helpers for Q5: transcriptomic ageing scores per cell type and donor.
+#
+# Contents (all the functions of Q5 are in this file):
+#  PART 1 – CALCULATIONS: input, scores, age-disease concordance (Part B), disease models
+#  PART 2 – FIGURES of Q5 (F03, F04 and the reasoning diagram); the common style (theme, colours, saving) is in
+#           utils_figures.R
 
 # Input: the pseudobulk matrix of the preprocessing (counts summed per donor x subclass, all nuclei).
 # Column names written by the preprocessing (scripts/04_pseudobulk.R) and the names used in this notebook:
 PB_COLUMNS <- c(column = "column", donor_id = "donor", cell_type = "subclass", n_nuclei = "n_nuclei",
                 diagnosis = "group", age = "age", sex = "sex", ancestry = "ancestry")
+
+# ===========================================================================
+# PART 1 – CALCULATIONS
+# ===========================================================================
 
 # ---------------------------------------------------------------------------
 # Input
@@ -96,10 +105,10 @@ validate_in_controls <- function(donor_scores, control_label = "CTRL", min_donor
     dplyr::mutate(p_adj = stats::p.adjust(p_value, method = "BH"))
 }
 
-# Ageing index of a cell type: mean of the signatures validated in controls in that cell type,
+# Composite ageing score of a cell type: mean of the signatures validated in controls in that cell type,
 # each one signed so that a higher value always means "older-looking" (age_direction = +1 or -1),
 # then re-standardised against controls. `exclude` (optional) lists donor x signature scores to leave out.
-add_aging_index <- function(donor_scores, valid_pairs, exclude = NULL, name = "Ageing_index") {
+add_composite_score <- function(donor_scores, valid_pairs, exclude = NULL, name = "Composite_ageing_score") {
   d <- donor_scores |>
     dplyr::inner_join(valid_pairs, by = c("cell_type", "signature"))
   if (!is.null(exclude)) d <- dplyr::anti_join(d, exclude, by = c("donor_id", "signature"))
@@ -147,7 +156,8 @@ age_t_statistic <- function(Y, X) {
 }
 
 # Spearman correlation between the age effect (controls) and the disease effect (Q2 Wald statistic) over all genes,
-# with a permutation test: ages are shuffled among controls to see which correlations arise by chance.
+# with a two-sided permutation test: ages are shuffled among controls to see which correlations arise by chance
+# (a negative correlation, i.e. a younger-looking profile, would also be reported).
 age_disease_concordance <- function(age_fit, disease_stat, n_perm = 200, seed = 42) {
   genes <- intersect(names(age_fit$t_age), names(disease_stat))
   if (length(genes) < 100) return(NULL)
@@ -161,12 +171,14 @@ age_disease_concordance <- function(age_fit, disease_stat, n_perm = 200, seed = 
   })
   data.frame(n_genes = length(genes), rho = rho,
              null_low = stats::quantile(null, 0.025), null_high = stats::quantile(null, 0.975),
-             p_perm = (sum(null >= rho) + 1) / (n_perm + 1), row.names = NULL)
+             p_perm = (sum(abs(null) >= abs(rho)) + 1) / (n_perm + 1), row.names = NULL)
 }
 
 # Overlap between the genes significantly changed with age (controls) and with the disease (Q2), with:
 #  - a one-sided Fisher exact test on the 2 x 2 table (age gene yes/no x disease gene yes/no): more overlap than chance?
-#  - a binomial test on the overlapping genes: do more than half change in the same direction with age and disease?
+#    (an enrichment test: less overlap than chance has no biological meaning here, as for the ORA of Q3)
+#  - a two-sided binomial test on the overlapping genes: does the share changing in the same direction with age and
+#    disease differ from one half?
 # Universe: genes tested in both analyses (Q2 padj not NA). Age p-values come from the t statistic of age_t_statistic().
 age_disease_overlap <- function(age_fit, disease_stat, disease_padj, alpha = 0.05, min_overlap = 5) {
   df_age <- nrow(age_fit$X) - ncol(age_fit$X)
@@ -181,7 +193,7 @@ age_disease_overlap <- function(age_fit, disease_stat, disease_padj, alpha = 0.0
   both   <- genes[age_sig & dis_sig]
   n_same <- sum(sign(age_fit$t_age[both]) == sign(disease_stat[both]))
   p_dir  <- if (length(both) >= min_overlap) {
-    stats::binom.test(n_same, length(both), p = 0.5, alternative = "greater")$p.value
+    stats::binom.test(n_same, length(both), p = 0.5, alternative = "two.sided")$p.value
   } else NA_real_
   data.frame(n_genes = length(genes), n_age = sum(age_sig), n_disease = sum(dis_sig), n_both = length(both),
              expected_both = round(sum(age_sig) * sum(dis_sig) / length(genes), 1),
@@ -193,6 +205,18 @@ age_disease_overlap <- function(age_fit, disease_stat, disease_padj, alpha = 0.0
 # ---------------------------------------------------------------------------
 # Disease models
 # ---------------------------------------------------------------------------
+
+# 95% confidence interval of a ratio num / den of two estimates (Fieller's method), from their variances and
+# covariance. If den (here the effect of age) is not significantly different from 0, the interval has no upper
+# limit: NA is returned ("not estimable").
+fieller_ci <- function(num, den, v_num, v_den, cov_num_den, df, level = 0.95) {
+  t2 <- stats::qt(1 - (1 - level) / 2, df)^2
+  A <- den^2 - t2 * v_den
+  B <- num * den - t2 * cov_num_den
+  C <- num^2 - t2 * v_num
+  if (A <= 0) return(c(NA_real_, NA_real_))
+  sort(unname((B + c(-1, 1) * sqrt(B^2 - A * C)) / A))
+}
 
 # Difference between two coefficients of an lm fit (e.g. SCZ effect - BD effect), with its standard error.
 contrast_coefs <- function(fit, term_a, term_b) {
@@ -237,21 +261,23 @@ fit_disease_models <- function(donor_scores, covariates = c("sex", "ancestry"), 
             contrast_coefs(fit_int, "age:diagnosisSCZ", "age:diagnosisBD"))
     )
     # apparent age gap (offset model): disease effect / age effect = how many years older-looking,
-    # with a delta-method standard error
+    # with a 95% confidence interval by Fieller's method (ratio of two regression coefficients)
     b <- stats::coef(fit_off); v <- stats::vcov(fit_off)
-    terms <- c("diagnosisSCZ", "diagnosisBD", "age")
+    terms <- c("diagnosisSCZ", "diagnosisBD")
     a <- b["age"]
     # numerator weights: SCZ, BD, SCZ - BD
     weights <- list(SCZ = c(1, 0), BD = c(0, 1), SCZ_vs_BD = c(1, -1))
     res$age_slope <- unname(a)
-    res$years <- NA_real_; res$years_se <- NA_real_
+    res$years <- NA_real_; res$years_lower <- NA_real_; res$years_upper <- NA_real_
     for (cmp in names(weights)) {
-      w <- weights[[cmp]]
-      num <- sum(w * b[terms[1:2]])
-      grad <- c(w / a, -num / a^2)                       # derivative of num / a
+      w   <- weights[[cmp]]
+      num <- sum(w * b[terms])
+      ci  <- fieller_ci(num, a, v_num = as.numeric(t(w) %*% v[terms, terms] %*% w), v_den = v["age", "age"],
+                        cov_num_den = sum(w * v[terms, "age"]), df = fit_off$df.residual)
       k <- res$model == "offset" & res$comparison == cmp
-      res$years[k]    <- unname(num / a)
-      res$years_se[k] <- sqrt(as.numeric(t(grad) %*% v[terms, terms] %*% grad))
+      res$years[k]       <- unname(num / a)
+      res$years_lower[k] <- ci[1]
+      res$years_upper[k] <- ci[2]
     }
     cbind(cell_type = groups$cell_type[i], signature = groups$signature[i],
           n_CTRL = sum(d$diagnosis == "CTRL"), n_SCZ = sum(d$diagnosis == "SCZ"),
@@ -261,13 +287,171 @@ fit_disease_models <- function(donor_scores, covariates = c("sex", "ancestry"), 
 }
 
 # Benjamini-Hochberg correction within each family of tests:
-# model (offset / slope) x level (ageing index = main test / single signatures = detail) x comparison type
+# model (offset / slope) x level (composite ageing score = main test / single signatures = detail) x comparison type
 # (vs controls / direct SCZ vs BD).
-adjust_by_family <- function(models, index_name = "Ageing_index") {
+adjust_by_family <- function(models, index_name = "Composite_ageing_score") {
   models |>
     dplyr::mutate(level = ifelse(signature == index_name, "index", "signatures"),
                   comparison_type = ifelse(comparison == "SCZ_vs_BD", "direct", "vs_CTRL")) |>
     dplyr::group_by(model, level, comparison_type) |>
     dplyr::mutate(p_adj = stats::p.adjust(p_value, method = "BH")) |>
     dplyr::ungroup()
+}
+
+# ===========================================================================
+# PART 2 – FIGURES
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Figure: composite ageing score of patients and controls at equal age
+# ---------------------------------------------------------------------------
+
+# Boxplots of the composite ageing score adjusted for age, sex and ancestry, one panel per family (lettered A, B, C)
+# and one facet per cell type. adjusted = score - score expected for a control of the same age, sex and ancestry
+# (linear model fitted on controls only). Brackets: p_adj of the offset model (models), one per pair of groups.
+plot_composite_boxplots <- function(model_data, models, cell_order, cols, composite = "Composite_ageing_score",
+                                    covariates = c("sex", "ancestry"), seed = 42) {
+  form <- stats::as.formula(paste("score_z ~ age +", paste(covariates, collapse = " + ")))
+  grp  <- c(CTRL = "Controls", SCZ = "SCZ", BD = "BD")
+  adj <- model_data |>
+    dplyr::filter(signature == composite) |>
+    dplyr::group_by(cell_type) |>
+    dplyr::group_modify(function(d, k) {
+      fit <- stats::lm(form, data = d[d$diagnosis == "CTRL", ])
+      d$adjusted <- d$score_z - stats::predict(fit, newdata = d)
+      d
+    }) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(group = factor(grp[as.character(diagnosis)], levels = grp), family = cell_family(cell_type))
+  stars <- function(p) ifelse(p < 1e-4, "****", ifelse(p < 1e-3, "***", ifelse(p < 0.01, "**", ifelse(p < 0.05, "*", "ns"))))
+  top <- adj |> dplyr::group_by(cell_type) |> dplyr::summarise(top = max(adjusted, na.rm = TRUE))
+  brackets <- models |>
+    dplyr::filter(signature == composite, model == "offset") |>
+    dplyr::mutate(comparison = as.character(comparison), label = stars(p_adj),
+                  g1 = c(SCZ = "Controls", BD = "Controls", SCZ_vs_BD = "SCZ")[comparison],
+                  g2 = c(SCZ = "SCZ", BD = "BD", SCZ_vs_BD = "BD")[comparison],
+                  level = c(SCZ = 1, SCZ_vs_BD = 2, BD = 3)[comparison]) |>
+    dplyr::inner_join(top, by = "cell_type") |>
+    dplyr::mutate(y = top + 0.4 + 0.6 * (level - 1), x1 = match(g1, grp), x2 = match(g2, grp),
+                  family = cell_family(cell_type))
+  cell_order <- cell_order[cell_order %in% adj$cell_type]
+  one_family <- function(fam) {
+    cts <- cell_order[cell_family(cell_order) == fam]
+    d <- dplyr::filter(adj, family == fam) |> dplyr::mutate(cell_type = factor(cell_type, levels = cts))
+    b <- dplyr::filter(brackets, family == fam) |> dplyr::mutate(cell_type = factor(cell_type, levels = cts))
+    ggplot2::ggplot(d, ggplot2::aes(group, adjusted, colour = group)) +
+      ggplot2::geom_hline(yintercept = 0, linetype = "dashed", colour = "grey60") +
+      ggplot2::geom_point(position = ggplot2::position_jitter(width = 0.15, height = 0, seed = seed),
+                          size = 1, alpha = 0.5, show.legend = FALSE) +
+      ggplot2::geom_boxplot(ggplot2::aes(fill = group), alpha = 0.15, outlier.shape = NA, width = 0.6,
+                            linewidth = 0.6, key_glyph = "rect") +
+      ggplot2::geom_segment(data = b, inherit.aes = FALSE, ggplot2::aes(x = x1, xend = x2, y = y, yend = y), linewidth = 0.35) +
+      ggplot2::geom_segment(data = b, inherit.aes = FALSE, ggplot2::aes(x = x1, xend = x1, y = y, yend = y - 0.15), linewidth = 0.35) +
+      ggplot2::geom_segment(data = b, inherit.aes = FALSE, ggplot2::aes(x = x2, xend = x2, y = y, yend = y - 0.15), linewidth = 0.35) +
+      ggplot2::geom_text(data = b, inherit.aes = FALSE, size = 3.2,
+                         ggplot2::aes(x = (x1 + x2) / 2, y = y, label = label, vjust = ifelse(label == "ns", -0.25, 0.3))) +
+      ggplot2::facet_wrap(~ cell_type, nrow = 1, scales = "free_y") +
+      ggplot2::scale_colour_manual(values = cols, name = NULL, guide = "none") +
+      ggplot2::scale_fill_manual(values = cols, name = NULL) +
+      ggplot2::guides(fill = ggplot2::guide_legend(override.aes = list(alpha = 1))) +
+      ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.05, 0.1))) +
+      ggplot2::labs(x = NULL, y = "Adjusted composite\nageing score (SD)", title = fam) +
+      theme_project(11) +
+      ggplot2::theme(plot.title = ggplot2::element_text(colour = "black", face = "bold", size = 14, hjust = 0.5),
+                     plot.title.position = "panel",
+                     strip.text = ggplot2::element_text(size = 12, face = "bold", colour = "black"),
+                     strip.background = ggplot2::element_blank(), axis.text.x = ggplot2::element_blank(),
+                     axis.ticks.x = ggplot2::element_blank(), panel.grid.major.x = ggplot2::element_blank())
+  }
+  families <- intersect(c("Excitatory neurons", "Inhibitory neurons", "Glial cells", "Vascular cells"),
+                        cell_family(cell_order))
+  patchwork::wrap_plots(lapply(families, one_family), ncol = 1) +
+    patchwork::plot_layout(guides = "collect") +
+    patchwork::plot_annotation(
+      tag_levels = "A", theme = theme_project(),
+      title = "At equal age, patients have a higher composite ageing score than controls in most cell types",
+      subtitle = "Composite ageing score adjusted for age, sex and ancestry: 0 = the score expected for a control of the same age",
+      caption = paste0("One dot per donor; above 0 = older-looking than expected for the age. Only the cell types with a composite score are shown (at least one signature following age in controls).\n",
+                       "Brackets: difference between two groups at equal age (linear model adjusted for age, sex and ancestry), Benjamini-Hochberg adjusted (ns: not significant; * < 0.05; ** < 0.01; *** < 0.001; **** < 0.0001).")) &
+    ggplot2::theme(plot.tag = ggplot2::element_text(face = "bold", size = 16, hjust = 0, vjust = 1),
+                   plot.tag.position = c(0, 1), legend.position = "bottom",
+                   legend.text = ggplot2::element_text(size = 12))
+}
+
+# ---------------------------------------------------------------------------
+# Figure: shift of each score of the composite ageing score
+# ---------------------------------------------------------------------------
+
+# Heatmap with the same layout as Figure F01 (cell types grouped by family, a bracket naming each family), restricted
+# to the cell types with a composite score and to the scores kept in it (validated in controls). One panel per
+# comparison with controls (SCZ, BD); colour = shift towards an older profile, stars = adjusted p of that score.
+plot_score_shifts <- function(models, composite = "Composite_ageing_score", alpha = 0.05) {
+  stars <- function(p) ifelse(p < 1e-3, "***", ifelse(p < 0.01, "**", ifelse(p < alpha, "*", "")))
+  d <- models |>
+    dplyr::filter(signature != composite, model == "offset", comparison %in% c("SCZ", "BD"), validated)
+  lev <- rev(order_cell_types(d$cell_type))
+  d <- d |>
+    dplyr::mutate(cell_type = factor(cell_type, levels = lev), signature = factor(signature),
+                  comparison = factor(as.character(comparison), levels = c("SCZ", "BD"),
+                                      labels = c("SCZ vs controls", "BD vs controls")))
+  fam <- data.frame(y = seq_along(lev), family = cell_family(lev)) |>
+    dplyr::group_by(family) |>
+    dplyr::summarise(ymin = min(y) - 0.4, ymax = max(y) + 0.4, ymid = mean(y), .groups = "drop") |>
+    dplyr::mutate(label = sub(" ", "\n", family))
+  lim <- max(abs(d$aging_shift), na.rm = TRUE)
+  heat <- ggplot2::ggplot(d, ggplot2::aes(signature, cell_type, fill = aging_shift)) +
+    ggplot2::geom_tile(colour = "white") +
+    ggplot2::geom_text(ggplot2::aes(label = stars(p_adj)), size = 5, vjust = 0.75) +
+    ggplot2::facet_wrap(~ comparison) +
+    ggplot2::scale_fill_gradient2(low = "#5e3c99", mid = "white", high = "#e66101", midpoint = 0,
+                                  limits = c(-lim, lim), name = "Shift towards\nolder profile\n(control SD)") +
+    ggplot2::scale_y_discrete(drop = FALSE) +
+    ggplot2::labs(x = "Signature", y = NULL,
+                  title = "The older-looking profile is carried by the lifespan and microglial ageing genes",
+                  subtitle = paste0("Shift of each score kept in the composite ageing score, in patients compared with controls of the same age; * adjusted p < ", alpha),
+                  caption = "Orange: older-looking than controls of the same age. Grey: not a validated ageing score in that cell type. No score differs between SCZ and BD (direct test).") +
+    theme_project() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 30, hjust = 1), panel.grid = ggplot2::element_blank(),
+                   legend.position = "right", panel.background = ggplot2::element_rect(fill = "grey90"),
+                   strip.background = ggplot2::element_blank(),
+                   strip.text = ggplot2::element_text(face = "bold", size = 12))
+  # brackets naming the families, drawn in a narrow plot on the left with the same vertical scale
+  brackets <- ggplot2::ggplot() +
+    ggplot2::scale_x_continuous(limits = c(0, 1)) +
+    ggplot2::scale_y_continuous(limits = c(0.5, length(lev) + 0.5), expand = c(0, 0)) +
+    ggplot2::annotate("segment", x = 0.95, xend = 0.95, y = fam$ymin, yend = fam$ymax) +
+    ggplot2::annotate("segment", x = 0.95, xend = 1, y = fam$ymin, yend = fam$ymin) +
+    ggplot2::annotate("segment", x = 0.95, xend = 1, y = fam$ymax, yend = fam$ymax) +
+    ggplot2::annotate("text", x = 0.9, y = fam$ymid, label = fam$label, hjust = 1, fontface = "bold", size = 3.8,
+                      lineheight = 0.9) +
+    ggplot2::theme_void()
+  brackets + heat + patchwork::plot_layout(widths = c(0.12, 1))
+}
+
+# ---------------------------------------------------------------------------
+# Figure: how the notebook answers Q5 (reasoning diagram, no data)
+# ---------------------------------------------------------------------------
+
+# Content of the diagram drawn by plot_reasoning_diagram() (utils_figures.R): one column per stage, one box per step.
+plot_reasoning <- function() {
+  cols <- data.frame(head = c("1. Build the ruler", "2. Measure the patients", "3. Check with all genes"),
+                     sub = c("Part A, steps A1 to A4", "Part A, steps A5 to A7", "Part B"),
+                     fill = c("#fdf3c4", "#fbe38c", "#f5d35a"), border = "#a88600")
+  boxes <- data.frame(
+    col  = c(1, 1, 1, 1, 2, 2, 2, 3, 3),
+    step = c("A1", "A2", "A3", "A4", "A5", "A6", "A7", "B1", "B2"),
+    text = c("Published gene lists,\none per ageing hallmark",
+             "One score per donor\nand cell type",
+             "Which scores really\nfollow age in\nhealthy controls?",
+             "Combine them: one\ncomposite ageing score\nper cell type",
+             "Do patients look older\nthan controls of the\nsame age? By how much?",
+             "Which hallmark\ndrives the shift?",
+             "A head start,\nor faster ageing?",
+             "With all genes: does the\ndisease move genes\nlike age does?",
+             "Are they the same\nsignificant genes?"),
+    out = c("", "", "F01", "", "F02 + table", "F03", "table", "F04", "table"))
+  plot_reasoning_diagram(cols, boxes,
+    conclusion = "Conclusion: answer to Q5, H3, and comparison with the literature",
+    title = "How the notebook answers Q5",
+    subtitle = "We first build an ageing ruler in healthy controls, then measure the patients with it, then check the result without chosen gene lists")
 }

@@ -3,7 +3,11 @@
 #  - theme_project(): same fonts, sizes and layout everywhere;
 #  - save_figure(): saves each figure as a PNG (300 dpi), for the slides and the report;
 #  - clean_set_name(): turns gene set identifiers (HALLMARK_..., GOBP_...) into readable labels;
-#  - cell_family(), order_cell_types(): the same order of the cell types in every figure of the project.
+#  - cell_family(), order_cell_types(): the same order of the cell types in every figure of the project;
+#  - plot_reasoning_diagram(): the diagram that shows how a notebook answers its question (Overview).
+#
+# This file holds only the common style, shared by all notebooks. The figures specific to one question are drawn by
+# that question's script (utils_enrichment.R for Q3, utils_aging_scores.R for Q5).
 
 # Project colours (pastel = backgrounds, dark = accents), as in the slides and the report
 project_colours <- list(
@@ -93,4 +97,44 @@ cell_family <- function(x) {
 order_cell_types <- function(x) {
   u <- unique(as.character(x))
   u[order(match(cell_family(u), FAMILIES), gsub("_", " ", toupper(u)), method = "radix")]
+}
+
+# ---------------------------------------------------------------------------
+# Reasoning diagram of a notebook (Overview)
+# ---------------------------------------------------------------------------
+
+# Columns of boxes linked by arrows, a conclusion box at the bottom.
+# cols: data.frame(head, sub, fill, border); boxes: data.frame(col, step, text, out)
+plot_reasoning_diagram <- function(cols, boxes, conclusion, title, subtitle, w = 0.42, h = 0.41) {
+  cols$x <- seq_len(nrow(cols))
+  boxes <- merge(boxes, cols[, c("x", "fill", "border")], by.x = "col", by.y = "x")
+  boxes$x <- boxes$col
+  boxes <- do.call(rbind, lapply(split(boxes, boxes$col), function(d) { d$y <- rev(seq_len(nrow(d))) + (4 - nrow(d)); d }))
+  ymax <- 4
+  arrows_in <- do.call(rbind, lapply(split(boxes, boxes$col), function(d) if (nrow(d) > 1) data.frame(x = d$x[-nrow(d)], y = d$y[-nrow(d)]) else NULL))
+  n <- nrow(cols)
+  ggplot2::ggplot() +
+    ggplot2::geom_segment(data = arrows_in, ggplot2::aes(x = x, xend = x, y = y - h, yend = y - 1 + h),
+                          arrow = ggplot2::arrow(length = ggplot2::unit(0.18, "cm"), type = "closed"), colour = "grey45") +
+    (if (n > 1) ggplot2::annotate("segment", x = seq_len(n - 1) + w + 0.01, xend = seq_len(n - 1) + 1 - w - 0.01,
+                                  y = ymax + 0.64, yend = ymax + 0.64,
+                                  arrow = ggplot2::arrow(length = ggplot2::unit(0.3, "cm"), type = "closed"),
+                                  colour = "grey30", linewidth = 1.2)) +
+    ggplot2::geom_rect(data = boxes, ggplot2::aes(xmin = x - w, xmax = x + w, ymin = y - h, ymax = y + h,
+                                                  fill = I(fill), colour = I(border)), linewidth = 0.6) +
+    ggplot2::geom_text(data = boxes, ggplot2::aes(x = x - w + 0.03, y = y + h - 0.06, label = step),
+                       hjust = 0, vjust = 1, fontface = "bold", size = 4.4) +
+    ggplot2::geom_text(data = boxes, ggplot2::aes(x = x, y = y + 0.04, label = text), size = 4.6, lineheight = 0.95) +
+    ggplot2::geom_label(data = subset(boxes, out != ""), ggplot2::aes(x = x + w - 0.03, y = y - h + 0.06, label = out),
+                        hjust = 1, vjust = 0, size = 4, fontface = "bold", fill = "white", label.size = 0.3) +
+    ggplot2::geom_text(data = cols, ggplot2::aes(x = x, y = ymax + 0.75, label = head), fontface = "bold", size = 5.6) +
+    ggplot2::geom_text(data = cols, ggplot2::aes(x = x, y = ymax + 0.53, label = sub), size = 4.3, colour = "grey35") +
+    ggplot2::annotate("rect", xmin = 1 - w, xmax = n + w, ymin = -0.05, ymax = 0.4, fill = "grey95", colour = "grey40", linewidth = 0.5) +
+    ggplot2::annotate("text", x = (n + 1) / 2, y = 0.175, size = 4.6, label = conclusion) +
+    ggplot2::coord_cartesian(xlim = c(1 - w - 0.03, n + w + 0.03), ylim = c(-0.1, ymax + 0.9), expand = FALSE) +
+    ggplot2::labs(title = title, subtitle = subtitle) +
+    ggplot2::theme_void() +
+    ggplot2::theme(plot.title = ggplot2::element_text(face = "bold", colour = "#3849a2", size = 18),
+                   plot.subtitle = ggplot2::element_text(size = 13.5, colour = "grey30"),
+                   plot.margin = ggplot2::margin(10, 10, 10, 10), plot.background = ggplot2::element_rect(fill = "white", colour = NA))
 }

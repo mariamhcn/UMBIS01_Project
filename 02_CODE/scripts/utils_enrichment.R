@@ -6,6 +6,10 @@
 #    annotation, as in the clusterProfiler book; this also allows simplify() to remove redundant GO terms;
 #  - other collections (Hallmark, Reactome, SynGO): generic functions (enricher / GSEA) with a
 #    TERM2GENE table (columns gs_name, gene_symbol).
+#
+# Contents (all the functions of Q3 are in this file):
+#  PART 1 – CALCULATIONS: ORA, GSEA, SCZ vs BD comparison
+#  PART 2 – FIGURES of Q3 (Part A: ORA; Part B: GSEA); the common style (theme, colours, saving) is in utils_figures.R
 
 DE_REQUIRED_COLUMNS <- c("cell_type", "contrast", "gene", "log2FoldChange", "stat", "pvalue", "padj")
 
@@ -18,6 +22,10 @@ load_de_results <- function(path) {
   }
   de
 }
+
+# ===========================================================================
+# PART 1 – CALCULATIONS
+# ===========================================================================
 
 # ---------------------------------------------------------------------------
 # ORA
@@ -154,6 +162,10 @@ add_leading_edge_overlap <- function(paired) {
                                         paired$core_enrichment_BD)
   paired
 }
+
+# ===========================================================================
+# PART 2 – FIGURES
+# ===========================================================================
 
 # ---------------------------------------------------------------------------
 # Figures of Part A (ORA)
@@ -588,4 +600,33 @@ show_figures_in_tabs <- function(files_by_tab) {
     if (length(files_by_tab[[tab]]) == 0) cat("No result.\n\n")
     for (f in files_by_tab[[tab]]) cat("![](", f, ")\n\n", sep = "")
   }
+}
+
+# ---------------------------------------------------------------------------
+# Figure: how the notebook answers Q3 (reasoning diagram, no data)
+# ---------------------------------------------------------------------------
+
+# Content of the diagram drawn by plot_reasoning_diagram() (utils_figures.R): one column per stage, one box per step.
+plot_reasoning <- function() {
+  cols <- data.frame(head = c("1. Significant genes", "2. All genes", "3. SCZ versus BD"),
+                     sub = c("Part A (ORA), steps A1 to A4", "Part B (GSEA), steps B1 to B3", "Part B (GSEA), steps B4 to B6"),
+                     fill = c("#f4dcfa", "#e9c2f5", "#e2a9f1"), border = "#8e3fb0")
+  boxes <- data.frame(
+    col  = c(1, 1, 1, 1, 2, 2, 2, 3, 3, 3),
+    step = c("A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4", "B5", "B6"),
+    text = c("In which cell types do\nthe significant genes\npoint to functions?",
+             "Which functions?\n(GO)",
+             "Same question with\nHallmark, Reactome\nand SynGO",
+             "Do SCZ and BD change\nthe same genes?",
+             "How to read\none GSEA result",
+             "In which cell types are\ngene sets shifted?",
+             "Which gene sets?",
+             "Shared or specific\nto one disease?",
+             "Same pathway,\nsame genes?",
+             "And the synapse?"),
+    out = c("F01", "F02", "F03", "F04", "F05", "F06", "F07", "F08, F09", "F10", "F11"))
+  plot_reasoning_diagram(cols, boxes,
+    conclusion = "Conclusion: answer to Q3, H1, and comparison with the literature",
+    title = "How the notebook answers Q3",
+    subtitle = "We first look at the significant genes (ORA), then at all genes (GSEA), then compare SCZ and BD")
 }
