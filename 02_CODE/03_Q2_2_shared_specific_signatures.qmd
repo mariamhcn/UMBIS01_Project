@@ -91,7 +91,7 @@ q2_dir <- here::here("03_RESULTS", "Q2")
 deg_dir <- file.path(q2_dir, "DEG")
 
 #Consolidated export for Q3 (different directory)
-q3_dir <- here::here("03_RESULTS", "Q2_pseudobulk_DE")
+q3_dir <- here::here("01_DATA", "processed")
 
 #Cross-disease comparison outputs
 comparison_dir <- file.path(q2_dir, "cross_disease")
@@ -115,7 +115,7 @@ expected <-  expand.grid(Subclass = eligible_subclasses, Contrast = required_con
 summary_keys <- paste(q2_summary$Subclass, q2_summary$Contrast, sep = "__")
 expected_keys <-paste(expected$Subclass, expected$Contrast, sep = "__")
 
-stopifnot(nrow(q2_summary) == 69L, length(eligible_subclasses) == 23L, !anyDuplicated(summary_keys), setequal(summary_keys, expected_keys))
+stopifnot(nrow(q2_summary) == 69, length(eligible_subclasses) == 23, !anyDuplicated(summary_keys), setequal(summary_keys, expected_keys))
 
 knitr::kable(data.frame(Characteristic = c("Eligible subclasses", "Diagnostic contrasts", "Subclass-level comparisons"), Value = c(length(eligible_subclasses), length(required_contrasts), nrow(q2_summary))), caption = "Input summary for cross-disease comparison")
 
@@ -293,9 +293,9 @@ The cross-disease comparison identified overlapping transcriptional signatures b
 
 The highest number of concordant shared differentially expressed genes was observed in **EN_L2_3_IT excitatory neurons (192 genes)**, followed by **astrocytes (183 genes)**, **pericytes (144 genes)** and **EN_L3_5_IT_3 excitatory neurons (124 genes)**.
 
-In contrast, **shared significant genes with opposite directions of regulation were uncommin among the leading subclasses**, with only 2 identified for EN_L2_3_IT, one in astrocyte and two in endothelial cells.
+In contrast, **shared significant genes with opposite directions of regulation were uncommon among the leading subclasses**, with only 2 identified for EN_L2_3_IT, one in astrocyte and two in endothelial cells.
 
-The distribution of diagnosis-associated significance patterns also differed across populations. EN_L2_3_IT neurons showed 2 261 significant genes only in SCZ comparison, wheread astrocytes showed 908 significant genes only in BD comparison.
+The distribution of diagnosis-associated significance patterns also differed across populations. EN_L2_3_IT neurons showed 2 261 significant genes only in SCZ comparison, whereas astrocytes showed 908 significant genes only in BD comparison.
 
 **These findings suggest that schizophrenia and bipolar disorder exhibit both shared and distinct patterns of detectable transcriptional alterations.**
 
@@ -362,7 +362,7 @@ Interestingly, the subclasses with the largest numbers of concordant shared DEGs
 
 This highlights an relevant distinction between significant gene overlap and trancriptome wide effect size concordance. DEG overlap focuses on genes meeting statistical significance thresholds in both disorders, while Spearman correlations summarize the relative consistency of estimated effects accross a much larger set of genes.
 
-Direct SCZ-BD contrast identified differences in selected subclasses : EN_L2_3_IT (164 DEGs), endothelilal cells (108 DEGs) and microglia (47 DEGs).
+Direct SCZ-BD contrast identified differences in selected subclasses : EN_L2_3_IT (164 DEGs), endothelial cells (108 DEGs) and microglia (47 DEGs).
 
 All this results indicate that SCZ and BD exhibit partially shared transcriptional signatures, with varying degrees of concordance and diagnostic differentiation across the cell subclasses.
 
@@ -411,7 +411,7 @@ Strongest concordance was observed in **microglia** followed by EN_L6B excitator
 
 In contrast, EN_L2_3_IT neurons and astrocytes exhibited modest correlations despite having the highest numbers of concordant shared DEGs.
 
-These findings demonstate that **the number of shared significant genes does not reflect the overall degree of transcriptional effect size concordance**.
+These findings demonstrate that **the number of shared significant genes does not reflect the overall degree of transcriptional effect size concordance**.
 
 The results suggest heterogeneous molecular similarities between SCZ and BD across cell subclasses, with microglia showing the strongest relative concordance among analyzed populations.
 :::
@@ -522,7 +522,7 @@ The strongest direct diagnostic differences were detected in **EN_L2_3_IT (164 D
 
 In comparison, astrocytes showed only 5 significant genes in the direct comparison, despite having 183 concordant shared DEGs in the disease versus control analysis.
 
-These results shows the coexistence of shared transcriptional signatures and detectable differences between the two diseases. EN_L2_3_IT neurons and endothelilal cells emerge as important populations for incestigating potential disease-associated distinctions.
+These results shows the coexistence of shared transcriptional signatures and detectable differences between the two diseases. EN_L2_3_IT neurons and endothelilal cells emerge as important populations for investigating potential disease-associated distinctions.
 
 Interpretation of these results remains limited by the unequal donor representation, ancestry imbalance and potentially unmeasured confounding factors.
 :::

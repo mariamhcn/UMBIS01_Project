@@ -49,9 +49,12 @@ suppressPackageStartupMessages({
 
 source(here::here("02_CODE", "R", "utils_figures.R"))
 
+col_main <- unname(project_colours$Q2["dark"])
+col_groups <- c(Control = "grey60", col_disease[c("SCZ", "BD")])
 ```
 
-\:::{.callout-note title = "How to read this notebook"} This notebook documents the differential expression analysis (Q2) of the PsychAD HBCC cohort.
+:::{.callout-note title = "How to read this notebook"} 
+This notebook documents the differential expression analysis (Q2) of the PsychAD HBCC cohort.
 
 Each section briefly explains the objectives, followed by the R code and its outputs with an interpretation based on obtained results.
 
@@ -59,7 +62,8 @@ Methodological decisions and limitations are discussed where relevant.
 
 The preprocessing and pseudobulk aggregation were performed in the upstream notebooks / scripts. This notebook reuses their saved outputs without repeating these steps.
 
-Cited references are listed at the end. \:::
+Cited references are listed at the end. 
+:::
 
 # Overview
 
@@ -263,18 +267,19 @@ NB : No differential expression test is performed at this stage. Sample eligibil
 
 # Sample eligibility and subclass selection
 
-\:::{.callout-note title = "Principle"} Differential expression analysis requires sufficient nuclei to get instructive pseudobulk profiles and sufficient biological replicates in each diagnostic group.
+:::{.callout-note title = "Principle"} Differential expression analysis requires sufficient nuclei to get instructive pseudobulk profiles and sufficient biological replicates in each diagnostic group.
 
 As established during preprocessing (criterion E7), we retain donor-subclass profiles containing at least **20 nuclei**. A subclass is considered eligible for the primary analysis if there are at least **10 donors per diagnostic group** that satisfy this threashold.
 
-These criteria were defined before differential expression testing and are applied across our three conditions : Control, SCZ and BD. Subclass eligibility is assessed independently of the cell-composition results from Q1 as transcriptional changes may occur without corresponding changes in cellular abundance. \:::
+These criteria were defined before differential expression testing and are applied across our three conditions : Control, SCZ and BD. Subclass eligibility is assessed independently of the cell-composition results from Q1 as transcriptional changes may occur without corresponding changes in cellular abundance. 
+:::
 
 ## Apply sample eligibility criteria
 
 ```{r sample_eligibilty}
 
-nuclei_min <- 20L
-donors_min_per_group <- 10L
+nuclei_min <- 20
+donors_min_per_group <- 10
 
 #Retain pseudobulks with sufficient nuclei
 meta_eligible <- meta[meta$n_nuclei >= nuclei_min, , drop = FALSE]
@@ -322,9 +327,9 @@ The retained populations include major neuronal and glial subclasses, enabling c
 
 # Covariate balance and potential confounding
 
-\:::{.callout-note title = "Principle"} The preprocessing analysis revealed major differences in genetic ancestry and age between the three diagnostic groups. These imbalances may confound the estimation of disease-associated transcriptional effects.
-
-As each cell subclass retains a different subset of donors after nucleus-count filtering, covariate distributions must be reassessed within the populations selected for Q2. This step focuses on the following variables : **genetic ancestry, age and sex**. \:::
+:::{.callout-note title = "Principle"} The preprocessing analysis revealed major differences in genetic ancestry and age between the three diagnostic groups. These imbalances may confound the estimation of disease-associated transcriptional effects.
+As each cell subclass retains a different subset of donors after nucleus-count filtering, covariate distributions must be reassessed within the populations selected for Q2. This step focuses on the following variables : **genetic ancestry, age and sex**. 
+:::
 
 ## Retained profiles and metadata completeness
 
@@ -407,7 +412,9 @@ Sex distribution also differs between diagnostic groups, although both sexes rem
 
 # Statistical design and identifiability
 
-\:::{.callout-note title = "Principle"} Differential gene expression is modeled separately within each cell subclass, accounting for age at death, sex and genetic ancestry. For each gene, pseudobulk counts are modeled as the response variable. Diagnosis is the main explanatory variable of interest, while age, sex and genetic ancestry are included as covariates to reduce potential confounding \[3,4\]. \:::
+:::{.callout-note title = "Principle"} 
+Differential gene expression is modeled separately within each cell subclass, accounting for age at death, sex and genetic ancestry. For each gene, pseudobulk counts are modeled as the response variable. Diagnosis is the main explanatory variable of interest, while age, sex and genetic ancestry are included as covariates to reduce potential confounding \[3,4\]. 
+:::
 
 ## Encoding genetic ancestry
 
@@ -471,7 +478,9 @@ Still, full-rank design do not guarantee well-balanced comparisons. The overlap 
 
 # Pilot differential expression analysis : astrocytes
 
-\:::{.callout-note title = "Principle"} Before applying the model to eligible subclasses, the workflow is evaluated on astrocytes (`Astro`) as it is a well-represented population across the three diagnostic groups. This pilot verifies the complete input-to-results procedure without processing the full pseudobulk matrix. \:::
+:::{.callout-note title = "Principle"} 
+Before applying the model to eligible subclasses, the workflow is evaluated on astrocytes (`Astro`) as it is a well-represented population across the three diagnostic groups. This pilot verifies the complete input-to-results procedure without processing the full pseudobulk matrix. 
+:::
 
 ## Prepare counts and donor metadata
 
@@ -545,16 +554,20 @@ q2_deg_dir <- here::here("03_RESULTS", "Q2", "DEG")
 dir.create(q2_deg_dir, recursive = TRUE)
 
 for (contrast_name in names(results_astro)){
+  astro_file <- file.path(q2_deg_dir, paste0("Astro_", contrast_name, ".csv"))
+  if (file.exists(astro_file)) next  # Preserve completed analysis outputs during Knit
   result_table <- data.frame(gene = rownames(results_astro[[contrast_name]]),
                              as.data.frame(results_astro[[contrast_name]]),
                              check.names = FALSE)
-  write.csv(result_table, file.path(q2_deg_dir, paste0("Astro_", contrast_name, ".csv")), row.names = FALSE)}
+  write.csv(result_table, astro_file, row.names = FALSE)}
 
 ```
 
 # Statistical quality assessment
 
-\:::{.callout-note title = "Principle"} Before extending the analysis, the astrocyte pilot is assessed for statistical consistency and potential sample-level effects. These diagnostics are particularly important given the imbalance in genetic ancestry between diagnostic groups. \:::
+:::{.callout-note title = "Principle"} 
+Before extending the analysis, the astrocyte pilot is assessed for statistical consistency and potential sample-level effects. These diagnostics are particularly important given the imbalance in genetic ancestry between diagnostic groups. 
+:::
 
 ## Differential expression results audit
 
@@ -598,7 +611,7 @@ These descriptive differences do not, by themselves, indicate biological changes
 A variance stabilizing transformation is applied for exploratory visualization, differential expression testing remains based on raw counts. PCA is used here to assess sample heterogeneity and detect potential clustering associated with diagnosis or genetic ancestry \[4\].
 
 ```{r astro_pca}
-#| fig-cap: "Q2-F01. Principal component analysis of variance-stabilized astrocyte pseudobulk profiles. Each point represents one donor. Colours indicate diagnosis and shapes indicate genetic ancestry."
+#| fig-cap: "Q2-F01. Principal component analysis of variance-stabilized astrocyte pseudobulk profiles. Each point represents one donor. Colours indicate diagnosis and shapes indicate genetic ancestry"
 
 vsd_astro <- DESeq2::vst(dds_astro, blind = FALSE)
 pca_data <- DESeq2::plotPCA(vsd_astro, intgroup = c("group", "ancestry_model"), returnData = TRUE)
@@ -630,6 +643,7 @@ dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 ggsave(file.path(fig_dir, "Q2_F01_Astro_PCA.png"), plot = p_pca, width = 8, height = 5.5, dpi = 300)
 
 p_pca
+
 ```
 
 ::: {.callout-note title="How to read Figure Q2-F01"}
@@ -681,11 +695,12 @@ Overall, the graphical pattern does not suggest any clear failure in the dispers
 
 ## Batch analysis
 
-\:::{.callout-note title = "Principle"} Following validation of the astrocyte pilot, the same differential expression workflow is applied to all eligible subclasses.
+:::{.callout-note title = "Principle"} Following validation of the astrocyte pilot, the same differential expression workflow is applied to all eligible subclasses.
 
 For each subclass, donor-level pseudobulk counts are extracted and genes with fewer than 10 total counts are removed. DESeq2 fits a negative binomial model adjusted for each variable. Three contrasts are extracted : SCZ vs Control, BD vs Control and SCZ vs BD.
 
-Analysis is performed sequentially to limit memory usage. \:::
+Analysis is performed sequentially to limit memory usage. 
+:::
 
 ```{r deseq2_all_subclasses}
 #| output: false
@@ -803,13 +818,14 @@ cat("Completed comparisons : ", nrow(q2_summary), "\n",
 
 ```
 
-\:::{.callout-tip title = "Interpretation"} The differential expression workflow was completed for **23 cell subclasses**, resulting in **69 subclass-specific diagnostic comparisons**.
+:::{.callout-tip title = "Interpretation"} The differential expression workflow was completed for **23 cell subclasses**, resulting in **69 subclass-specific diagnostic comparisons**.
 
 The highest number of significant genes was detected in the **EN_L2_3_IT** subclass for the comparison between subjects with schizophrenia (SCZ) and controls (**2,455 differentially expressed genes \[DEGs\], FDR \< 0.05**), followed by endothelial cells (Endo, 1,116 DEGs) and EN_L3_5_IT_3 neurons (964 DEGs).
 
 For the comparison between subjects with bipolar disorder (BD) and controls, the highest number of significant genes was observed in **astrocytes (1,103 DEGs)**, followed by EN_L2_3_IT neurons (685 DEGs) and oligodendrocyte precursor cells (OPCs, 517 DEGs).
 
-These results reveal different patterns of statistically relevant transcriptional alterations across both neuronal and non-neuronal populations. However, the number of differentially expressed genes (DEGs) depends on sample representation, expression levels, and statistical power. Therefore, it should not be interpreted as a direct measure of the magnitude of the biological effect. \:::
+These results reveal different patterns of statistically relevant transcriptional alterations across both neuronal and non-neuronal populations. However, the number of differentially expressed genes (DEGs) depends on sample representation, expression levels, and statistical power. Therefore, it should not be interpreted as a direct measure of the magnitude of the biological effect. 
+:::
 
 ## Export of the complete DESeq2 table for Q3
 
@@ -844,7 +860,7 @@ export_columns <- c("cell_type", "contrast", result_columns)
 stopifnot(nrow(q2_summary) == length(eligible_subclasses) * 3, !anyDuplicated(q2_summary[, c("Subclass", "Contrast")]))
 
 first_write <- TRUE
-total_rows <- 0L
+total_rows <- 0
 
 for (sc in eligible_subclasses) {
   for (cn in names(contrast_names_q3)) {
@@ -925,15 +941,19 @@ p_deg
 
 ```
 
-\:::{.callout-note title = "How to read Figure Q2-F03"} Each pair of bars represents the number of genes meeting the FDR \< 0.05 threshold within one cell subclass. Blue bars correspond to SCZ versus Controls and red bars to BD versus Controls. These counts reflect statistical discoveries rather than the transcriptional alterations. \:::
+:::{.callout-note title = "How to read Figure Q2-F03"} 
+Each pair of bars represents the number of genes meeting the FDR \< 0.05 threshold within one cell subclass. Blue bars correspond to SCZ versus Controls and red bars to BD versus Controls. These counts reflect statistical discoveries rather than the transcriptional alterations. 
+:::
 
-\:::{.callout-tip title = "Interpretation"} The number of significant genes varies considerably across the 23 cell subclasses analyzed, with distinct profiles observed in schizophrenia (SCZ) and bipolar disorder (BD).
+:::{.callout-tip title = "Interpretation"} 
+The number of significant genes varies considerably across the 23 cell subclasses analyzed, with distinct profiles observed in schizophrenia (SCZ) and bipolar disorder (BD).
 
 In SCZ, **EN_L2_3_IT neurons exhibit the most extensive transcriptional signature**, with 2,455 significant genes—1,017 upregulated and 1,438 downregulated. Endothelial cells also show a substantial number of significant genes (1,116), suggesting that the detectable alterations are not limited to neuronal populations.
 
 In BD, **astrocytes show the highest number of significant genes (1,103)**, the majority of which are upregulated (893 upregulated versus 210 downregulated). Significant transcriptional alterations are also detected within neuronal populations, oligodendrocyte precursor cells, and microglia.
 
-These observations suggest differences in the distribution of detectable transcriptional alterations between the two disorders. However, the profiles seemingly associated with the disease require gene-level comparisons and the consideration of potential confounding factors before biological specificity can be established. \:::
+These observations suggest differences in the distribution of detectable transcriptional alterations between the two disorders. However, the profiles seemingly associated with the disease require gene-level comparisons and the consideration of potential confounding factors before biological specificity can be established. 
+:::
 
 # Ancestry-restricted sensitivity analyses
 
@@ -990,7 +1010,7 @@ knitr::kable(sens_summary, caption = "Ancestry-restricted differential expressio
 
 ```
 
-\:::{.callout-tip title = "Interpretation"} Sensitivity analyses stratified by ancestry revealed contrasting results between the two disorders.
+:::{.callout-tip title = "Interpretation"} Sensitivity analyses stratified by ancestry revealed contrasting results between the two disorders.
 
 For **schizophrenia (SCZ) versus controls among donors of African ancestry**, the analysis included 68 controls and 29 donors with SCZ. Although 33,121 genes were tested, **no gene reached an FDR threshold of \< 0.05**, compared to 463 significant genes in the primary adjusted analysis.
 
@@ -1000,7 +1020,8 @@ The absence of significant genes in the ancestry-stratified analysis for SCZ rai
 
 The persistence of a substantial number of significant genes in the bipolar disorder analysis is encouraging. However, confirming individual transcriptional signals requires comparing effect sizes and gene-level concordance between the primary and restricted models.
 
-Overall, these results highlight the significance of ancestry-related imbalance as a study limitation, particularly regarding the interpretation of transcriptional alterations associated with schizophrenia. \:::
+Overall, these results highlight the significance of ancestry-related imbalance as a study limitation, particularly regarding the interpretation of transcriptional alterations associated with schizophrenia. 
+:::
 
 # Age-threshold sensitivity analysis
 
@@ -1024,7 +1045,7 @@ age24_cohort_summary <- data.frame(
   Criterion = c("Donors in primary cohort (age >= 20)", "Donors in sensitivity cohort (age >= 24)", "Donors excluded by the new threshold", "Eligible subclasses"),
   Value = c(length(unique(meta_q2$donor)), length(unique(meta_age24$donor)), length(unique(meta_q2$donor)) - length(unique(meta_age24$donor)), length(eligible_24)))
 
-knitr::kable(age24_cohort_summary, caption = "Cohort and subclass eligibility after increasing the minimum age to 24 years.")
+knitr::kable(age24_cohort_summary, caption = "Cohort and subclass eligibility after increasing the minimum age to 24 years")
 stopifnot(setequal(eligible_24, eligible_subclasses))
 ```
 
@@ -1056,7 +1077,7 @@ design_24 <- do.call(rbind, lapply(eligible_24,
                Rank = qr(mm)$rank,
                Full_rank = qr(mm)$rank == ncol(mm))}))
 
-knitr::kable(design_24, caption = "Model identifiability after restricting the cohort to donors aged 24 years or older.")
+knitr::kable(design_24, caption = "Model identifiability after restricting the cohort to donors aged 24 years or older")
 stopifnot(all(design_24$Full_rank))
 ```
 
@@ -1206,7 +1227,7 @@ Furthermore, false discovery rate correction was applied within each subclass-co
 
 The complete DESeq2 results (including non-significant and Wald statistics) were exported for downstream GSEA.
 
-The next notebook `04_Q2_02_shared_specific_signature.qmd`, will investigate concordant and discordant expression changes, shared transcriptional signatures and disease-associated differences across cell subclasses. 
+The next notebook `03_Q2_2_shared_specific_signature.qmd`, will investigate concordant and discordant expression changes, shared transcriptional signatures and disease-associated differences across cell subclasses. 
 :::
 
 # References
