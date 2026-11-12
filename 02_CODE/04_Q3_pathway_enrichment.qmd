@@ -8,7 +8,7 @@ format:
     toc: true
     toc-depth: 3
     toc-location: left
-    number-sections: true
+    number-sections: false
     embed-resources: true
     code-fold: show
     df-print: kable
@@ -172,7 +172,9 @@ label_contrast <- function(x) {
 }
 ```
 
-# Step 1 – The input: Q2 results
+# Inputs
+
+## Step 1 – The input: Q2 results
 
 **What we do and why.** Before any enrichment, we check that the Q2 table is complete and see how many genes change
 in each cell type. The table has one row per gene, cell type and comparison, with the DESeq2 results:
@@ -224,7 +226,7 @@ response to the disease.
   SCZ in this cell type. We keep it in mind when reading its GSEA results.
 :::
 
-# Step 2 – Gene sets: which functions are tested?
+## Step 2 – Gene sets: which functions are tested?
 
 **What we do and why.** We use four collections of gene sets, from broad to specialised. P-values are corrected
 **within each collection**, because the collections overlap and answer different questions.
@@ -338,7 +340,7 @@ write.csv(ora_curated_table, file.path(out_dir, "ora_curated.csv"), row.names = 
 The full ORA results (all functions, all cell types, with their genes in the column `geneID`) are saved in
 `03_RESULTS/Q3_enrichment/ora_go_bp.csv` and `ora_curated.csv`. The notebook shows them as figures.
 
-# Step A1 – Where does ORA find something?
+## Step A1 – Where does ORA find something?
 
 **What we do and why.** Before looking at the functions themselves, we count, for each cell type, the significant
 genes (A) and the number of functions ORA finds among them (B). This tells us where Part A has something to say.
@@ -368,7 +370,7 @@ even if the list contains many genes.
 - Many genes change, but they are rarely concentrated enough in one known function for ORA to see it.
 :::
 
-# Step A2 – Which functions? (GO Biological Process)
+## Step A2 – Which functions? (GO Biological Process)
 
 **What we do and why.** For each cell type, we show the 3 most significant functions of each list. One figure per
 family of cell types (excitatory neurons, inhibitory neurons, glial cells, vascular cells), one panel per cell type, so
@@ -416,7 +418,7 @@ is changed in the same way by both diseases.
   also act outside muscle: we read them with caution.
 :::
 
-# Step A3 – Same question with Hallmark, Reactome and SynGO
+## Step A3 – Same question with Hallmark, Reactome and SynGO
 
 **What we do and why.** GO is very detailed. The three other collections give complementary views: Hallmark groups
 the results into 50 well-known processes, Reactome describes signalling and metabolic pathways, and SynGO is limited to
@@ -462,7 +464,7 @@ Same reading as F02. Click on a tab to choose the collection; the figures of the
   question.**
 :::
 
-# Step A4 – Do SCZ and BD change the same genes?
+## Step A4 – Do SCZ and BD change the same genes?
 
 **What we do and why.** Before comparing functions between the two diseases, we measure how much they share at the
 **gene** level. Each significant gene of a cell type is classified as significant in both diseases in the same
@@ -520,7 +522,7 @@ change the same genes.
 - Opposite changes are almost absent: when a gene changes in both diseases, it goes the same way.
 :::
 
-# What Part A tells us, and why we need Part B
+## What Part A tells us, and why we need Part B
 
 At the gene level, SCZ and BD look different (F04). ORA finds functions in only part of the lists, rarely the same in
 both diseases, and almost no synaptic function (F01–F03). But ORA has a blind spot: it only uses the genes above the
@@ -589,7 +591,7 @@ write.csv(gsea_counts, file.path(out_dir, "gsea_counts.csv"), row.names = FALSE)
 The full results (every gene set, cell type and comparison, with NES, adjusted p-value and leading-edge genes) are saved
 in `gsea_all.csv`, and the number of shifted sets per cell type in `gsea_counts.csv`.
 
-# Step B1 – How to read one GSEA result
+## Step B1 – How to read one GSEA result
 
 **What we do and why.** Before looking at summaries, we look at one result in detail, to see what the NES and the
 leading edge are. We take a result that matters for the rest of the notebook: the **interferon gamma response in
@@ -626,7 +628,7 @@ score climbs to a peak: the interferon response is shifted up in microglia in SC
 adjusted p = `r signif(ex_hit$p.adjust, 2)`). The shaded genes before the peak are the ones that drive this result.
 :::
 
-# Step B2 – Where? Number of shifted gene sets per cell type
+## Step B2 – Where? Number of shifted gene sets per cell type
 
 **What we do and why.** We count, for each cell type and disease, the gene sets significantly shifted up or down. This
 is the GSEA counterpart of Figure F01 (A): it tells us which cell types are the most affected at the level of functions.
@@ -665,7 +667,7 @@ patients; bars to the left, among the decreased genes. Compare with F01 (A), whi
   GSEA can see.
 :::
 
-# Step B3 – Which gene sets?
+## Step B3 – Which gene sets?
 
 **What we do and why.** We now name the gene sets. To keep the figure readable, we show the **30 gene sets significant
 in the largest number of cell types** (in SCZ or BD). Rows with similar profiles are placed next to each other
@@ -702,7 +704,7 @@ way in both diseases. A row orange in one panel and purple in the other is a fun
   interneurons and astrocytes; TNFA signalling via NFKB goes up mainly in vascular cells.
 :::
 
-# Step B4 – Together or separately? Shared and disease-specific gene sets
+## Step B4 – Together or separately? Shared and disease-specific gene sets
 
 **What we do and why.** For each cell type and gene set, we put the SCZ and BD results side by side and classify the
 set. A pathway significant in SCZ but not in BD is not necessarily specific to SCZ: BD may show the same change, but
@@ -809,7 +811,7 @@ that cell type. Without a star, the two diseases cannot be told apart for that s
 - In vascular cells (Endo, VLMC), many processes are higher in SCZ.
 :::
 
-# Step B5 – Same pathway, same genes? (direct test of H1)
+## Step B5 – Same pathway, same genes? (direct test of H1)
 
 **What we do and why.** For a pathway shifted in the same direction in both diseases, we look at the genes that drive it
 (its leading edge) in SCZ and in BD, and measure their overlap with the Jaccard index:
@@ -871,7 +873,7 @@ than chance would predict. The higher the purple box, the more the two diseases 
   almost every cell type.
 :::
 
-# Step B6 – And the synapse? (SynGO)
+## Step B6 – And the synapse? (SynGO)
 
 **What we do and why.** The question asks specifically about synaptic and neurotransmission pathways, for three
 reasons: (1) the common genetic risk of SCZ is concentrated in genes of neurons and of synaptic organisation,
@@ -1012,7 +1014,7 @@ in SCZ upper-layer neurons does not, and may reflect the cell-type resolution of
 - **Q4 (communication)**: Shared glial inflammatory signalling (interferon, IL6, TNF) and divergent synaptic signalling are the candidates to check in CellChat.
 - **Q5 (ageing)**: Inflammation, oxidative phosphorylation and the decrease of cholesterol and synaptic genes in SCZ astrocytes [13] are hallmarks of brain ageing, tested in Q5.
 
-# Limits 
+# Limits
 
 - **Dependence on Q2.** The enrichment inherits every bias of the DE analysis (covariates, number of donors per cell
   type).
@@ -1040,6 +1042,7 @@ All figures are saved as `.png` in `04_FIGURES/Q3_enrichment/`. Every table is s
 
 | Figure | File | What it shows | Why we need it |
 |--------|------|---------------|----------------|
+| — | `Q3_reasoning` | how the notebook answers Q3 | gives the logic before any result |
 | F01 | `Q3_F01_ORA_overview` | significant genes and functions found by ORA, per cell type | shows where ORA has something to say, and its limits |
 | F02 | `Q3_F02_ORA_GO_<family>` | GO functions over-represented among the significant genes, one panel per cell type | first answer to "which functions?", close to the Q2 genes |
 | F03 | `Q3_F03_ORA_<collection>_<family>` | same with Hallmark, Reactome and SynGO | checks that the GO results hold with other collections |

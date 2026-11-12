@@ -8,7 +8,7 @@ format:
     toc: true
     toc-depth: 3
     toc-location: left
-    number-sections: true
+    number-sections: false
     embed-resources: true
     code-fold: show
     df-print: kable
@@ -222,7 +222,9 @@ scale_fill_shift <- function(lim, name) {
 }
 ```
 
-# Step 1 – Donors and cell types
+# Inputs
+
+## Step 1 – Donors and cell types
 
 **What we do and why.** We load the pseudobulk profiles made during preprocessing (one column per donor and subclass,
 raw counts of all nuclei summed). In a cross-sectional study, the main risk is **confounding**: if patients were
@@ -309,7 +311,7 @@ whether patients change faster with age (A7).
 **What we expect.** Every comparison is made at equal age. If patients have an older-looking profile in a cell type,
 their score is higher than that of controls of the same age.
 
-# Step A1 – The signatures
+## Step A1 – The signatures
 
 **What we do and why.** We load the published signatures listed in the overview. The lifespan signatures come from the
 PsychAD lifespan atlas [13], which studied the same brain region with the same technique: for each subclass, the genes
@@ -402,7 +404,7 @@ signatures; 0 = nothing in common, 1 = identical).
   evidence, not three.
 :::
 
-# Step A2 – Scores per donor and cell type
+## Step A2 – Scores per donor and cell type
 
 **How a score is computed.** For one cell type, the pseudobulk profiles of all donors are log-normalised
 (`NormalizeData()`, as in the practicals). `AddModuleScore()` then takes, for each donor, the mean expression of the
@@ -455,7 +457,7 @@ be missing if fewer than `r min_genes` of its genes are in the data, and the lif
 subclasses with a list of at least 10 genes (Step A1).
 :::
 
-# Step A3 – Which scores really follow age?
+## Step A3 – Which scores really follow age?
 
 **What we do and why.** A score is only an ageing measure if it changes with age in **healthy** donors. For each cell
 type and signature, we compute the Spearman correlation between the score and age in controls (rank-based, so robust to
@@ -534,7 +536,7 @@ age. Only cells with a star are used as ageing measures in the rest of the noteb
   independent (see Limits). The disease effect tested next does not have this problem.
 :::
 
-# Step A4 – The composite ageing score of each cell type
+## Step A4 – The composite ageing score of each cell type
 
 **What we do and why.** Rather than testing every signature separately, we summarise each cell type by one **composite
 ageing score**: the mean of its validated scores, each one oriented so that higher always means older-looking (a score
@@ -561,9 +563,9 @@ falls with age and is inverted in the composite score. Cell types without any va
 score.
 :::
 
-# Step A5 – Do patients look older than controls of the same age?
+## Step A5 – Do patients look older than controls of the same age?
 
-## How we compare patients and controls
+### How we compare patients and controls
 
 **What we do and why.** The ageing score rises with age. If the patients were older than the controls, they would have
 a higher score just because of their age. To know whether the disease plays a role, we compare each patient with
@@ -622,7 +624,7 @@ confidence interval by Fieller's method (`years_lower`, `years_upper`; NA = not 
 looks older than BD.
 :::
 
-## The main result
+### The main result
 
 ```{r fig-F02, fig.width=15, fig.height=13}
 p_F02 <- plot_composite_boxplots(model_data, models, cell_order = order_cell_types(model_data$cell_type),
@@ -654,7 +656,7 @@ significant difference.
 - **The effect is shared**: SCZ and BD do not differ in any cell type (direct test, adjusted p ≥ 0.71).
 :::
 
-## How many years older?
+### How many years older?
 
 ```{r age-gap}
 age_gap <- models |>
@@ -686,7 +688,7 @@ controls, so a shift cannot be converted into years.
 - The years are an order of magnitude, not a measure of how much faster patients age.
 :::
 
-# Step A6 – Which hallmark drives the effect?
+## Step A6 – Which hallmark drives the effect?
 
 **What we do and why.** The composite ageing score is an average. To see which hallmark makes it rise, we test each of
 its scores separately, with the same offset model. Only the scores kept in the composite are shown, in the 13 cell types
@@ -722,7 +724,7 @@ the effect seen in F02.
 - **No score differs between SCZ and BD.**
 :::
 
-# Step A7 – Do patients age faster?
+## Step A7 – Do patients age faster?
 
 **What we do and why.** Step A5 used the **offset model** and showed that patients look older than controls of the
 same age (Figure F02). This does not yet say whether they age *faster*, which is what "accelerated ageing" (H3) would
@@ -776,7 +778,7 @@ whether age and the disease change the same genes more often than by chance.
 positive, and the genes shared by age and the disease should be more numerous than expected by chance and mostly
 changed in the same direction.
 
-# Step B1 – Does the disease shift genes in the same direction as ageing?
+## Step B1 – Does the disease shift genes in the same direction as ageing?
 
 **What we do and why.** The scores look at chosen gene lists. This test, close to the approach of [5], looks at
 **all genes**, without any list: in each
@@ -870,7 +872,7 @@ resemblance.
   without a composite score, such as the deep-layer excitatory neurons and IN_PVALB.
 :::
 
-# Step B2 – Do age and the disease change the same genes?
+## Step B2 – Do age and the disease change the same genes?
 
 **What we do and why.** B2 is a **complementary approach** to B1. B1 uses all genes and gives one number per cell type,
 a correlation, without saying which genes are involved. B2 looks only at the genes that change **significantly**, and
@@ -942,7 +944,7 @@ a non-significant result then means "not testable", not "no overlap".
   makes its p-values optimistic.
 :::
 
-# Conclusion: answer to Q5
+# Conclusion
 
 ::: {.callout-important title="Summary table"}
 | Element | Result | Figure |
@@ -996,7 +998,7 @@ score is not.
 - **Q4**: ageing also alters communication between cells [1]; the cell types highlighted here (upper-layer neurons,
   interneurons, OPC, microglia) are candidates for Q4.
 
-# Limits to discuss in the report
+# Limits
 
 - **Cross-sectional design.** Each donor is seen once: an ageing-like profile is inferred between donors, not followed
   over time.
