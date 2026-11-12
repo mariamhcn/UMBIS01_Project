@@ -2,7 +2,8 @@
 #
 #  - theme_project(): same fonts, sizes and layout everywhere;
 #  - save_figure(): saves each figure as a PNG (300 dpi), for the slides and the report;
-#  - clean_set_name(): turns gene set identifiers (HALLMARK_..., GOBP_...) into readable labels.
+#  - clean_set_name(): turns gene set identifiers (HALLMARK_..., GOBP_...) into readable labels;
+#  - cell_family(), order_cell_types(): the same order of the cell types in every figure of the project.
 
 # Project colours (pastel = backgrounds, dark = accents), as in the slides and the report
 project_colours <- list(
@@ -60,8 +61,36 @@ clean_set_name <- function(x, max_char = 60) {
   # put common acronyms back in capitals
   acronyms <- c("TNFA", "NFKB", "MTORC1", "MTOR", "KRAS", "IL6", "IL2", "JAK", "STAT3", "STAT5", "DNA", "RNA",
                 "ATP", "TCA", "G2M", "E2F", "MYC", "UV", "P53", "TGF", "PI3K", "AKT", "WNT", "NMDA", "AMPA",
-                "GABA", "ROS", "UPR", "MHC", "ECM", "GPCR", "ERK", "MAPK", "CREB")
+                "GABA", "ROS", "UPR", "MHC", "ECM", "GPCR", "ERK", "MAPK", "CREB",
+                "FGFR1", "FGFR2", "FGFR3", "FGFR4", "TP53", "RHOA", "BMP", "NTRK", "NTRKS", "SREBF", "SREBP",
+                "PDH", "EIF2AK4", "GCN2", "SRP", "HSF1", "TNFR1", "NOTCH3", "MET", "RET")
   for (a in acronyms) out[was_upper] <- gsub(paste0("\\b", tolower(a), "\\b"), a, out[was_upper])
+  out[was_upper] <- gsub("\\bsars cov 2\\b", "SARS-CoV-2", out[was_upper])
+  out[was_upper] <- gsub("\\bnfkappab\\b", "NF-kappaB", out[was_upper])
+  out[was_upper] <- gsub("\\bgtpase\\b", "GTPase", out[was_upper])
   out <- paste0(toupper(substr(out, 1, 1)), substr(out, 2, nchar(out)))
   ifelse(nchar(out) > max_char, paste0(substr(out, 1, max_char - 3), "..."), out)
+}
+
+# ---------------------------------------------------------------------------------------
+# Cell types: families and order, the same in every figure of the project
+# ---------------------------------------------------------------------------------------
+
+# The four families of cell types (subclasses), in the order used in the figures.
+FAMILIES <- c("Excitatory neurons", "Inhibitory neurons", "Glial cells", "Vascular cells")
+
+# Family of each cell type: EN_* = excitatory neurons, IN_* = inhibitory neurons,
+# Astro / Micro / Oligo / OPC = glial cells, the others (Endo, PC, SMC, VLMC...) = vascular cells.
+cell_family <- function(x) {
+  ifelse(grepl("^EN_", x), "Excitatory neurons",
+  ifelse(grepl("^IN_", x), "Inhibitory neurons",
+  ifelse(x %in% c("Astro", "Micro", "Oligo", "OPC"), "Glial cells", "Vascular cells")))
+}
+
+# Excitatory neurons, then inhibitory neurons, glial cells and vascular cells; alphabetical inside a family.
+# The alphabetical order is the same on every computer (as sort_subclasses() in utils_h5ad.R): case is ignored and
+# "_" comes before letters and digits, so EN_L6_CT comes before EN_L6B whatever the language settings.
+order_cell_types <- function(x) {
+  u <- unique(as.character(x))
+  u[order(match(cell_family(u), FAMILIES), gsub("_", " ", toupper(u)), method = "radix")]
 }

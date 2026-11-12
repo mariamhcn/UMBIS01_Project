@@ -120,6 +120,8 @@ suppressPackageStartupMessages({
   library(org.Hs.eg.db)
 })
 select <- dplyr::select # org.Hs.eg.db also has a select(): use the dplyr one for tables
+# fgsea (used by gseGO/GSEA) runs in parallel by default; on macOS this can freeze the render, so we compute serially
+BiocParallel::register(BiocParallel::SerialParam(), default = TRUE)
 
 # Reusable functions, kept outside the notebook so the code below stays readable
 source("scripts/utils_genesets.R")

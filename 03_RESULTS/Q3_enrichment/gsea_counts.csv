@@ -1,0 +1,277 @@
+"collection","cell_type","disease","n_tested","up","down"
+"GO_BP","Astro","SCZ",4455,223,117
+"GO_BP","Astro","BD",4450,576,84
+"GO_BP","Astro","SCZ vs BD",4446,63,51
+"GO_BP","EN_L2_3_IT","SCZ",4457,751,9
+"GO_BP","EN_L2_3_IT","BD",4438,12,4
+"GO_BP","EN_L2_3_IT","SCZ vs BD",4219,169,7
+"GO_BP","EN_L3_5_IT_1","SCZ",4427,586,4
+"GO_BP","EN_L3_5_IT_1","BD",4415,24,138
+"GO_BP","EN_L3_5_IT_1","SCZ vs BD",4241,504,12
+"GO_BP","EN_L3_5_IT_2","SCZ",4452,231,21
+"GO_BP","EN_L3_5_IT_2","BD",4440,8,21
+"GO_BP","EN_L3_5_IT_2","SCZ vs BD",4428,171,8
+"GO_BP","EN_L3_5_IT_3","SCZ",4456,549,12
+"GO_BP","EN_L3_5_IT_3","BD",4445,46,80
+"GO_BP","EN_L3_5_IT_3","SCZ vs BD",4296,298,1
+"GO_BP","EN_L5_6_NP","SCZ",4400,27,10
+"GO_BP","EN_L5_6_NP","BD",4400,7,40
+"GO_BP","EN_L5_6_NP","SCZ vs BD",4400,130,7
+"GO_BP","EN_L6B","SCZ",4426,108,25
+"GO_BP","EN_L6B","BD",4426,697,9
+"GO_BP","EN_L6B","SCZ vs BD",4426,3,143
+"GO_BP","EN_L6_CT","SCZ",4417,44,0
+"GO_BP","EN_L6_CT","BD",4417,386,14
+"GO_BP","EN_L6_CT","SCZ vs BD",4417,14,62
+"GO_BP","EN_L6_IT_1","SCZ",4447,53,97
+"GO_BP","EN_L6_IT_1","BD",4447,713,18
+"GO_BP","EN_L6_IT_1","SCZ vs BD",4447,10,659
+"GO_BP","EN_L6_IT_2","SCZ",4374,70,39
+"GO_BP","EN_L6_IT_2","BD",4374,248,11
+"GO_BP","EN_L6_IT_2","SCZ vs BD",4374,2,57
+"GO_BP","Endo","SCZ",4365,804,12
+"GO_BP","Endo","BD",4365,21,0
+"GO_BP","Endo","SCZ vs BD",4365,448,21
+"GO_BP","IN_ADARB2","SCZ",4436,413,15
+"GO_BP","IN_ADARB2","BD",4436,8,34
+"GO_BP","IN_ADARB2","SCZ vs BD",4318,261,12
+"GO_BP","IN_LAMP5_LHX6","SCZ",4365,175,8
+"GO_BP","IN_LAMP5_LHX6","BD",4363,9,4
+"GO_BP","IN_LAMP5_LHX6","SCZ vs BD",4315,26,11
+"GO_BP","IN_LAMP5_RELN","SCZ",4419,549,5
+"GO_BP","IN_LAMP5_RELN","BD",4410,10,6
+"GO_BP","IN_LAMP5_RELN","SCZ vs BD",4223,85,3
+"GO_BP","IN_PVALB","SCZ",4447,90,5
+"GO_BP","IN_PVALB","BD",4445,32,45
+"GO_BP","IN_PVALB","SCZ vs BD",4400,46,26
+"GO_BP","IN_PVALB_CHC","SCZ",4375,515,4
+"GO_BP","IN_PVALB_CHC","BD",4375,11,8
+"GO_BP","IN_PVALB_CHC","SCZ vs BD",4370,304,10
+"GO_BP","IN_SST","SCZ",4450,201,40
+"GO_BP","IN_SST","BD",4450,48,224
+"GO_BP","IN_SST","SCZ vs BD",4350,156,5
+"GO_BP","IN_VIP","SCZ",4457,633,8
+"GO_BP","IN_VIP","BD",4457,28,75
+"GO_BP","IN_VIP","SCZ vs BD",4411,459,14
+"GO_BP","Micro","SCZ",4406,668,24
+"GO_BP","Micro","BD",4406,361,65
+"GO_BP","Micro","SCZ vs BD",4406,112,20
+"GO_BP","OPC","SCZ",4445,590,67
+"GO_BP","OPC","BD",4445,850,30
+"GO_BP","OPC","SCZ vs BD",4445,22,88
+"GO_BP","Oligo","SCZ",4455,31,21
+"GO_BP","Oligo","BD",4455,304,127
+"GO_BP","Oligo","SCZ vs BD",4404,74,430
+"GO_BP","PC","SCZ",4309,1485,25
+"GO_BP","PC","BD",4309,1013,8
+"GO_BP","PC","SCZ vs BD",4309,107,57
+"GO_BP","VLMC","SCZ",4247,732,16
+"GO_BP","VLMC","BD",4247,2,4
+"GO_BP","VLMC","SCZ vs BD",4247,673,23
+"Hallmark","Astro","SCZ",50,13,3
+"Hallmark","Astro","BD",50,22,2
+"Hallmark","Astro","SCZ vs BD",50,1,5
+"Hallmark","EN_L2_3_IT","SCZ",50,23,0
+"Hallmark","EN_L2_3_IT","BD",50,10,0
+"Hallmark","EN_L2_3_IT","SCZ vs BD",43,3,0
+"Hallmark","EN_L3_5_IT_1","SCZ",50,15,0
+"Hallmark","EN_L3_5_IT_1","BD",50,1,3
+"Hallmark","EN_L3_5_IT_1","SCZ vs BD",50,12,0
+"Hallmark","EN_L3_5_IT_2","SCZ",50,11,1
+"Hallmark","EN_L3_5_IT_2","BD",50,2,1
+"Hallmark","EN_L3_5_IT_2","SCZ vs BD",50,5,1
+"Hallmark","EN_L3_5_IT_3","SCZ",50,16,1
+"Hallmark","EN_L3_5_IT_3","BD",50,3,0
+"Hallmark","EN_L3_5_IT_3","SCZ vs BD",49,5,0
+"Hallmark","EN_L5_6_NP","SCZ",50,7,1
+"Hallmark","EN_L5_6_NP","BD",50,0,2
+"Hallmark","EN_L5_6_NP","SCZ vs BD",50,4,0
+"Hallmark","EN_L6B","SCZ",50,1,0
+"Hallmark","EN_L6B","BD",50,29,0
+"Hallmark","EN_L6B","SCZ vs BD",50,0,17
+"Hallmark","EN_L6_CT","SCZ",50,9,1
+"Hallmark","EN_L6_CT","BD",50,13,0
+"Hallmark","EN_L6_CT","SCZ vs BD",50,2,12
+"Hallmark","EN_L6_IT_1","SCZ",50,4,10
+"Hallmark","EN_L6_IT_1","BD",50,33,1
+"Hallmark","EN_L6_IT_1","SCZ vs BD",50,0,34
+"Hallmark","EN_L6_IT_2","SCZ",50,4,0
+"Hallmark","EN_L6_IT_2","BD",50,27,0
+"Hallmark","EN_L6_IT_2","SCZ vs BD",50,0,16
+"Hallmark","Endo","SCZ",50,32,3
+"Hallmark","Endo","BD",50,7,1
+"Hallmark","Endo","SCZ vs BD",50,25,0
+"Hallmark","IN_ADARB2","SCZ",50,9,0
+"Hallmark","IN_ADARB2","BD",50,0,3
+"Hallmark","IN_ADARB2","SCZ vs BD",50,5,0
+"Hallmark","IN_LAMP5_LHX6","SCZ",50,10,0
+"Hallmark","IN_LAMP5_LHX6","BD",50,11,0
+"Hallmark","IN_LAMP5_LHX6","SCZ vs BD",50,5,2
+"Hallmark","IN_LAMP5_RELN","SCZ",50,17,0
+"Hallmark","IN_LAMP5_RELN","BD",50,9,1
+"Hallmark","IN_LAMP5_RELN","SCZ vs BD",44,3,1
+"Hallmark","IN_PVALB","SCZ",50,8,0
+"Hallmark","IN_PVALB","BD",50,8,2
+"Hallmark","IN_PVALB","SCZ vs BD",48,2,2
+"Hallmark","IN_PVALB_CHC","SCZ",50,23,0
+"Hallmark","IN_PVALB_CHC","BD",50,8,2
+"Hallmark","IN_PVALB_CHC","SCZ vs BD",50,11,1
+"Hallmark","IN_SST","SCZ",50,5,1
+"Hallmark","IN_SST","BD",50,2,7
+"Hallmark","IN_SST","SCZ vs BD",50,1,0
+"Hallmark","IN_VIP","SCZ",50,21,0
+"Hallmark","IN_VIP","BD",50,4,4
+"Hallmark","IN_VIP","SCZ vs BD",50,15,0
+"Hallmark","Micro","SCZ",50,31,1
+"Hallmark","Micro","BD",50,18,4
+"Hallmark","Micro","SCZ vs BD",50,15,0
+"Hallmark","OPC","SCZ",50,27,2
+"Hallmark","OPC","BD",50,28,1
+"Hallmark","OPC","SCZ vs BD",50,1,7
+"Hallmark","Oligo","SCZ",50,2,4
+"Hallmark","Oligo","BD",50,18,6
+"Hallmark","Oligo","SCZ vs BD",50,2,17
+"Hallmark","PC","SCZ",50,38,0
+"Hallmark","PC","BD",50,32,2
+"Hallmark","PC","SCZ vs BD",50,10,0
+"Hallmark","VLMC","SCZ",50,26,2
+"Hallmark","VLMC","BD",50,0,2
+"Hallmark","VLMC","SCZ vs BD",50,27,1
+"Reactome","Astro","SCZ",995,52,27
+"Reactome","Astro","BD",994,99,91
+"Reactome","Astro","SCZ vs BD",994,76,29
+"Reactome","EN_L2_3_IT","SCZ",995,267,4
+"Reactome","EN_L2_3_IT","BD",990,2,6
+"Reactome","EN_L2_3_IT","SCZ vs BD",941,85,3
+"Reactome","EN_L3_5_IT_1","SCZ",993,283,2
+"Reactome","EN_L3_5_IT_1","BD",992,41,18
+"Reactome","EN_L3_5_IT_1","SCZ vs BD",974,159,6
+"Reactome","EN_L3_5_IT_2","SCZ",995,96,4
+"Reactome","EN_L3_5_IT_2","BD",995,0,5
+"Reactome","EN_L3_5_IT_2","SCZ vs BD",992,67,6
+"Reactome","EN_L3_5_IT_3","SCZ",995,168,2
+"Reactome","EN_L3_5_IT_3","BD",993,4,1
+"Reactome","EN_L3_5_IT_3","SCZ vs BD",981,117,4
+"Reactome","EN_L5_6_NP","SCZ",989,13,8
+"Reactome","EN_L5_6_NP","BD",989,3,28
+"Reactome","EN_L5_6_NP","SCZ vs BD",989,43,5
+"Reactome","EN_L6B","SCZ",991,53,11
+"Reactome","EN_L6B","BD",991,157,2
+"Reactome","EN_L6B","SCZ vs BD",991,7,36
+"Reactome","EN_L6_CT","SCZ",991,28,10
+"Reactome","EN_L6_CT","BD",991,34,14
+"Reactome","EN_L6_CT","SCZ vs BD",991,5,13
+"Reactome","EN_L6_IT_1","SCZ",995,7,6
+"Reactome","EN_L6_IT_1","BD",995,166,3
+"Reactome","EN_L6_IT_1","SCZ vs BD",995,2,139
+"Reactome","EN_L6_IT_2","SCZ",983,3,4
+"Reactome","EN_L6_IT_2","BD",983,59,2
+"Reactome","EN_L6_IT_2","SCZ vs BD",983,0,19
+"Reactome","Endo","SCZ",977,162,4
+"Reactome","Endo","BD",977,34,17
+"Reactome","Endo","SCZ vs BD",977,114,5
+"Reactome","IN_ADARB2","SCZ",992,128,11
+"Reactome","IN_ADARB2","BD",992,1,18
+"Reactome","IN_ADARB2","SCZ vs BD",980,73,0
+"Reactome","IN_LAMP5_LHX6","SCZ",988,39,1
+"Reactome","IN_LAMP5_LHX6","BD",988,5,1
+"Reactome","IN_LAMP5_LHX6","SCZ vs BD",983,1,0
+"Reactome","IN_LAMP5_RELN","SCZ",991,104,10
+"Reactome","IN_LAMP5_RELN","BD",990,2,0
+"Reactome","IN_LAMP5_RELN","SCZ vs BD",967,25,0
+"Reactome","IN_PVALB","SCZ",995,28,5
+"Reactome","IN_PVALB","BD",995,10,8
+"Reactome","IN_PVALB","SCZ vs BD",987,9,3
+"Reactome","IN_PVALB_CHC","SCZ",987,268,4
+"Reactome","IN_PVALB_CHC","BD",987,2,1
+"Reactome","IN_PVALB_CHC","SCZ vs BD",986,156,3
+"Reactome","IN_SST","SCZ",994,8,15
+"Reactome","IN_SST","BD",994,2,62
+"Reactome","IN_SST","SCZ vs BD",981,13,2
+"Reactome","IN_VIP","SCZ",995,141,1
+"Reactome","IN_VIP","BD",995,3,11
+"Reactome","IN_VIP","SCZ vs BD",988,185,9
+"Reactome","Micro","SCZ",984,247,10
+"Reactome","Micro","BD",984,182,23
+"Reactome","Micro","SCZ vs BD",984,35,25
+"Reactome","OPC","SCZ",994,196,17
+"Reactome","OPC","BD",994,170,22
+"Reactome","OPC","SCZ vs BD",994,56,29
+"Reactome","Oligo","SCZ",995,11,15
+"Reactome","Oligo","BD",995,34,52
+"Reactome","Oligo","SCZ vs BD",983,36,80
+"Reactome","PC","SCZ",964,388,5
+"Reactome","PC","BD",964,233,2
+"Reactome","PC","SCZ vs BD",964,52,29
+"Reactome","VLMC","SCZ",960,153,4
+"Reactome","VLMC","BD",960,6,13
+"Reactome","VLMC","SCZ vs BD",960,128,8
+"SynGO","Astro","SCZ",8,0,4
+"SynGO","Astro","BD",8,2,2
+"SynGO","Astro","SCZ vs BD",8,1,4
+"SynGO","EN_L2_3_IT","SCZ",8,3,0
+"SynGO","EN_L2_3_IT","BD",5,0,0
+"SynGO","EN_L2_3_IT","SCZ vs BD",3,1,0
+"SynGO","EN_L3_5_IT_1","SCZ",8,4,0
+"SynGO","EN_L3_5_IT_1","BD",8,1,5
+"SynGO","EN_L3_5_IT_1","SCZ vs BD",4,1,0
+"SynGO","EN_L3_5_IT_2","SCZ",8,2,2
+"SynGO","EN_L3_5_IT_2","BD",7,0,3
+"SynGO","EN_L3_5_IT_2","SCZ vs BD",7,3,0
+"SynGO","EN_L3_5_IT_3","SCZ",8,2,0
+"SynGO","EN_L3_5_IT_3","BD",7,0,4
+"SynGO","EN_L3_5_IT_3","SCZ vs BD",6,2,0
+"SynGO","EN_L5_6_NP","SCZ",8,2,0
+"SynGO","EN_L5_6_NP","BD",8,0,5
+"SynGO","EN_L5_6_NP","SCZ vs BD",8,6,0
+"SynGO","EN_L6B","SCZ",8,2,3
+"SynGO","EN_L6B","BD",8,1,0
+"SynGO","EN_L6B","SCZ vs BD",8,1,2
+"SynGO","EN_L6_CT","SCZ",8,2,1
+"SynGO","EN_L6_CT","BD",8,1,1
+"SynGO","EN_L6_CT","SCZ vs BD",8,0,1
+"SynGO","EN_L6_IT_1","SCZ",8,0,3
+"SynGO","EN_L6_IT_1","BD",8,0,0
+"SynGO","EN_L6_IT_1","SCZ vs BD",8,0,3
+"SynGO","EN_L6_IT_2","SCZ",8,0,5
+"SynGO","EN_L6_IT_2","BD",8,1,2
+"SynGO","EN_L6_IT_2","SCZ vs BD",8,0,3
+"SynGO","Endo","SCZ",8,2,0
+"SynGO","Endo","BD",8,4,1
+"SynGO","Endo","SCZ vs BD",8,1,4
+"SynGO","IN_ADARB2","SCZ",8,4,0
+"SynGO","IN_ADARB2","BD",8,0,4
+"SynGO","IN_ADARB2","SCZ vs BD",5,1,0
+"SynGO","IN_LAMP5_LHX6","SCZ",8,5,0
+"SynGO","IN_LAMP5_LHX6","BD",8,0,1
+"SynGO","IN_LAMP5_LHX6","SCZ vs BD",5,3,0
+"SynGO","IN_LAMP5_RELN","SCZ",8,5,0
+"SynGO","IN_LAMP5_RELN","BD",8,0,0
+"SynGO","IN_LAMP5_RELN","SCZ vs BD",4,1,0
+"SynGO","IN_PVALB","SCZ",8,3,0
+"SynGO","IN_PVALB","BD",8,0,0
+"SynGO","IN_PVALB","SCZ vs BD",5,1,0
+"SynGO","IN_PVALB_CHC","SCZ",8,3,0
+"SynGO","IN_PVALB_CHC","BD",8,0,2
+"SynGO","IN_PVALB_CHC","SCZ vs BD",8,4,0
+"SynGO","IN_SST","SCZ",8,5,1
+"SynGO","IN_SST","BD",8,0,6
+"SynGO","IN_SST","SCZ vs BD",4,1,0
+"SynGO","IN_VIP","SCZ",8,4,0
+"SynGO","IN_VIP","BD",8,0,6
+"SynGO","IN_VIP","SCZ vs BD",7,5,0
+"SynGO","Micro","SCZ",8,1,3
+"SynGO","Micro","BD",8,1,1
+"SynGO","Micro","SCZ vs BD",8,0,1
+"SynGO","OPC","SCZ",8,2,0
+"SynGO","OPC","BD",8,6,0
+"SynGO","OPC","SCZ vs BD",8,1,3
+"SynGO","Oligo","SCZ",8,0,4
+"SynGO","Oligo","BD",8,3,1
+"SynGO","Oligo","SCZ vs BD",7,0,5
+"SynGO","PC","SCZ",8,2,2
+"SynGO","PC","BD",8,4,0
+"SynGO","PC","SCZ vs BD",8,1,4
+"SynGO","VLMC","SCZ",8,1,0
+"SynGO","VLMC","BD",8,4,0
+"SynGO","VLMC","SCZ vs BD",8,1,3
