@@ -1,5 +1,5 @@
 ---
-title: "Q3 - Do distinct transcriptional signatures converge on common pathways?"
+title: "Q3 – Do distinct transcriptional signatures converge on common pathways?"
 subtitle: "Functional enrichment of the pseudobulk differential expression results: ORA, then GSEA (clusterProfiler)"
 author: "Ann-Solène Adelson"
 date: today
@@ -25,10 +25,9 @@ Each step starts with a short explanation of **what we do and why**, then the co
 - a **"How to read"** box, to understand the figure without knowing the method;
 - an **"Interpretation"** box, with the HBCC results.
 
-Every figure is saved as a `.png` (300 dpi) in `04_FIGURES/Q3_enrichment/`. References are numbered in
-square brackets and listed at the end.
-Each figure answers a part of the question; all the tables are saved in `03_RESULTS/Q3_enrichment/`. The list of
-figures is at the end of the notebook.
+Each figure answers a part of the question. Figures are saved as `.png` (300 dpi) in `04_FIGURES/Q3_enrichment/`,
+and all the tables in `03_RESULTS/Q3_enrichment/`; the list of figures is at the end of the notebook. References are
+numbered in square brackets and listed at the end.
 :::
 
 # Overview
@@ -103,7 +102,7 @@ tested) come before Part A; the conclusion gathers all the answers.
 
 | Package | Used for |
 |---------|----------|
-| `clusterProfiler` | ORA and GSEA (topic of a CC2 video) |
+| `clusterProfiler` | ORA and GSEA |
 | `org.Hs.eg.db` | human gene annotation: links gene symbols to GO terms |
 | `dplyr`, `tidyr`, `ggplot2`, `patchwork` | tables and figures (`patchwork` puts several panels in one figure) |
 
@@ -471,7 +470,7 @@ Same reading as F02. Click on a tab to choose the collection; the figures of the
 direction (shared), in one disease only, or in both with opposite directions. The overlap is summarised by the
 **Jaccard index**: shared genes / all significant genes (0 = no gene in common, 1 = identical lists). H1 predicts a low
 overlap of genes, but a larger overlap of functions (Part B). Q2 already describes shared and specific genes; here we
-compute the value that Figure F09 compares with the pathway level.
+compute the value that Figure F10 compares with the pathway level.
 
 ```{r deg-overlap}
 deg_status <- de |>
@@ -909,8 +908,8 @@ function in that cell type.
 - In SCZ, presynaptic processes and synapse organisation are shifted **up** in upper-layer neurons and interneurons,
   whereas synaptic signalling and the postsynapse are shifted **down** in deep-layer neurons (EN_L6B, EN_L6_CT,
   EN_L6_IT_1, EN_L6_IT_2).
-- In BD, synaptic signalling, presynapse and postsynapse are shifted **down** in upper-layer neurons (EN_L3_5_IT) and in
-  interneurons (IN_SST, IN_VIP).
+- In BD, synaptic signalling, presynapse and postsynapse are shifted **down** in EN_L3_5_IT neurons (layers 3 to 5) and
+  in interneurons (IN_SST, IN_VIP).
 - The direct test confirms the difference in several neurons (EN_L5_6_NP, IN_PVALB_CHC, IN_VIP).
 - In glial cells, synaptic sets are shifted down in SCZ (Astro, Micro, Oligo).
 :::
@@ -970,7 +969,7 @@ merged with `simplify()`, so the GO overlap is a lower bound.
 | Are the overall pathway profiles of SCZ and BD similar? | yes in Astro, Micro, OPC and PC (rho 0.67–0.83); much less in neurons (rho 0.04–0.51) | F08 (B) |
 | Gene-level overlap vs overlap of the genes driving shared pathways | significant genes: J ≈ 0.05; genes driving the shared pathways: J ≈ 0.4, twice the value expected by chance (≈ 0.2), significant in 20 of 23 cell types | F04, F10 |
 | Results found by both ORA and GSEA | about 60 % of the ORA functions are also found by GSEA | table |
-| Synaptic sets: direction and cell types | SCZ: up in upper-layer neurons and interneurons, down in deep-layer neurons; BD: down in upper-layer neurons and interneurons; glia: down in SCZ | F11 |
+| Synaptic sets: direction and cell types | SCZ: up in upper-layer neurons and interneurons, down in deep-layer neurons; BD: down in EN_L3_5_IT neurons and interneurons; glia: down in SCZ | F11 |
 | **Is H1 supported?** | **partly**: shared functions through partly shared genes, but only in glial and vascular cells; the two disorders differ at the synapse | F08, F10, F11 |
 :::
 
@@ -1011,15 +1010,16 @@ in SCZ upper-layer neurons does not, and may reflect the cell-type resolution of
 
 - **Q1 (composition)**: Microglia are fewer in both disorders (Q1), yet they share inflammatory pathways in SCZ and BD (F07, F08); this shift in expression is measured within the cell type, so it is not a consequence of the change in number.
 - **Q2 (genes)**: The convergence is stronger at the level of functions than of genes: SCZ–BD similarity is higher for pathways than for fold changes in 18 of 23 cell types (F08).
-- **Q4 (communication)**: Shared glial inflammatory signalling (interferon, IL6, TNF) and divergent synaptic signalling are the candidates to check in CellChat.
-- **Q5 (ageing)**: Inflammation, oxidative phosphorylation and the decrease of cholesterol and synaptic genes in SCZ astrocytes [13] are hallmarks of brain ageing, tested in Q5.
+- **Q4 (communication)**: Q4 finds changes in synaptic adhesion pathways (NRXN, NCAM, among others) and weaker GABAergic signalling, in line with the divergence of SCZ and BD at the synapse seen here; Q4 is exploratory (no donor-level test).
+- **Q5 (ageing)**: Q5 finds an older-looking profile in several cell types, shared by SCZ and BD, but carried by the genes that change with normal ageing, not by the inflammation signatures: the shared glial inflammation of Q3 and the ageing-like profile of Q5 are two different signals.
 
 # Limits
 
 - **Dependence on Q2.** The enrichment inherits every bias of the DE analysis (covariates, number of donors per cell
   type).
 - **Threshold of the ORA.** ORA results depend on the DEG cut-off; GSEA does not, which is why both are reported.
-- **Redundancy of GO.** Even after merging, report a few representative terms, not long lists of synonyms.
+- **Redundancy of GO.** Even after merging similar terms, several GO terms can describe the same function, so one
+  biological signal can appear several times in the results.
 - **Annotation bias.** Well-studied genes belong to more gene sets and weigh more in the results.
 - **RNA is not activity.** A pathway shifted at the RNA level does not prove a change in protein activity.
 - **Medication.** Antipsychotics (SCZ) and lithium or mood stabilisers (BD) can change synaptic and metabolic genes on

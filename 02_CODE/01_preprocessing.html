@@ -8,7 +8,7 @@
 
 <meta name="author" content="Myriam Sijlimassi">
 
-<title>Preprocessing - From the PsychAD atlas to an analysable HBCC cohort</title>
+<title>Preprocessing – From the PsychAD atlas to an analysable HBCC cohort</title>
 <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -2212,29 +2212,33 @@ vertical-align: -.125em;
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
   <ul class="collapse">
-  <li><a href="#question-and-role-of-the-preprocessing" id="toc-question-and-role-of-the-preprocessing" class="nav-link" data-scroll-target="#question-and-role-of-the-preprocessing"><span class="header-section-number">1.1</span> Question and role of the preprocessing</a></li>
-  <li><a href="#the-principle-behind-every-step" id="toc-the-principle-behind-every-step" class="nav-link" data-scroll-target="#the-principle-behind-every-step"><span class="header-section-number">1.2</span> The principle behind every step</a></li>
-  <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan"><span class="header-section-number">1.3</span> Plan</a></li>
+  <li><a href="#question-and-role-of-the-preprocessing" id="toc-question-and-role-of-the-preprocessing" class="nav-link" data-scroll-target="#question-and-role-of-the-preprocessing">Question and role of the preprocessing</a></li>
+  <li><a href="#the-principle-behind-every-step" id="toc-the-principle-behind-every-step" class="nav-link" data-scroll-target="#the-principle-behind-every-step">The principle behind every step</a></li>
+  <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan">Plan</a></li>
   </ul></li>
-  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup"><span class="header-section-number">2</span> Setup</a></li>
-  <li><a href="#part-a-study-design-who-do-we-compare" id="toc-part-a-study-design-who-do-we-compare" class="nav-link" data-scroll-target="#part-a-study-design-who-do-we-compare"><span class="header-section-number">3</span> Part A – Study design: who do we compare?</a></li>
-  <li><a href="#step-1-the-data" id="toc-step-1-the-data" class="nav-link" data-scroll-target="#step-1-the-data"><span class="header-section-number">4</span> Step 1 – The data</a></li>
-  <li><a href="#step-2-donor-selection" id="toc-step-2-donor-selection" class="nav-link" data-scroll-target="#step-2-donor-selection"><span class="header-section-number">5</span> Step 2 – Donor selection</a></li>
-  <li><a href="#step-3-description-of-the-groups" id="toc-step-3-description-of-the-groups" class="nav-link" data-scroll-target="#step-3-description-of-the-groups"><span class="header-section-number">6</span> Step 3 – Description of the groups</a></li>
-  <li><a href="#step-4-sensitivity-analyses" id="toc-step-4-sensitivity-analyses" class="nav-link" data-scroll-target="#step-4-sensitivity-analyses"><span class="header-section-number">7</span> Step 4 – Sensitivity analyses</a></li>
-  <li><a href="#step-5-cell-types-per-donor-input-of-q1" id="toc-step-5-cell-types-per-donor-input-of-q1" class="nav-link" data-scroll-target="#step-5-cell-types-per-donor-input-of-q1"><span class="header-section-number">8</span> Step 5 – Cell types per donor (input of Q1)</a></li>
-  <li><a href="#part-b-data-processing-are-the-data-usable-and-in-which-form" id="toc-part-b-data-processing-are-the-data-usable-and-in-which-form" class="nav-link" data-scroll-target="#part-b-data-processing-are-the-data-usable-and-in-which-form"><span class="header-section-number">9</span> Part B – Data processing: are the data usable, and in which form?</a></li>
-  <li><a href="#step-6-reading-the-data" id="toc-step-6-reading-the-data" class="nav-link" data-scroll-target="#step-6-reading-the-data"><span class="header-section-number">10</span> Step 6 – Reading the data</a></li>
-  <li><a href="#step-7-quality-control" id="toc-step-7-quality-control" class="nav-link" data-scroll-target="#step-7-quality-control"><span class="header-section-number">11</span> Step 7 – Quality control</a></li>
-  <li><a href="#step-8-normalisation-and-visual-check-of-the-cell-types-pca-umap" id="toc-step-8-normalisation-and-visual-check-of-the-cell-types-pca-umap" class="nav-link" data-scroll-target="#step-8-normalisation-and-visual-check-of-the-cell-types-pca-umap"><span class="header-section-number">12</span> Step 8 – Normalisation and visual check of the cell types (PCA, UMAP)</a></li>
-  <li><a href="#step-9-pseudobulk-one-sample-per-donor-and-cell-type-input-of-q2-and-q5" id="toc-step-9-pseudobulk-one-sample-per-donor-and-cell-type-input-of-q2-and-q5" class="nav-link" data-scroll-target="#step-9-pseudobulk-one-sample-per-donor-and-cell-type-input-of-q2-and-q5"><span class="header-section-number">13</span> Step 9 – Pseudobulk: one sample per donor and cell type (input of Q2 and Q5)</a></li>
-  <li><a href="#synthesis-of-the-preprocessing" id="toc-synthesis-of-the-preprocessing" class="nav-link" data-scroll-target="#synthesis-of-the-preprocessing"><span class="header-section-number">14</span> Synthesis of the preprocessing</a></li>
-  <li><a href="#limits" id="toc-limits" class="nav-link" data-scroll-target="#limits"><span class="header-section-number">15</span> Limits</a></li>
-  <li><a href="#list-of-figures" id="toc-list-of-figures" class="nav-link" data-scroll-target="#list-of-figures"><span class="header-section-number">16</span> List of figures</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">17</span> References</a></li>
-  <li><a href="#session-info" id="toc-session-info" class="nav-link" data-scroll-target="#session-info"><span class="header-section-number">18</span> Session info</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#part-a-study-design-who-do-we-compare" id="toc-part-a-study-design-who-do-we-compare" class="nav-link" data-scroll-target="#part-a-study-design-who-do-we-compare">Part A – Study design: who do we compare?</a>
+  <ul class="collapse">
+  <li><a href="#step-1-the-data" id="toc-step-1-the-data" class="nav-link" data-scroll-target="#step-1-the-data">Step 1 – The data</a></li>
+  <li><a href="#step-2-donor-selection" id="toc-step-2-donor-selection" class="nav-link" data-scroll-target="#step-2-donor-selection">Step 2 – Donor selection</a></li>
+  <li><a href="#step-3-description-of-the-groups" id="toc-step-3-description-of-the-groups" class="nav-link" data-scroll-target="#step-3-description-of-the-groups">Step 3 – Description of the groups</a></li>
+  <li><a href="#step-4-sensitivity-analyses" id="toc-step-4-sensitivity-analyses" class="nav-link" data-scroll-target="#step-4-sensitivity-analyses">Step 4 – Sensitivity analyses</a></li>
+  <li><a href="#step-5-cell-types-per-donor-input-of-q1" id="toc-step-5-cell-types-per-donor-input-of-q1" class="nav-link" data-scroll-target="#step-5-cell-types-per-donor-input-of-q1">Step 5 – Cell types per donor (input of Q1)</a></li>
+  </ul></li>
+  <li><a href="#part-b-data-processing-are-the-data-usable-and-in-which-form" id="toc-part-b-data-processing-are-the-data-usable-and-in-which-form" class="nav-link" data-scroll-target="#part-b-data-processing-are-the-data-usable-and-in-which-form">Part B – Data processing: are the data usable, and in which form?</a>
+  <ul class="collapse">
+  <li><a href="#step-6-reading-the-data" id="toc-step-6-reading-the-data" class="nav-link" data-scroll-target="#step-6-reading-the-data">Step 6 – Reading the data</a></li>
+  <li><a href="#step-7-quality-control" id="toc-step-7-quality-control" class="nav-link" data-scroll-target="#step-7-quality-control">Step 7 – Quality control</a></li>
+  <li><a href="#step-8-normalisation-and-visual-check-of-the-cell-types-pca-umap" id="toc-step-8-normalisation-and-visual-check-of-the-cell-types-pca-umap" class="nav-link" data-scroll-target="#step-8-normalisation-and-visual-check-of-the-cell-types-pca-umap">Step 8 – Normalisation and visual check of the cell types (PCA, UMAP)</a></li>
+  <li><a href="#step-9-pseudobulk-one-sample-per-donor-and-cell-type-input-of-q2-and-q5" id="toc-step-9-pseudobulk-one-sample-per-donor-and-cell-type-input-of-q2-and-q5" class="nav-link" data-scroll-target="#step-9-pseudobulk-one-sample-per-donor-and-cell-type-input-of-q2-and-q5">Step 9 – Pseudobulk: one sample per donor and cell type (input of Q2 and Q5)</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#limits" id="toc-limits" class="nav-link" data-scroll-target="#limits">Limits</a></li>
+  <li><a href="#list-of-figures" id="toc-list-of-figures" class="nav-link" data-scroll-target="#list-of-figures">List of figures</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  <li><a href="#session-info" id="toc-session-info" class="nav-link" data-scroll-target="#session-info">Session info</a></li>
   </ul>
 </nav>
 </div>
@@ -2244,7 +2248,7 @@ vertical-align: -.125em;
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Preprocessing - From the PsychAD atlas to an analysable HBCC cohort</h1>
+<h1 class="title">Preprocessing – From the PsychAD atlas to an analysable HBCC cohort</h1>
 <p class="subtitle lead">Donor selection, data reading, quality control, standard single-cell pipeline and pseudobulk matrix</p>
 </div>
 
@@ -2289,10 +2293,10 @@ vertical-align: -.125em;
 <p>Figures are saved as <code>.png</code> (300 dpi) in <code>04_FIGURES/preprocessing/</code>. References are numbered in square brackets and listed at the end.</p>
 </div>
 </div>
-<section id="overview" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Overview</h1>
-<section id="question-and-role-of-the-preprocessing" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="question-and-role-of-the-preprocessing"><span class="header-section-number">1.1</span> Question and role of the preprocessing</h2>
+<section id="overview" class="level1">
+<h1>Overview</h1>
+<section id="question-and-role-of-the-preprocessing" class="level2">
+<h2 class="anchored" data-anchor-id="question-and-role-of-the-preprocessing">Question and role of the preprocessing</h2>
 <p><strong>Central question of the project.</strong> Do schizophrenia (SCZ) and bipolar disorder (BD) share cell-type-specific molecular alterations in the human prefrontal cortex, and could these changes reflect accelerated ageing and affect neuronal and glial signalling networks?</p>
 <p><strong>Role of this notebook.</strong> The PsychAD atlas [1] contains 6.3 million nuclei from 1,494 donors and several brain banks. We extract from it a cohort that can answer the question without obvious bias, and we prepare the data sets used by Q1 to Q5:</p>
 <table class="caption-top table">
@@ -2332,12 +2336,12 @@ vertical-align: -.125em;
 </tbody>
 </table>
 </section>
-<section id="the-principle-behind-every-step" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="the-principle-behind-every-step"><span class="header-section-number">1.2</span> The principle behind every step</h2>
+<section id="the-principle-behind-every-step" class="level2">
+<h2 class="anchored" data-anchor-id="the-principle-behind-every-step">The principle behind every step</h2>
 <p><strong>We compare people, not cells.</strong> A brain that gives 5,000 nuclei is still one person. Treating nuclei as independent samples (pseudoreplication) makes p-values far too small [2]. Every test of the project is therefore done at the <strong>donor</strong> level, and the preprocessing is built for that.</p>
 </section>
-<section id="plan" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="plan"><span class="header-section-number">1.3</span> Plan</h2>
+<section id="plan" class="level2">
+<h2 class="anchored" data-anchor-id="plan">Plan</h2>
 <p>The notebook has two parts: first we decide <strong>who we compare</strong> (study design), then we prepare <strong>the data</strong> of these donors (data processing).</p>
 <table class="caption-top table">
 <colgroup>
@@ -2356,7 +2360,7 @@ vertical-align: -.125em;
 </thead>
 <tbody>
 <tr class="odd">
-<td>A - Study design</td>
+<td>A – Study design</td>
 <td>1</td>
 <td>The data: download the HBCC file, read the table of the nuclei</td>
 <td>1,486,324 nuclei, 300 donors</td>
@@ -2386,7 +2390,7 @@ vertical-align: -.125em;
 <td>E7 table</td>
 </tr>
 <tr class="even">
-<td>B - Data processing</td>
+<td>B – Data processing</td>
 <td>6</td>
 <td>Reading the data, one donor at a time</td>
 <td>Seurat object</td>
@@ -2413,8 +2417,8 @@ vertical-align: -.125em;
 </table>
 </section>
 </section>
-<section id="setup" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> Setup</h1>
+<section id="setup" class="level1">
+<h1>Setup</h1>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 47%">
@@ -2433,7 +2437,7 @@ vertical-align: -.125em;
 </tr>
 <tr class="even">
 <td><code>Seurat</code></td>
-<td>normalisation, HVG, scaling, PCA, UMAP [4]</td>
+<td>normalisation, HVG, scaling, PCA, UMAP [3]</td>
 </tr>
 <tr class="odd">
 <td><code>ggplot2</code>, <code>knitr</code></td>
@@ -2478,7 +2482,7 @@ vertical-align: -.125em;
 <tr class="odd">
 <td><code>age_min</code></td>
 <td>20 years</td>
-<td>end of the developmental transcriptomic remodelling of the cortex [3]</td>
+<td>end of the developmental transcriptomic remodelling of the cortex [4]</td>
 </tr>
 <tr class="even">
 <td><code>keep_tardive_dyskinesia</code></td>
@@ -2536,12 +2540,11 @@ vertical-align: -.125em;
 </details>
 </div>
 </section>
-<section id="part-a-study-design-who-do-we-compare" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> Part A – Study design: who do we compare?</h1>
+<section id="part-a-study-design-who-do-we-compare" class="level1">
+<h1>Part A – Study design: who do we compare?</h1>
 <p>Before looking at any gene, we decide which donors are compared, with criteria fixed in advance, as for a clinical trial. This part only uses the table of the nuclei (donor, diagnoses, age, sex, ancestry, cell type), not the gene expression.</p>
-</section>
-<section id="step-1-the-data" class="level1" data-number="4">
-<h1 data-number="4"><span class="header-section-number">4</span> Step 1 – The data</h1>
+<section id="step-1-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-the-data">Step 1 – The data</h2>
 <p><strong>What we do and why.</strong> The data come from the PsychAD atlas [1], which is shared on CELLxGENE as one file per brain bank. We use the file of the <strong>HBCC</strong> bank (NIMH Human Brain Collection Core): 1,486,324 nuclei from 300 donors, about 14 GB. The file is downloaded once and kept in <code>01_DATA/raw/</code>.</p>
 <div class="cell">
 <details open class="code-fold">
@@ -2600,8 +2603,8 @@ vertical-align: -.125em;
 </div>
 </div>
 </section>
-<section id="step-2-donor-selection" class="level1" data-number="5">
-<h1 data-number="5"><span class="header-section-number">5</span> Step 2 – Donor selection</h1>
+<section id="step-2-donor-selection" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-donor-selection">Step 2 – Donor selection</h2>
 <p><strong>What we do and why.</strong> We start from the 300 donors of the HBCC brain bank. Using a single bank avoids mixing a difference between banks with a difference between diseases (a “site” confounder). We then apply inclusion and exclusion criteria, as for a clinical trial, starting from the group definitions of Lee et al. [1] and making them stricter on two points.</p>
 <p><strong>From nuclei to donors.</strong> We keep one row per donor: we want to count people, not nuclei. The age is written as text (“45-year-old stage”, “8-month-old stage”): we convert it to years.</p>
 <div class="cell">
@@ -2684,7 +2687,7 @@ SCZ     FALSE TRUE
 <tr class="odd">
 <td>I2</td>
 <td>age at death &gt;= 20 years</td>
-<td>before 20, the cortex is still maturing [3]: young controls versus adult patients would create a false difference</td>
+<td>before 20, the cortex is still maturing [4]: young controls versus adult patients would create a false difference</td>
 </tr>
 <tr class="even">
 <td>E1</td>
@@ -2825,7 +2828,7 @@ Figure 1
 </div>
 </div>
 </div>
-<p><strong>Figure PP-F01 - Age at death of the selected donors, per group.</strong> Violin plot, box plot (median and interquartile range) and individual donors (dots). Only donors aged 20 years or more were kept.</p>
+<p><strong>Figure PP-F01 – Age at death of the selected donors, per group.</strong> Violin plot, box plot (median and interquartile range) and individual donors (dots). Only donors aged 20 years or more were kept.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2857,8 +2860,8 @@ Figure 1
 </div>
 </div>
 </section>
-<section id="step-3-description-of-the-groups" class="level1" data-number="6">
-<h1 data-number="6"><span class="header-section-number">6</span> Step 3 – Description of the groups</h1>
+<section id="step-3-description-of-the-groups" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-description-of-the-groups">Step 3 – Description of the groups</h2>
 <p><strong>What we do and why.</strong> Before comparing patients with controls, we check that they are similar on everything else (Table 1, balance of covariates). We also check that the clinical columns of the file agree with the text of the diagnoses (metadata quality control).</p>
 <div class="cell">
 <details open class="code-fold">
@@ -3027,7 +3030,7 @@ Figure 3
 </div>
 </div>
 </div>
-<p><strong>Figure PP-F02 - Genetic ancestry of the donors, per group.</strong> Share of each genetic ancestry among the donors of each group (counts in the table below the figure).</p>
+<p><strong>Figure PP-F02 – Genetic ancestry of the donors, per group.</strong> Share of each genetic ancestry among the donors of each group (counts in the table below the figure).</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -3162,8 +3165,8 @@ Figure 3
 </div>
 </div>
 </section>
-<section id="step-4-sensitivity-analyses" class="level1" data-number="7">
-<h1 data-number="7"><span class="header-section-number">7</span> Step 4 – Sensitivity analyses</h1>
+<section id="step-4-sensitivity-analyses" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-sensitivity-analyses">Step 4 – Sensitivity analyses</h2>
 <p><strong>What we do and why.</strong> We repeat the selection, changing one parameter at a time. These variants are used by the sensitivity analyses of the next questions.</p>
 <div class="cell">
 <details open class="code-fold">
@@ -3203,8 +3206,8 @@ schizoaff_bipolar_to_BD        121  49 58       72</code></pre>
 </details>
 </div>
 </section>
-<section id="step-5-cell-types-per-donor-input-of-q1" class="level1" data-number="8">
-<h1 data-number="8"><span class="header-section-number">8</span> Step 5 – Cell types per donor (input of Q1)</h1>
+<section id="step-5-cell-types-per-donor-input-of-q1" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-cell-types-per-donor-input-of-q1">Step 5 – Cell types per donor (input of Q1)</h2>
 <p><strong>What we do and why.</strong> For the composition analysis (Q1), all we need is the number of nuclei of each of the 27 subclasses in each selected donor, using <strong>all</strong> their nuclei. We also count, for each subclass, how many donors of each group have at least 20 nuclei of it (criterion E7): a subclass that is too rare cannot be analysed in pseudobulk.</p>
 <div class="cell">
 <details open class="code-fold">
@@ -3275,12 +3278,12 @@ Oligo             121  46 52</code></pre>
 </details>
 </div>
 </section>
-<section id="part-b-data-processing-are-the-data-usable-and-in-which-form" class="level1" data-number="9">
-<h1 data-number="9"><span class="header-section-number">9</span> Part B – Data processing: are the data usable, and in which form?</h1>
-<p>Now that the donors are chosen, we read their gene expression, check its quality, and put it in the two forms used by the next questions: a Seurat object (one column per nucleus) and a pseudobulk matrix (one column per donor and cell type).</p>
 </section>
-<section id="step-6-reading-the-data" class="level1" data-number="10">
-<h1 data-number="10"><span class="header-section-number">10</span> Step 6 – Reading the data</h1>
+<section id="part-b-data-processing-are-the-data-usable-and-in-which-form" class="level1">
+<h1>Part B – Data processing: are the data usable, and in which form?</h1>
+<p>Now that the donors are chosen, we read their gene expression, check its quality, and put it in the two forms used by the next questions: a Seurat object (one column per nucleus) and a pseudobulk matrix (one column per donor and cell type).</p>
+<section id="step-6-reading-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-reading-the-data">Step 6 – Reading the data</h2>
 <p><strong>What we do and why.</strong> The data set is too large to be loaded at once in the memory of a computer (1.5 million nuclei). We therefore read the file <strong>one donor at a time</strong>: we read the nuclei of a donor, keep what we need, free the memory, then move to the next donor. This works because the nuclei of each donor are stored next to each other in the file (checked for every donor). The reading functions are in <code>scripts/utils_h5ad.R</code>.</p>
 <p><strong>Raw counts?</strong> The file has no <code>raw/</code> layer, so the matrix <code>X</code> should hold the raw counts. We read the first million values and check that they are integers.</p>
 <div class="cell">
@@ -3443,8 +3446,8 @@ Active assay: RNA (34176 features, 2000 variable features)
 </div>
 </div>
 </section>
-<section id="step-7-quality-control" class="level1" data-number="11">
-<h1 data-number="11"><span class="header-section-number">11</span> Step 7 – Quality control</h1>
+<section id="step-7-quality-control" class="level2">
+<h2 class="anchored" data-anchor-id="step-7-quality-control">Step 7 – Quality control</h2>
 <p><strong>What we do and why.</strong> The authors had already filtered the nuclei [1]. We did not filter again, to stay comparable with the atlas; we checked the distributions on the subsample.</p>
 <div class="cell">
 <details open class="code-fold">
@@ -3485,7 +3488,7 @@ Figure 4
 </div>
 </div>
 </div>
-<p><strong>Figure PP-F03 - Quality of the nuclei, per group.</strong> Number of RNA molecules per nucleus (<code>nCount_RNA</code>), number of detected genes (<code>nFeature_RNA</code>) and percentage of mitochondrial reads (<code>percent_mt</code>, human pattern <code>^MT-</code>), on 44,588 nuclei (at most 200 per donor).</p>
+<p><strong>Figure PP-F03 – Quality of the nuclei, per group.</strong> Number of RNA molecules per nucleus (<code>nCount_RNA</code>), number of detected genes (<code>nFeature_RNA</code>) and percentage of mitochondrial reads (<code>percent_mt</code>, human pattern <code>^MT-</code>), on 44,588 nuclei (at most 200 per donor).</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -3518,8 +3521,8 @@ Figure 4
 </div>
 </div>
 </section>
-<section id="step-8-normalisation-and-visual-check-of-the-cell-types-pca-umap" class="level1" data-number="12">
-<h1 data-number="12"><span class="header-section-number">12</span> Step 8 – Normalisation and visual check of the cell types (PCA, UMAP)</h1>
+<section id="step-8-normalisation-and-visual-check-of-the-cell-types-pca-umap" class="level2">
+<h2 class="anchored" data-anchor-id="step-8-normalisation-and-visual-check-of-the-cell-types-pca-umap">Step 8 – Normalisation and visual check of the cell types (PCA, UMAP)</h2>
 <p><strong>What we do and why.</strong> We follow the steps of the course on the subsample. The upstream steps (alignment, filtering, annotation) were done by the authors on the whole atlas [1]: we checked them rather than redoing them.</p>
 <table class="caption-top table">
 <colgroup>
@@ -3657,7 +3660,7 @@ Figure 5
 </div>
 </div>
 </div>
-<p><strong>Figure PP-F04 - UMAP of 44,588 nuclei coloured by cell subclass.</strong> UMAP computed on the first 30 principal components of the 2,000 most variable genes; subclasses as annotated by the authors [1].</p>
+<p><strong>Figure PP-F04 – UMAP of 44,588 nuclei coloured by cell subclass.</strong> UMAP computed on the first 30 principal components of the 2,000 most variable genes; subclasses as annotated by the authors [1].</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -3793,7 +3796,7 @@ Figure 6
 </div>
 </div>
 </div>
-<p><strong>Figure PP-F05 - Expression of marker genes in the 17 neuronal subclasses.</strong> Markers of Figure 2d of [1] and of the taxonomy used to name the cell types [5], on the 19,505 neuronal nuclei of the subsample. Dot size: percentage of nuclei of the subclass that express the gene; colour: mean expression, scaled across subclasses.</p>
+<p><strong>Figure PP-F05 – Expression of marker genes in the 17 neuronal subclasses.</strong> Markers of Figure 2d of [1] and of the taxonomy used to name the cell types [5], on the 19,505 neuronal nuclei of the subsample. Dot size: percentage of nuclei of the subclass that express the gene; colour: mean expression, scaled across subclasses.</p>
 <div class="cell">
 <details open class="code-fold">
 <summary>Code</summary>
@@ -3824,7 +3827,7 @@ Figure 7
 </div>
 </div>
 </div>
-<p><strong>Figure PP-F06 - Expression of marker genes in the 9 non-neuronal subclasses.</strong> Subclass-level markers of Supplementary Table 10 of [1] and markers of [5], on the 25,003 non-neuronal nuclei of the subsample. Same reading as Figure PP-F05.</p>
+<p><strong>Figure PP-F06 – Expression of marker genes in the 9 non-neuronal subclasses.</strong> Subclass-level markers of Supplementary Table 10 of [1] and markers of [5], on the 25,003 non-neuronal nuclei of the subsample. Same reading as Figure PP-F05.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -4028,7 +4031,7 @@ Figure 8
 </div>
 </div>
 </div>
-<p><strong>Figure PP-F07 - UMAP of 44,588 nuclei coloured by diagnosis.</strong> Same UMAP as Figure PP-F04.</p>
+<p><strong>Figure PP-F07 – UMAP of 44,588 nuclei coloured by diagnosis.</strong> Same UMAP as Figure PP-F04.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -4059,8 +4062,8 @@ Figure 8
 </div>
 </div>
 </section>
-<section id="step-9-pseudobulk-one-sample-per-donor-and-cell-type-input-of-q2-and-q5" class="level1" data-number="13">
-<h1 data-number="13"><span class="header-section-number">13</span> Step 9 – Pseudobulk: one sample per donor and cell type (input of Q2 and Q5)</h1>
+<section id="step-9-pseudobulk-one-sample-per-donor-and-cell-type-input-of-q2-and-q5" class="level2">
+<h2 class="anchored" data-anchor-id="step-9-pseudobulk-one-sample-per-donor-and-cell-type-input-of-q2-and-q5">Step 9 – Pseudobulk: one sample per donor and cell type (input of Q2 and Q5)</h2>
 <p><strong>What we do and why.</strong> For each donor, we sort its nuclei by cell type and add up their counts, gene by gene. For example, all the microglia of donor 1 become one “sample”, all its astrocytes another one. We obtain one sample per donor and cell type, as if the cells of each type had been sorted and sequenced together (pseudobulk). Each donor then counts once in the tests, which avoids treating 5,000 nuclei of the same brain as 5,000 people [2]. We use all the nuclei here, not the 200-nuclei subsample. This matrix is the input of Q2 and Q5.</p>
 <p>The 27 cell types are kept for every donor, even when a donor has none of a type (empty sample): Q2 removes the samples with too few nuclei (E7 threshold).</p>
 <div class="cell">
@@ -4247,8 +4250,9 @@ Figure 8
 </div>
 </div>
 </section>
-<section id="synthesis-of-the-preprocessing" class="level1" data-number="14">
-<h1 data-number="14"><span class="header-section-number">14</span> Synthesis of the preprocessing</h1>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 36%">
@@ -4294,25 +4298,31 @@ Figure 8
 <td>-</td>
 </tr>
 <tr class="odd">
-<td>Input of Q2</td>
-<td>pseudobulk matrix, raw counts, 4,116 usable columns</td>
+<td>Input of Q2 and Q5</td>
+<td>pseudobulk matrix (all nuclei), raw counts, 4,116 usable columns</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td>Input of Q4</td>
+<td>Seurat object, 44,588 nuclei (at most 200 per donor), normalised</td>
 <td>-</td>
 </tr>
 </tbody>
 </table>
+<p><strong>What this gives to the next questions.</strong> We compare 224 adult donors from a single brain bank (121 controls, 49 SCZ, 54 BD), selected with criteria fixed in advance. The data are of good quality, and the 27 subclasses of the atlas are recovered by our pipeline and by their marker genes; the diseases do not create new cell types. Every question therefore works on the same donors and the same cell types: Q1 on the number of nuclei per donor and subclass, Q2 and Q5 on the pseudobulk matrix (all nuclei), Q4 on the Seurat object. The main limit to keep in mind in every question is that genetic ancestry is confounded with the diagnosis: it is adjusted for in every model, but the direct SCZ vs BD comparison must be read with caution.</p>
 </section>
-<section id="limits" class="level1" data-number="15">
-<h1 data-number="15"><span class="header-section-number">15</span> Limits</h1>
+<section id="limits" class="level1">
+<h1>Limits</h1>
 <ul>
-<li><strong>Ancestry confounded with diagnosis</strong> (severity 5/5): adjusted for and stratified, but it cannot be removed.</li>
-<li><strong>QC and doublet detection not redone</strong> (3/5): we rely on the filtering of the authors [1].</li>
-<li><strong>No post-mortem interval and no information on treatments</strong> (3/5): covariates limited to age, sex and ancestry.</li>
-<li><strong>Subsample of 200 nuclei per donor</strong> (2/5): used only for the Seurat object; every statistical analysis uses all nuclei.</li>
-<li><strong>Donors with few nuclei</strong> (2/5): 12 donors with fewer than 1,000 nuclei (minimum 61).</li>
+<li><strong>Ancestry confounded with diagnosis</strong>: adjusted for and stratified, but it cannot be removed.</li>
+<li><strong>QC and doublet detection not redone</strong>: we rely on the filtering of the authors [1].</li>
+<li><strong>No post-mortem interval and no information on treatments</strong>: covariates limited to age, sex and ancestry.</li>
+<li><strong>Subsample of 200 nuclei per donor</strong>: used only for the Seurat object; every statistical analysis uses all nuclei.</li>
+<li><strong>Donors with few nuclei</strong>: 12 donors with fewer than 1,000 nuclei (minimum 61).</li>
 </ul>
 </section>
-<section id="list-of-figures" class="level1" data-number="16">
-<h1 data-number="16"><span class="header-section-number">16</span> List of figures</h1>
+<section id="list-of-figures" class="level1">
+<h1>List of figures</h1>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 27%">
@@ -4377,18 +4387,18 @@ Figure 8
 </div>
 </div>
 </section>
-<section id="references" class="level1" data-number="17">
-<h1 data-number="17"><span class="header-section-number">17</span> References</h1>
+<section id="references" class="level1">
+<h1>References</h1>
 <ol type="1">
-<li>Lee D. et al. (2024). Single-cell atlas of transcriptomic vulnerability across multiple neurodegenerative and neuropsychiatric diseases. <em>medRxiv</em>. doi:10.1101/2024.10.31.24316513</li>
+<li>Lee D. et al. (2026). Single-cell atlas of transcriptomic vulnerability across brain disorders. <em>Nature</em>, 657, 988–1002. doi:10.1038/s41586-025-09573-z</li>
 <li>Squair J. W. et al. (2021). Confronting false discoveries in single-cell differential expression. <em>Nature Communications</em>, 12, 5692.</li>
-<li>Girdhar K. et al. PsychAD lifespan atlas of the human prefrontal cortex. <em>medRxiv</em>. doi:10.1101/2024.11.06.24316592</li>
-<li>Hao Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis (Seurat v5). <em>Nature Biotechnology</em>, 42, 293-304.</li>
+<li>Hao Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis (Seurat v5). <em>Nature Biotechnology</em>, 42, 293–304.</li>
+<li>Yang H., Clarence T., Scott M. R. et al. (2026). Lifespan single-cell transcriptomic atlas of the human prefrontal cortex. <em>Nature</em>, 657, 1003–1015. doi:10.1038/s41586-026-10271-7</li>
 <li>Ma S. et al. (2022). Molecular and cellular evolution of the primate dorsolateral prefrontal cortex. <em>Science</em>, 377, eabo7257.</li>
 </ol>
 </section>
-<section id="session-info" class="level1" data-number="18">
-<h1 data-number="18"><span class="header-section-number">18</span> Session info</h1>
+<section id="session-info" class="level1">
+<h1>Session info</h1>
 <div class="cell">
 <details open class="code-fold">
 <summary>Code</summary>
@@ -4420,39 +4430,40 @@ loaded via a namespace (and not attached):
   [1] deldir_2.0-4           pbapply_1.7-5          gridExtra_2.3.1       
   [4] rlang_1.3.0            magrittr_2.0.5         RcppAnnoy_0.0.23      
   [7] otel_0.2.0             spatstat.geom_3.8-2    matrixStats_1.5.0     
- [10] ggridges_0.5.7         compiler_4.6.1         png_0.1-9             
- [13] vctrs_0.7.3            reshape2_1.4.5         stringr_1.6.0         
- [16] pkgconfig_2.0.3        fastmap_1.2.0          labeling_0.4.3        
- [19] promises_1.5.0         rmarkdown_2.32         purrr_1.2.2           
- [22] xfun_0.60              jsonlite_2.0.0         goftest_1.2-3         
- [25] later_1.4.8            rhdf5filters_1.24.1    spatstat.utils_3.2-4  
- [28] Rhdf5lib_2.0.0         irlba_2.3.7            parallel_4.6.1        
- [31] cluster_2.1.8.3        R6_2.6.1               ica_1.0-3             
- [34] stringi_1.8.9          RColorBrewer_1.1-3     spatstat.data_3.1-9   
- [37] reticulate_1.47.0      parallelly_1.48.0      spatstat.univar_3.2-0 
- [40] lmtest_0.9-40          scattermore_1.2        Rcpp_1.1.2            
- [43] tensor_1.5.1           future.apply_1.20.2    zoo_1.9-0             
- [46] sctransform_0.4.3      httpuv_1.6.17          splines_4.6.1         
- [49] igraph_2.3.3           tidyselect_1.2.1       abind_1.4-8           
- [52] yaml_2.3.12            spatstat.random_3.5-1  codetools_0.2-20      
- [55] miniUI_0.1.2           spatstat.explore_3.8-2 listenv_1.0.0         
- [58] lattice_0.23-1         tibble_3.3.1           plyr_1.8.9            
- [61] shiny_1.14.0           withr_3.0.3            S7_0.2.2              
- [64] ROCR_1.0-12            evaluate_1.0.5         Rtsne_0.17            
- [67] future_1.75.0          fastDummies_1.7.6      survival_3.8-11       
- [70] polyclip_1.10-7        fitdistrplus_1.2-6     pillar_1.11.1         
- [73] KernSmooth_2.23-27     plotly_4.12.1          generics_0.1.4        
- [76] RcppHNSW_0.7.0         scales_1.4.0           globals_0.19.1        
- [79] xtable_1.8-8           glue_1.8.1             tools_4.6.1           
- [82] data.table_1.18.6.1    RSpectra_0.16-2        RANN_2.6.3            
- [85] dotCall64_1.2          cowplot_1.2.0          grid_4.6.1            
- [88] tidyr_1.3.2            nlme_3.1-171           patchwork_1.3.2       
- [91] cli_3.6.6              spatstat.sparse_3.2-0  spam_2.11-4           
- [94] viridisLite_0.4.3      dplyr_1.2.1            uwot_0.2.5            
- [97] gtable_0.3.6           digest_0.6.39          progressr_1.0.0       
-[100] ggrepel_0.9.8          htmlwidgets_1.6.4      farver_2.1.2          
-[103] htmltools_0.5.9        lifecycle_1.0.5        httr_1.4.9            
-[106] mime_0.13              MASS_7.3-66           </code></pre>
+ [10] ggridges_0.5.7         compiler_4.6.1         systemfonts_1.3.2     
+ [13] png_0.1-9              vctrs_0.7.3            reshape2_1.4.5        
+ [16] stringr_1.6.0          pkgconfig_2.0.3        fastmap_1.2.0         
+ [19] labeling_0.4.3         promises_1.5.0         rmarkdown_2.32        
+ [22] ragg_1.5.2             purrr_1.2.2            xfun_0.60             
+ [25] jsonlite_2.0.0         goftest_1.2-3          later_1.4.8           
+ [28] rhdf5filters_1.24.1    spatstat.utils_3.2-4   Rhdf5lib_2.0.0        
+ [31] irlba_2.3.7            parallel_4.6.1         cluster_2.1.8.3       
+ [34] R6_2.6.1               ica_1.0-3              stringi_1.8.9         
+ [37] RColorBrewer_1.1-3     spatstat.data_3.1-9    reticulate_1.47.0     
+ [40] parallelly_1.48.0      spatstat.univar_3.2-0  lmtest_0.9-40         
+ [43] scattermore_1.2        Rcpp_1.1.2             tensor_1.5.1          
+ [46] future.apply_1.20.2    zoo_1.9-0              sctransform_0.4.3     
+ [49] httpuv_1.6.17          splines_4.6.1          igraph_2.3.3          
+ [52] tidyselect_1.2.1       rstudioapi_0.19.0      abind_1.4-8           
+ [55] yaml_2.3.12            spatstat.random_3.5-1  codetools_0.2-20      
+ [58] miniUI_0.1.2           spatstat.explore_3.8-2 listenv_1.0.0         
+ [61] lattice_0.23-1         tibble_3.3.1           plyr_1.8.9            
+ [64] shiny_1.14.0           withr_3.0.3            S7_0.2.2              
+ [67] ROCR_1.0-12            evaluate_1.0.5         Rtsne_0.17            
+ [70] future_1.75.0          fastDummies_1.7.6      survival_3.8-11       
+ [73] polyclip_1.10-7        fitdistrplus_1.2-6     pillar_1.11.1         
+ [76] KernSmooth_2.23-27     plotly_4.12.1          generics_0.1.4        
+ [79] RcppHNSW_0.7.0         scales_1.4.0           globals_0.19.1        
+ [82] xtable_1.8-8           glue_1.8.1             tools_4.6.1           
+ [85] data.table_1.18.6.1    RSpectra_0.16-2        RANN_2.6.3            
+ [88] dotCall64_1.2          cowplot_1.2.0          grid_4.6.1            
+ [91] tidyr_1.3.2            nlme_3.1-171           patchwork_1.3.2.9000  
+ [94] cli_3.6.6              spatstat.sparse_3.2-0  textshaping_1.0.5     
+ [97] spam_2.11-4            viridisLite_0.4.3      dplyr_1.2.1           
+[100] uwot_0.2.5             gtable_0.3.6           digest_0.6.39         
+[103] progressr_1.0.0        ggrepel_0.9.8          htmlwidgets_1.6.4     
+[106] farver_2.1.2           htmltools_0.5.9        lifecycle_1.0.5       
+[109] httr_1.4.9             mime_0.13              MASS_7.3-66           </code></pre>
 </div>
 </div>
 </section>

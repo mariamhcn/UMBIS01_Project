@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Ann-Solène Adelson">
-<meta name="dcterms.date" content="2026-11-12">
+<meta name="dcterms.date" content="2026-11-18">
 
-<title>Q3 - Do distinct transcriptional signatures converge on common pathways?</title>
+<title>Q3 – Do distinct transcriptional signatures converge on common pathways?</title>
 <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -2397,7 +2397,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Q3 - Do distinct transcriptional signatures converge on common pathways?</h1>
+<h1 class="title">Q3 – Do distinct transcriptional signatures converge on common pathways?</h1>
 <p class="subtitle lead">Functional enrichment of the pseudobulk differential expression results: ORA, then GSEA (clusterProfiler)</p>
 </div>
 
@@ -2415,7 +2415,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 12, 2026</p>
+      <p class="date">November 18, 2026</p>
     </div>
   </div>
   
@@ -2443,7 +2443,7 @@ window.Quarto = {
 <li>a <strong>“How to read”</strong> box, to understand the figure without knowing the method;</li>
 <li>an <strong>“Interpretation”</strong> box, with the HBCC results.</li>
 </ul>
-<p>Every figure is saved as a <code>.png</code> (300 dpi) in <code>04_FIGURES/Q3_enrichment/</code>. References are numbered in square brackets and listed at the end. Each figure answers a part of the question; all the tables are saved in <code>03_RESULTS/Q3_enrichment/</code>. The list of figures is at the end of the notebook.</p>
+<p>Each figure answers a part of the question. Figures are saved as <code>.png</code> (300 dpi) in <code>04_FIGURES/Q3_enrichment/</code>, and all the tables in <code>03_RESULTS/Q3_enrichment/</code>; the list of figures is at the end of the notebook. References are numbered in square brackets and listed at the end.</p>
 </div>
 </div>
 <section id="overview" class="level1">
@@ -2575,7 +2575,7 @@ Figure 1
 <tbody>
 <tr class="odd">
 <td><code>clusterProfiler</code></td>
-<td>ORA and GSEA (topic of a CC2 video)</td>
+<td>ORA and GSEA</td>
 </tr>
 <tr class="even">
 <td><code>org.Hs.eg.db</code></td>
@@ -3630,7 +3630,7 @@ Figure 2
 </section>
 <section id="step-a4-do-scz-and-bd-change-the-same-genes" class="level2">
 <h2 class="anchored" data-anchor-id="step-a4-do-scz-and-bd-change-the-same-genes">Step A4 – Do SCZ and BD change the same genes?</h2>
-<p><strong>What we do and why.</strong> Before comparing functions between the two diseases, we measure how much they share at the <strong>gene</strong> level. Each significant gene of a cell type is classified as significant in both diseases in the same direction (shared), in one disease only, or in both with opposite directions. The overlap is summarised by the <strong>Jaccard index</strong>: shared genes / all significant genes (0 = no gene in common, 1 = identical lists). H1 predicts a low overlap of genes, but a larger overlap of functions (Part B). Q2 already describes shared and specific genes; here we compute the value that Figure F09 compares with the pathway level.</p>
+<p><strong>What we do and why.</strong> Before comparing functions between the two diseases, we measure how much they share at the <strong>gene</strong> level. Each significant gene of a cell type is classified as significant in both diseases in the same direction (shared), in one disease only, or in both with opposite directions. The overlap is summarised by the <strong>Jaccard index</strong>: shared genes / all significant genes (0 = no gene in common, 1 = identical lists). H1 predicts a low overlap of genes, but a larger overlap of functions (Part B). Q2 already describes shared and specific genes; here we compute the value that Figure F10 compares with the pathway level.</p>
 <div class="cell">
 <details open class="code-fold">
 <summary>Code</summary>
@@ -4289,7 +4289,7 @@ Figure 8
 <ul>
 <li>The synapse is where the two diseases <strong>diverge most</strong>, and where the cell types matter most.</li>
 <li>In SCZ, presynaptic processes and synapse organisation are shifted <strong>up</strong> in upper-layer neurons and interneurons, whereas synaptic signalling and the postsynapse are shifted <strong>down</strong> in deep-layer neurons (EN_L6B, EN_L6_CT, EN_L6_IT_1, EN_L6_IT_2).</li>
-<li>In BD, synaptic signalling, presynapse and postsynapse are shifted <strong>down</strong> in upper-layer neurons (EN_L3_5_IT) and in interneurons (IN_SST, IN_VIP).</li>
+<li>In BD, synaptic signalling, presynapse and postsynapse are shifted <strong>down</strong> in EN_L3_5_IT neurons (layers 3 to 5) and in interneurons (IN_SST, IN_VIP).</li>
 <li>The direct test confirms the difference in several neurons (EN_L5_6_NP, IN_PVALB_CHC, IN_VIP).</li>
 <li>In glial cells, synaptic sets are shifted down in SCZ (Astro, Micro, Oligo).</li>
 </ul>
@@ -4461,7 +4461,7 @@ Figure 8
 </tr>
 <tr class="even">
 <td>Synaptic sets: direction and cell types</td>
-<td>SCZ: up in upper-layer neurons and interneurons, down in deep-layer neurons; BD: down in upper-layer neurons and interneurons; glia: down in SCZ</td>
+<td>SCZ: up in upper-layer neurons and interneurons, down in deep-layer neurons; BD: down in EN_L3_5_IT neurons and interneurons; glia: down in SCZ</td>
 <td>F11</td>
 </tr>
 <tr class="odd">
@@ -4483,8 +4483,8 @@ Figure 8
 <ul>
 <li><strong>Q1 (composition)</strong>: Microglia are fewer in both disorders (Q1), yet they share inflammatory pathways in SCZ and BD (F07, F08); this shift in expression is measured within the cell type, so it is not a consequence of the change in number.</li>
 <li><strong>Q2 (genes)</strong>: The convergence is stronger at the level of functions than of genes: SCZ–BD similarity is higher for pathways than for fold changes in 18 of 23 cell types (F08).</li>
-<li><strong>Q4 (communication)</strong>: Shared glial inflammatory signalling (interferon, IL6, TNF) and divergent synaptic signalling are the candidates to check in CellChat.</li>
-<li><strong>Q5 (ageing)</strong>: Inflammation, oxidative phosphorylation and the decrease of cholesterol and synaptic genes in SCZ astrocytes [13] are hallmarks of brain ageing, tested in Q5.</li>
+<li><strong>Q4 (communication)</strong>: Q4 finds changes in synaptic adhesion pathways (NRXN, NCAM, among others) and weaker GABAergic signalling, in line with the divergence of SCZ and BD at the synapse seen here; Q4 is exploratory (no donor-level test).</li>
+<li><strong>Q5 (ageing)</strong>: Q5 finds an older-looking profile in several cell types, shared by SCZ and BD, but carried by the genes that change with normal ageing, not by the inflammation signatures: the shared glial inflammation of Q3 and the ageing-like profile of Q5 are two different signals.</li>
 </ul>
 </section>
 <section id="limits" class="level1">
@@ -4492,7 +4492,7 @@ Figure 8
 <ul>
 <li><strong>Dependence on Q2.</strong> The enrichment inherits every bias of the DE analysis (covariates, number of donors per cell type).</li>
 <li><strong>Threshold of the ORA.</strong> ORA results depend on the DEG cut-off; GSEA does not, which is why both are reported.</li>
-<li><strong>Redundancy of GO.</strong> Even after merging, report a few representative terms, not long lists of synonyms.</li>
+<li><strong>Redundancy of GO.</strong> Even after merging similar terms, several GO terms can describe the same function, so one biological signal can appear several times in the results.</li>
 <li><strong>Annotation bias.</strong> Well-studied genes belong to more gene sets and weigh more in the results.</li>
 <li><strong>RNA is not activity.</strong> A pathway shifted at the RNA level does not prove a change in protein activity.</li>
 <li><strong>Medication.</strong> Antipsychotics (SCZ) and lithium or mood stabilisers (BD) can change synaptic and metabolic genes on their own. A pathway that differs between SCZ and BD may reflect the treatment rather than the disease.</li>

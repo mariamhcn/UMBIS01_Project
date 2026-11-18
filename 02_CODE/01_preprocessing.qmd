@@ -1,5 +1,5 @@
 ---
-title: "Preprocessing - From the PsychAD atlas to an analysable HBCC cohort"
+title: "Preprocessing – From the PsychAD atlas to an analysable HBCC cohort"
 subtitle: "Donor selection, data reading, quality control, standard single-cell pipeline and pseudobulk matrix"
 author: "Myriam Sijlimassi"
 
@@ -8,7 +8,7 @@ format:
     toc: true
     toc-depth: 3
     toc-location: left
-    number-sections: true
+    number-sections: false
     embed-resources: true
     code-fold: show
     df-print: kable
@@ -69,12 +69,12 @@ donors (data processing).
 
 | Part | Step | What we do | Output |
 |------|------|------------|--------|
-| A - Study design | 1 | The data: download the HBCC file, read the table of the nuclei | 1,486,324 nuclei, 300 donors |
+| A – Study design | 1 | The data: download the HBCC file, read the table of the nuclei | 1,486,324 nuclei, 300 donors |
 | | 2 | Donor selection (inclusion and exclusion criteria) | flow table, PP-F01 |
 | | 3 | Description of the groups (Table 1) and check of the clinical information | tables, PP-F02 |
 | | 4 | Sensitivity analyses: group sizes when one criterion changes | table |
 | | 5 | Cell types per donor (input of Q1) | E7 table |
-| B - Data processing | 6 | Reading the data, one donor at a time | Seurat object |
+| B – Data processing | 6 | Reading the data, one donor at a time | Seurat object |
 | | 7 | Quality control | PP-F03 |
 | | 8 | Normalisation and visual check of the cell types (PCA, UMAP, marker genes) | PP-F04 to PP-F07 |
 | | 9 | Pseudobulk (input of Q2 and Q5) | pseudobulk matrix |
@@ -84,7 +84,7 @@ donors (data processing).
 | Package | Used for |
 |---------|----------|
 | `rhdf5`, `Matrix` | reading the `.h5ad` file block by block, sparse matrices |
-| `Seurat` | normalisation, HVG, scaling, PCA, UMAP [4] |
+| `Seurat` | normalisation, HVG, scaling, PCA, UMAP [3] |
 | `ggplot2`, `knitr` | figures and tables |
 
 ```{r setup}
@@ -108,7 +108,7 @@ All our choices are gathered in one place. They were **fixed before looking at a
 
 | Parameter | Value | Why |
 |-----------|-------|-----|
-| `age_min` | 20 years | end of the developmental transcriptomic remodelling of the cortex [3] |
+| `age_min` | 20 years | end of the developmental transcriptomic remodelling of the cortex [4] |
 | `keep_tardive_dyskinesia` | yes | part of the real clinical picture of SCZ (side effect of antipsychotics) |
 | `keep_metabolic_controls` | yes | controls with diabetes or atherosclerosis are tolerated in [1] |
 | `nuclei_min` | 20 nuclei | minimum number of nuclei of a cell type in a donor for a usable pseudobulk sample (criterion E7) |
@@ -147,7 +147,7 @@ Before looking at any gene, we decide which donors are compared, with criteria f
 trial. This part only uses the table of the nuclei (donor, diagnoses, age, sex, ancestry, cell type), not the gene
 expression.
 
-# Step 1 – The data
+## Step 1 – The data
 
 **What we do and why.** The data come from the PsychAD atlas [1], which is shared on CELLxGENE as one file per brain
 bank. We use the file of the **HBCC** bank (NIMH Human Brain Collection Core): 1,486,324 nuclei from 300 donors, about
@@ -187,7 +187,7 @@ c(donors = length(unique(meta$donor_id)),   # expected: 300 donors
 table(meta$Source)                          # H = HBCC only
 ```
 
-# Step 2 – Donor selection
+## Step 2 – Donor selection
 
 **What we do and why.** We start from the 300 donors of the HBCC brain bank. Using a single bank avoids mixing a
 difference between banks with a difference between diseases (a "site" confounder). We then apply inclusion and
@@ -223,7 +223,7 @@ fails.
 
 | Criterion | Rule | Why |
 |-----------|------|-----|
-| I2 | age at death >= 20 years | before 20, the cortex is still maturing [3]: young controls versus adult patients would create a false difference |
+| I2 | age at death >= 20 years | before 20, the cortex is still maturing [4]: young controls versus adult patients would create a false difference |
 | E1 | not both SCZ and BD | a donor cannot be in both groups we compare |
 | E2 | no schizoaffective disorder, bipolar type | in [1] these donors are counted in both SCZ and BD |
 | E4, E5 | no other brain disorder (dementia, epilepsy, other psychiatric diagnosis) | it would change the cells independently of SCZ or BD ("no secondary diagnosis" rule of [1]) |
@@ -270,7 +270,7 @@ age_test <- kruskal.test(age ~ group, data = sel)   # do the ages differ between
 age_test
 ```
 
-**Figure PP-F01 - Age at death of the selected donors, per group.** Violin plot, box plot (median and interquartile
+**Figure PP-F01 – Age at death of the selected donors, per group.** Violin plot, box plot (median and interquartile
 range) and individual donors (dots). Only donors aged `r age_min` years or more were kept.
 
 ::: {.callout-tip title="How to read"}
@@ -288,7 +288,7 @@ cannot fully explain a difference between groups; it is still adjusted for in ev
   donors under `r age_min`, almost all controls). Thresholds of 17 and 24 years are sensitivity analyses (Step 4).
 :::
 
-# Step 3 – Description of the groups
+## Step 3 – Description of the groups
 
 **What we do and why.** Before comparing patients with controls, we check that they are similar on everything else
 (Table 1, balance of covariates). We also check that the clinical columns of the file agree with the text of the
@@ -322,7 +322,7 @@ ancestry_counts <- table(droplevels(sel$genetic_ancestry), sel$group)
 as.data.frame.matrix(ancestry_counts)
 ```
 
-**Figure PP-F02 - Genetic ancestry of the donors, per group.** Share of each genetic ancestry among the donors of each
+**Figure PP-F02 – Genetic ancestry of the donors, per group.** Share of each genetic ancestry among the donors of each
 group (counts in the table below the figure).
 
 ::: {.callout-tip title="How to read"}
@@ -372,7 +372,7 @@ donors cannot be trusted.
 - The post-mortem interval (PMI) is not in the file: our covariates are limited to age, sex and ancestry.
 :::
 
-# Step 4 – Sensitivity analyses
+## Step 4 – Sensitivity analyses
 
 **What we do and why.** We repeat the selection, changing one parameter at a time. These variants are
 used by the sensitivity analyses of the next questions.
@@ -400,7 +400,7 @@ donors$group_sab_SCZ        <- variants$schizoaff_bipolar_to_SCZ$group
 donors$group_sab_BD         <- variants$schizoaff_bipolar_to_BD$group
 ```
 
-# Step 5 – Cell types per donor (input of Q1)
+## Step 5 – Cell types per donor (input of Q1)
 
 **What we do and why.** For the composition analysis (Q1), all we need is the number of nuclei of each of the 27
 subclasses in each selected donor, using **all** their nuclei. We also count, for each subclass, how many donors of each
@@ -436,7 +436,7 @@ Now that the donors are chosen, we read their gene expression, check its quality
 the next questions: a Seurat object (one column per nucleus) and a pseudobulk matrix (one column per donor and cell
 type).
 
-# Step 6 – Reading the data
+## Step 6 – Reading the data
 
 **What we do and why.** The data set is too large to be loaded at once in the memory of a computer (1.5 million
 nuclei). We therefore read the file **one donor at a time**: we read the nuclei of a donor, keep what we need, free the
@@ -512,7 +512,7 @@ would give random differences and a low correlation: the reading is correct. The
 gene list used by the authors to compute their totals (not tested).
 :::
 
-# Step 7 – Quality control
+## Step 7 – Quality control
 
 **What we do and why.** The authors had already filtered the nuclei [1]. We did not filter again, to stay comparable
 with the atlas; we checked the distributions on the subsample.
@@ -530,7 +530,7 @@ round(qc_summary, 2)
 median_counts <- tapply(obj$nCount_RNA, obj$group, median)
 ```
 
-**Figure PP-F03 - Quality of the nuclei, per group.** Number of RNA molecules per nucleus (`nCount_RNA`), number of
+**Figure PP-F03 – Quality of the nuclei, per group.** Number of RNA molecules per nucleus (`nCount_RNA`), number of
 detected genes (`nFeature_RNA`) and percentage of mitochondrial reads (`percent_mt`, human pattern `^MT-`), on
 `r format(ncol(obj), big.mark = ",")` nuclei (at most `r max_nuclei_per_donor` per donor).
 
@@ -551,7 +551,7 @@ between controls and patients.
 - No knee plot can be drawn: the file contains only the nuclei retained by the authors, not all the droplets.
 :::
 
-# Step 8 – Normalisation and visual check of the cell types (PCA, UMAP)
+## Step 8 – Normalisation and visual check of the cell types (PCA, UMAP)
 
 **What we do and why.** We follow the steps of the course on the subsample. The upstream steps (alignment, filtering,
 annotation) were done by the authors on the whole atlas [1]: we checked them rather than redoing them.
@@ -607,7 +607,7 @@ p_PP_F04
 save_figure(p_PP_F04, "PP_F04_umap_subclass", fig_dir, width = 8, height = 7)
 ```
 
-**Figure PP-F04 - UMAP of `r format(ncol(obj), big.mark = ",")` nuclei coloured by cell subclass.** UMAP computed on the
+**Figure PP-F04 – UMAP of `r format(ncol(obj), big.mark = ",")` nuclei coloured by cell subclass.** UMAP computed on the
 first 30 principal components of the 2,000 most variable genes; subclasses as annotated by the authors [1].
 
 ::: {.callout-tip title="How to read"}
@@ -711,7 +711,7 @@ p_PP_F05
 save_figure(p_PP_F05, "PP_F05_markers_neurons", fig_dir, width = 10, height = 11)
 ```
 
-**Figure PP-F05 - Expression of marker genes in the 17 neuronal subclasses.** Markers of Figure 2d of [1] and of the
+**Figure PP-F05 – Expression of marker genes in the 17 neuronal subclasses.** Markers of Figure 2d of [1] and of the
 taxonomy used to name the cell types [5], on the `r format(ncol(obj_neurons), big.mark = ",")` neuronal nuclei of the
 subsample. Dot size: percentage of nuclei of the subclass that express the gene; colour: mean expression, scaled across
 subclasses.
@@ -732,7 +732,7 @@ p_PP_F06
 save_figure(p_PP_F06, "PP_F06_markers_non_neuronal", fig_dir, width = 8, height = 6)
 ```
 
-**Figure PP-F06 - Expression of marker genes in the 9 non-neuronal subclasses.** Subclass-level markers of
+**Figure PP-F06 – Expression of marker genes in the 9 non-neuronal subclasses.** Subclass-level markers of
 Supplementary Table 10 of [1] and markers of [5], on the `r format(ncol(obj_other), big.mark = ",")` non-neuronal nuclei
 of the subsample. Same reading as Figure PP-F05.
 
@@ -790,7 +790,7 @@ p_PP_F07
 save_figure(p_PP_F07, "PP_F07_umap_group", fig_dir, width = 8, height = 7)
 ```
 
-**Figure PP-F07 - UMAP of `r format(ncol(obj), big.mark = ",")` nuclei coloured by diagnosis.** Same UMAP as Figure
+**Figure PP-F07 – UMAP of `r format(ncol(obj), big.mark = ",")` nuclei coloured by diagnosis.** Same UMAP as Figure
 PP-F04.
 
 ::: {.callout-tip title="How to read"}
@@ -807,7 +807,7 @@ types are found in the three groups.
   no dominant donor. **A coloured area of a UMAP is not a result**: only a donor-level test can conclude (Q1, Q2).
 :::
 
-# Step 9 – Pseudobulk: one sample per donor and cell type (input of Q2 and Q5)
+## Step 9 – Pseudobulk: one sample per donor and cell type (input of Q2 and Q5)
 
 **What we do and why.** For each donor, we sort its nuclei by cell type and add up their counts, gene by gene. For
 example, all the microglia of donor 1 become one "sample", all its astrocytes another one. We obtain one sample per
@@ -857,7 +857,7 @@ to the table of Step 5, and empty columns contain only zeros. Counts are raw int
 limma-voom) compute their own normalisation.
 :::
 
-# Synthesis of the preprocessing
+# Conclusion
 
 | Element | Result | Figure |
 |---------|--------|--------|
@@ -867,16 +867,26 @@ limma-voom) compute their own normalisation.
 | Annotation | 27 subclasses of the authors, recovered by our pipeline and by their marker genes | PP-F04 to PP-F06 |
 | New cell types in disease? | no: the three groups are mixed on the UMAP | PP-F07 |
 | Input of Q1 | nuclei per donor and subclass (all `r format(sum(nuclei_donor_subclass), big.mark = ",")` nuclei) | - |
-| Input of Q2 | pseudobulk matrix, raw counts, `r format(sum(pb$description$n_nuclei >= nuclei_min), big.mark = ",")` usable columns | - |
+| Input of Q2 and Q5 | pseudobulk matrix (all nuclei), raw counts, `r format(sum(pb$description$n_nuclei >= nuclei_min), big.mark = ",")` usable columns | - |
+| Input of Q4 | Seurat object, `r format(ncol(obj), big.mark = ",")` nuclei (at most `r max_nuclei_per_donor` per donor), normalised | - |
+
+**What this gives to the next questions.** We compare `r nrow(sel)` adult donors from a single brain bank
+(`r sum(sel$group == "Control")` controls, `r sum(sel$group == "SCZ")` SCZ, `r sum(sel$group == "BD")` BD), selected
+with criteria fixed in advance. The data are of good quality, and the 27 subclasses of the atlas are recovered by our
+pipeline and by their marker genes; the diseases do not create new cell types. Every question therefore works on the
+same donors and the same cell types: Q1 on the number of nuclei per donor and subclass, Q2 and Q5 on the pseudobulk
+matrix (all nuclei), Q4 on the Seurat object. The main limit to keep in mind in every question is that genetic ancestry
+is confounded with the diagnosis: it is adjusted for in every model, but the direct SCZ vs BD comparison must be read
+with caution.
 
 # Limits
 
-- **Ancestry confounded with diagnosis** (severity 5/5): adjusted for and stratified, but it cannot be removed.
-- **QC and doublet detection not redone** (3/5): we rely on the filtering of the authors [1].
-- **No post-mortem interval and no information on treatments** (3/5): covariates limited to age, sex and ancestry.
-- **Subsample of `r max_nuclei_per_donor` nuclei per donor** (2/5): used only for the Seurat object; every statistical
+- **Ancestry confounded with diagnosis**: adjusted for and stratified, but it cannot be removed.
+- **QC and doublet detection not redone**: we rely on the filtering of the authors [1].
+- **No post-mortem interval and no information on treatments**: covariates limited to age, sex and ancestry.
+- **Subsample of `r max_nuclei_per_donor` nuclei per donor**: used only for the Seurat object; every statistical
   analysis uses all nuclei.
-- **Donors with few nuclei** (2/5): `r sum(sel$n_nuclei < 1000)` donors with fewer than 1,000 nuclei (minimum
+- **Donors with few nuclei**: `r sum(sel$n_nuclei < 1000)` donors with fewer than 1,000 nuclei (minimum
   `r min(sel$n_nuclei)`).
 
 # List of figures
@@ -897,13 +907,14 @@ sort(list.files(fig_dir, pattern = "\\.png$"))
 
 # References
 
-1. Lee D. et al. (2024). Single-cell atlas of transcriptomic vulnerability across multiple neurodegenerative and
-   neuropsychiatric diseases. *medRxiv*. doi:10.1101/2024.10.31.24316513
+1. Lee D. et al. (2026). Single-cell atlas of transcriptomic vulnerability across brain disorders. *Nature*, 657,
+   988–1002. doi:10.1038/s41586-025-09573-z
 2. Squair J. W. et al. (2021). Confronting false discoveries in single-cell differential expression. *Nature
    Communications*, 12, 5692.
-3. Girdhar K. et al. PsychAD lifespan atlas of the human prefrontal cortex. *medRxiv*. doi:10.1101/2024.11.06.24316592
-4. Hao Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis (Seurat v5).
-   *Nature Biotechnology*, 42, 293-304.
+3. Hao Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis (Seurat v5).
+   *Nature Biotechnology*, 42, 293–304.
+4. Yang H., Clarence T., Scott M. R. et al. (2026). Lifespan single-cell transcriptomic atlas of the human prefrontal
+   cortex. *Nature*, 657, 1003–1015. doi:10.1038/s41586-026-10271-7
 5. Ma S. et al. (2022). Molecular and cellular evolution of the primate dorsolateral prefrontal cortex. *Science*,
    377, eabo7257.
 

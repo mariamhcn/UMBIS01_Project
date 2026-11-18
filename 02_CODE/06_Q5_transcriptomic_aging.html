@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Ann-Solène Adelson">
-<meta name="dcterms.date" content="2026-11-13">
+<meta name="dcterms.date" content="2026-11-18">
 
-<title>Q5 - Do schizophrenia and bipolar disorder show an accelerated-ageing-like transcriptomic profile?</title>
+<title>Q5 – Do schizophrenia and bipolar disorder show an accelerated-ageing-like transcriptomic profile?</title>
 <style>
 
 span.smallcaps{font-variant: small-caps;}
@@ -2261,7 +2261,7 @@ vertical-align: -.125em;
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Q5 - Do schizophrenia and bipolar disorder show an accelerated-ageing-like transcriptomic profile?</h1>
+<h1 class="title">Q5 – Do schizophrenia and bipolar disorder show an accelerated-ageing-like transcriptomic profile?</h1>
 <p class="subtitle lead">Ageing hallmark scores per cell type and donor, compared between patients and controls of the same age</p>
 </div>
 
@@ -2279,7 +2279,7 @@ vertical-align: -.125em;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 13, 2026</p>
+      <p class="date">November 18, 2026</p>
     </div>
   </div>
   
@@ -2391,7 +2391,7 @@ vertical-align: -.125em;
 </tr>
 </tbody>
 </table>
-<p>The cell types are <strong>all the subclasses with enough donors</strong> (shared rule, Step 1), the same as in Q2 and Q3, and not only the 7 subclasses whose proportion changes in Q1: a cell type can be altered in its expression without changing in number. Senescence and inflammation are tested in microglia and astrocytes, myelination in oligodendrocytes and OPC.</p>
+<p>The cell types are <strong>all the subclasses with enough donors</strong> (shared rule, Step 1), the same as in Q2 and Q3, and not only the two subclasses whose proportion changes in Q1 (microglia and oligodendrocytes): a cell type can be altered in its expression without changing in number. Senescence and inflammation are tested in microglia and astrocytes, myelination in oligodendrocytes and OPC.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 18%">
@@ -6708,9 +6708,9 @@ Figure 5
 <p><strong>Our results in the light of the literature.</strong> The closest study, in the orbitofrontal cortex, found that the transcriptomic effects of psychiatric disorders and of ageing converge, with most shared genes changed in the same direction [5]; we find the same convergence in the dorsolateral prefrontal cortex, cell type by cell type, with an even higher agreement of direction. At the scale of the whole brain, MRI studies find that the brain of patients looks older than their age in SCZ and, to a lesser extent, in BD [3], whereas epigenetic clocks find no accelerated ageing in the SCZ brain [4]: our results, an older-looking profile that does not grow with age, fit between these two views. In the same cortex, a program shared by neurons and astrocytes declines both with age and in SCZ [6]; we also find older-looking profiles in upper-layer neurons, and in astrocytes the lifespan genes are shifted, although the composite score is not.</p>
 <p><strong>Links with the other questions.</strong></p>
 <ul>
-<li><strong>Q1</strong>: only two subclasses change in proportion in Q1, microglia (fewer cells in SCZ and BD) and oligodendrocytes (fewer in BD). Both also look older here; but most of the older-looking cell types (upper-layer neurons, interneurons, OPC) do not change in number. An ageing-like profile does not require a loss of cells, which justifies analysing all subclasses.</li>
+<li><strong>Q1</strong>: only two subclasses change in proportion in Q1, microglia (fewer cells in SCZ and BD) and oligodendrocytes (fewer in BD). Both also look older here (microglia in SCZ, oligodendrocytes in both diseases); but most of the older-looking cell types (upper-layer neurons, interneurons, OPC) do not change in number. An ageing-like profile does not require a loss of cells, which justifies analysing all subclasses.</li>
 <li><strong>Q3</strong>: GSEA finds inflammatory pathways shifted in glial cells in both disorders, whereas the inflammatory ageing scores are not shifted here. GSEA can detect small coordinated shifts that an average score misses; in any case, inflammation is not what makes patients look older.</li>
-<li><strong>Q4</strong>: ageing also alters communication between cells [1]; the cell types highlighted here (upper-layer neurons, interneurons, OPC, microglia) are candidates for Q4.</li>
+<li><strong>Q4</strong>: ageing also alters communication between cells [1]. Q4 finds changes in the signalling between neurons and the oligodendrocyte lineage, and weaker GABAergic signalling, which involve cell types that look older here (OPC, oligodendrocytes, interneurons). Q4 is exploratory, so this link remains a hypothesis.</li>
 </ul>
 </section>
 <section id="limits" class="level1">
@@ -6718,13 +6718,13 @@ Figure 5
 <ul>
 <li><strong>Cross-sectional design.</strong> Each donor is seen once: an ageing-like profile is inferred between donors, not followed over time.</li>
 <li><strong>Not a proof of ageing.</strong> A profile that resembles ageing can have other causes; we only describe a resemblance.</li>
-<li><strong>Treatments and metabolic disorders.</strong> Antipsychotics, lithium and smoking change inflammation, metabolic and myelin genes. Donors with metabolic disorders (for example diabetes) are kept, as in Lee et al. [8]; these disorders are more frequent in patients (partly because of antipsychotics), and are themselves associated with accelerated ageing. If the information is in the metadata, a sensitivity analysis without these donors should be run; otherwise it is a limit. In HBCC, diabetes is more frequent in SCZ (27 %) than in controls (7 %) and BD (9 %), and tardive dyskinesia (a side effect of long antipsychotic treatment) concerns 24 % of SCZ donors (preprocessing, Table 1).</li>
+<li><strong>Treatments and metabolic disorders.</strong> Antipsychotics, lithium and smoking change inflammation, metabolic and myelin genes. Donors with metabolic disorders (for example diabetes) are kept, as in Lee et al. [8]; these disorders are more frequent in patients (partly because of antipsychotics), and are themselves associated with accelerated ageing. We did not repeat the analysis without these donors. In HBCC, diabetes is more frequent in SCZ (27 %) than in controls (7 %) and BD (9 %), and tardive dyskinesia (a side effect of long antipsychotic treatment) concerns 24 % of SCZ donors (preprocessing, Table 1).</li>
 <li><strong>Genetic ancestry.</strong> Ancestry is strongly linked to the diagnosis (most BD donors are of European ancestry, most SCZ donors of African ancestry). It is a covariate of every model, but a residual confounding cannot be excluded, mainly for the direct SCZ vs BD comparison.</li>
 <li><strong>No post-mortem interval.</strong> The PMI is not available in the data and is not in the models.</li>
 <li><strong>Few old donors.</strong> Only 34 donors are 60 or older (15 controls, 13 SCZ, 6 BD): the effect of age is estimated mostly before 60, and the slope model has little power.</li>
 <li><strong>Survival bias and cause of death.</strong> Patients die younger on average; the cause of death (for example suicide) can affect the brain transcriptome.</li>
 <li><strong>The composite ageing score covers only part of ageing.</strong> Several hallmark signatures did not follow age in our controls and were left out, possibly because they were built in other tissues or cell types, because senescence and chronic inflammation mostly appear after 60–70 years (most of our controls are younger), or because of the limited power of snRNA-seq data. The composite score therefore rests mostly on the lifespan signatures. When we find no shift in senescence or inflammation, this means “not detected with these lists in these donors”, not “absent”.</li>
-<li><strong>Lifespan signatures and our controls.</strong> The lifespan atlas was built partly on HBCC controls [13], so these signatures are not independent of our controls. With all subclasses, most indexes rest on these signatures: their validation in our controls is partly circular, but the disease effect, measured in patients, is not.</li>
+<li><strong>Lifespan signatures and our controls.</strong> The lifespan atlas was built partly on HBCC controls [13], so these signatures are not independent of our controls. Most composite ageing scores rest on these signatures: their validation in our controls is partly circular, but the disease effect, measured in patients, is not.</li>
 <li><strong>Power.</strong> With few donors per group in some cell types, the absence of an effect is not evidence of no effect; the direct SCZ vs BD test has even less power.</li>
 <li><strong>Choice of signatures.</strong> We kept a few well-established hallmarks; others (oxidative stress, NAD+ and sirtuins, proteostasis and autophagy, nutrient sensing) were not tested.</li>
 </ul>
