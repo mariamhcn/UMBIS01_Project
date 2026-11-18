@@ -1,0 +1,1534 @@
+---
+title: "Q4 - Cell–cell communication"
+subtitle: "PsychAD - Neuronal–glial signaling in schizophrenia and bipolar disorder"
+author: "Mariam H."
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 2
+    toc-location: right
+    number-sections: true
+    code-fold: false
+    code-copy: true
+    code-overflow: wrap
+    embed-resources: true
+execute:
+  echo: true
+  warning: true
+  message: false
+  error: false
+---
+
+<style>
+  h1, h2 { color: #354AA1; }
+
+  h2 {
+    border-bottom: 2px solid #DCE2F9;
+    padding-bottom: 6px;
+  }
+
+  h3 { color: #2F7D12; }
+
+  #title-block-header {
+    background: #F7F8FC;
+    border-left: 5px solid #2F7D12;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+</style>
+
+
+# Overview
+
+## Research question and hypothesis
+
+*Central research question : Do schizophrenia (SCZ) and bipolar disorder (BD) share cell-type-specific molecular alterations in the human prefrontal cortex, and could these affect neuronal–glial signaling networks and ageing-associated transcriptional profiles ?*
+
+**Q4 research question : ** Do SCZ and BD exhibit shared or distinct alterations in inferred cell–cell communication networks, particularly in neuronal–glial signaling ?
+
+**Hypothesis H2 : ** SCZ and BD may show partially convergent alterations in intercellular signaling, while differing in the cell populations and signaling pathways involved.
+
+**Objective of Q4 : ** To infer and compare intercellular communication networks in Control, SCZ and BD using two complementary approaches : CellChat for protein-mediated ligand–receptor signaling and NeuronChat for neural specific communication, focusing on GABAergic and glutamatergic signaling. Attention is given to neuronal-glial interactions, signaling pathways and potential shared or diagnosis dependent patterns.
+
+
+## Links with previous analyses
+
+The previous analyses investigated complementary levels of molecular organization in the PsychAD HBCC cohort.
+
+**Q1 - Cell-type composition.** The composition analysis identified a lower relative abundance of microglia in both SCZ and BD, with stronger evidence of robustness in SCZ following ancestry-restricted analyses. This finding raises the question of whether microglial populations may also differ in their inferred interactions with other brain cell populations.
+
+**Q2 - Differential gene expression.** Donor-level pseudobulk analysis identified heterogeneous transcriptional alterations across neuronal and non-neuronal subclasses. Cross-disease comparisons revealed 192 concordant shared DEGs in EN_L2_3_IT neurons, 183 in astrocytes, and 74 in microglia. Microglia also exhibited the strongest SCZ–BD correlation of gene-level log2 fold changes (Spearman rho = 0.535).
+
+All together, these findings motivate a complementary analysis of whether transcriptional alterations in different cell populations are accompanied by changes in predicted intercellular signaling.
+
+**Q3 - Functional enrichment.** The pathway-enrichment analysis investigates whether distinct disease-associated transcriptional signatures converge on common functions, particularly synaptic and neurotransmission-related processes. Q4 provides a complementary perspective by examining the potential sender and receiver populations associated with signaling pathways and ligand–receptor interactions.
+
+**Q5 - Transcriptomic ageing.** Ageing-related changes in neuronal and glial populations may provide additional biological context for the interpretation of communication pathways. However, Q4 does not directly test accelerated ageing.
+
+The goal of Q4 is not to repeat differential expression or pathway enrichment, but to connect molecular expression patterns with potential relationships between cell populations.
+
+
+## Why cell-cell communication analysis ?
+
+Brain function depends on coordinated interactions among excitatory neurons, inhibitory neurons, astrocytes, microglia, oligodendrocytes, endothelial cells.
+
+These interactions may involve secreted signaling molecules, membrane-bound ligands, receptors and extracellular matrix components.
+
+Single-nucleus RNA sequencing provides expression measurements for genes encoding some of these molecular components. By integrating transcriptomic information with known ligand–receptor interactions, computational methods can infer potential communication links between annotated cell populations.
+
+CellChat provides a framework for estimating these interactions and organizing them into communication networks and signaling pathways [2,3].
+
+This approach allows us to investigate :
+
+- Which cell populations may act as major signaling senders or receivers ?
+- Which inferred communication pathways are detected in controls ?
+- Which networks appear conserved or altered in SCZ and BD ?
+- Do neuronal–glial interactions exhibit similar or different patterns between disorders ?
+- Are candidate signaling pathways consistent with transcriptional signatures identified in Q2 and pathways investigated in Q3 ?
+
+
+## Analytical strategy
+
+Two complementary computational frameworks are used to investigate inferred intercellular communication in the PsychAD HBCC cohort.
+
+**CellChat - Primary communication analysis**
+
+CellChat is used to infer protein-mediated ligand–receptor interactions and signaling pathways between neuronal, glial and vascular associated populations.
+
+Separate communication networks are constructed for Control, SCZ and BD using identical inference parameters.
+
+The analysis proceeds from global network characteristics to more specific biological mechanisms.
+
+**NeuronChat — Complementary neural-specific analysis**
+
+NeuronChat extends this investigation by incorporating neural-specific signaling mechanisms, particularly neurotransmitter-associated communication [4].
+
+Separate networks are inferred for the same three diagnostic groups, with a focus on **GABAergic and glutamatergic communication**.
+
+This complementary approach allows us to investigate whether neurotransmitter-associated communication patterns differ between SCZ, BD and controls.
+
+**Common framework**
+
+Both methods use the same balanced subset of **5 100 nuclei**, with 17 retained cell subclasses and 1 700 nuclei per diagnostic group.
+
+Subclasses are selected according to minimum representation thresholds. 100 nuclei are selected per subclass and diagnosis using a reproducible donor sampling strategy (seed = 2026).
+
+All analyses are performed sequentially to limit memory consumption.
+
+CellChat and NeuronChat are considered **complementary inference approaches**, since both rely on the same underlying transcriptomic observations.
+
+## Input data and biological representation
+
+The main input is the preprocessed Seurat object generated from the PsychAD HBCC cohort.
+
+During preprocessing, the initial cohort of 300 HBCC donors was restricted to 224 eligible adult donors : 121 controls, 49 SCZ donors and 54 BD donors.
+
+The Seurat object contains a random subsample of at most 200 nuclei per selected donor, corresponding to approximately 45,000 nuclei at most. It retains the original subclass annotations and donor-level metadata, together with RNA expression data used for cell-level analyses.
+
+| Input | Description | Role in Q4 |
+|---|---|---|
+| Seurat object | Subsampled nuclei, RNA expression and annotations | Main CellChat input |
+| Nucleus metadata | Donor, diagnosis, subclass, age, sex and ancestry | Group definitions and quality checks |
+| Q1 results | Composition and selected cell populations | Biological context |
+| Q2 results | Shared and disease-associated transcriptional signatures | Interpretation of inferred interactions |
+| Q3 results | Functional enrichment, including synaptic pathways | Cross-analysis interpretation |
+
+NB : The Seurat subsample contains fewer nuclei than the full PsychAD dataset. This reduces computational requirements but may limit the detection of rare cell populations and lowly expressed ligands or receptors.
+
+Following input validation, 17 of the 27 annotated cell subclasses were retained based on their representation across all diagnostic groups. A donor-aware sampling procedure produced a balanced dataset of 5 100 nuclei, with 100 nuclei per subclass and diagnosis.
+
+Normalized RNA expression matrices were extracted and saved separately for Control, SCZ and BD, allowing CellChat and NeuronChat inference without repeatedly loading the complete Seurat object.
+
+This sampling strategy improves computational feasibility and standardizes cell counts, but does not eliminate donor-level or ancestry-related differences between conditions.
+
+## Statistical considerations and limitations
+
+Several considerations are particularly important to consider in this study :
+
+1. The underlying data are single-nucleus rather than whole-cell transcriptomic profiles. Nuclear RNA measurements may incompletely represent certain signaling transcripts.
+2. The 224 donors represent biological replicates, nuclei sampled from the same donor are not statistically independent.
+3. Diagnostic groups differ in donor numbers and genetic ancestry. These imbalances may influence inferred network differences.
+4. The subsampling strategy limits each donor to 200 nuclei overall, but does not guarantee equal representation of every cellular subclass.
+5. Differences in cellular composition may influence inferred network structure. Comparisons of communication strength must be interpreted in light of cell population abundance.
+
+For all these reasons, **the primary CellChat comparisons will be interpreted as exploratory and descriptive**, rather than as definitive donor-level tests of disease-associated communication differences.
+
+
+## Analysis plan
+
+
+| Step | Analysis | Main output |
+|---|---|---|
+| 1 | Validate Seurat input and metadata | Input summary and population availability |
+| 2 | Select and balance cell populations | 17 subclasses and 5,100 nuclei |
+| 3 | Infer CellChat networks across diagnoses | Three CellChat objects |
+| 4 | Compare global communication networks | Network summaries and differential heatmaps |
+| 5 | Investigate neuronal–glial signaling | Sender–receiver communication comparisons |
+| 6 | Examine signaling pathways and ligand–receptor interactions | Pathway and interaction-level results |
+| 7 | Compare global pathway information flow | Shared and distinct signaling patterns |
+| 8 | Infer NeuronChat networks across diagnoses | Three NeuronChat objects |
+| 9 | Investigate GABAergic and glutamatergic signaling | Neurotransmitter-specific summaries and networks |
+| 10 | Integrate results with previous analyses and literature | Biological discussion and methodological limitations |
+| 11 | Summarize findings and reproducibility | Final conclusion, figures and saved outputs |
+
+
+## Expected outputs
+
+All results are stored in 03_RESULTS/Q4_cell_communication/, while figures are exported to 04_FIGURES/Q4/.
+
+The analysis produces :
+
+- Three CellChat objects and three NeuronChat objects, corresponding to Control, SCZ and BD.
+- Global communication network summaries and between-condition comparisons.
+- Neuronal–glial communication results at the sender–receiver, pathway and ligand–receptor levels.
+- Global pathway information-flow comparisons.
+- GABAergic and glutamatergic communication summaries and network visualizations.
+- A discussion of the findings in relation to previous transcriptomic analyses and published evidence.
+
+
+## Setup
+
+```{r setup}
+
+suppressPackageStartupMessages({
+  library(Seurat)
+  library(SeuratObject)
+  library(CellChat)
+  library(NeuronChat)
+  library(ggplot2)
+  library(knitr)
+  library(here)})
+
+source(here::here("02_CODE", "R", "utils_figures.R"))
+col_q4 <- unname(project_colours$Q4["dark"])
+col_groups <- c(Control = "grey60", col_disease[c("SCZ", "BD")])
+
+seed <- 2026
+set.seed(seed)
+
+#Population selection
+min_nuclei_group <- 100
+min_donors_group <- 20
+target_nuclei <- 100
+
+#CellChat inference parameters
+n_permutations <- 100
+min_cells <- 10
+
+#Memory management
+future::plan("sequential")
+
+out_dir <- here::here("03_RESULTS", "Q4_cell_communication")
+fig_dir <- here::here("04_FIGURES", "Q4")
+
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
+
+theme_set(theme_project(base_size = 11) + theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)))
+
+```
+
+## Analysis parameters and methodological choices
+
+The following parameters were defined to balance biological representation, reproducibility and computational feasibility.
+
+The same sampling strategy and CellChat inference settings are applied across Control, SCZ and BD to support consistent network comparisons.
+
+| Parameter | Value | Why |
+|---|---|---|
+| `seed` | 2026 | A fixed random seed is used for all donor-aware sampling operations and CellChat inference to ensure reproducibility. |
+| `min_nuclei_group` | 100 | Requires sufficient nuclei per subclass and diagnostic condition before communication inference. |
+| `min_donors_group` | 20 | Ensures that each retained subclass is represented across multiple biological donors, limiting reliance on a small number of individuals. |
+| `target_nuclei` | 100 | Balances nucleus counts across subclasses and diagnoses while reducing memory requirements for local computation. |
+| `retained_q4` | 17 subclasses | Preserves sufficiently represented neuronal, glial and vascular-associated populations. |
+| `sampling_method` | Donor-aware | Prioritizes representation across contributing donors rather than allowing highly sampled donors to dominate the selected cells. |
+| `CellChatDB` | Human, protein-mediated interactions | Includes secreted signaling, cell–cell contact and extracellular matrix–receptor interactions. Non-protein signaling is excluded from the primary analysis. |
+| `type` | `triMean` | Robust estimation of average expression within cell groups, favoring stronger and more consistently expressed ligand–receptor interactions. |
+| `nboot` | 100 | Uses the standard number of CellChat permutations to assess inferred communication probabilities. |
+| `seed.use` | 2026 | Explicitly controls the random permutations performed by CellChat. |
+| `population.size` | `FALSE` | Prevents inferred communication strengths from being weighted by cell population proportions, which were artificially balanced during sampling. |
+| `min.cells` | 10 | Retains the standard minimum cell-count safeguard, although all selected subclasses already contain 100 nuclei per diagnosis. |
+| `NeuronChat` | Human database, `M = 100` | Complementary inference of neural-specific communication, including GABAergic and glutamatergic signaling. |
+| `future::plan` | `sequential` | Avoids parallel memory duplication and facilitates execution with limited RAM. |
+
+::: {.callout-note title="Methodological considerations"}
+The minimum nucleus and donor thresholds, as well as the balanced sampling size, were selected as pragmatic criteria for the present dataset and computational environment. They should not be interpreted as universal CellChat recommendations.
+
+The `triMean` estimator prioritizes robustly expressed interactions but may miss biologically relevant signaling involving sparsely detected ligands or receptors, particularly in single-nucleus RNA-seq data.
+
+The same inference parameters are used across diagnoses. Nevertheless, equal nucleus counts do not eliminate differences in donor composition, genetic ancestry or other potential confounders.
+
+Finally, CellChat permutation-based significance does not provide donor-level statistical evidence of communication differences between diagnostic groups. Network comparisons are therefore interpreted as exploratory.
+:::
+
+
+# Input data validation
+
+## Locate the preprocessed Seurat object
+
+The Seurat object generated during preprocessing is reused without re-downloading the original PsychAD dataset. Its presence and size are verified before loading it into memory.
+
+```{r input_setup}
+
+seurat_file <- here::here("01_DATA", "processed", "seurat_object_HBCC_224donors.rds")
+
+if (!file.exists(seurat_file)) {stop("Seurat input file not found : ", seurat_file)}
+
+input_size_gb <- file.info(seurat_file)$size / 1024^3
+
+cat("Seurat input:", basename(seurat_file))
+cat("File size:", round(input_size_gb, 2), "GB")
+
+```
+
+## Load and validate the Seurat object
+
+The object is checked for required donor and cell population metadata. The availability of normalized RNA expression is also verified before CellChat inference.
+
+```{r seurat_validation}
+#| message: false
+#| warning: false
+
+obj <- readRDS(seurat_file)
+
+meta_q4 <- obj[[]]
+
+required_metadata <- c("donor_id",
+                       "group",
+                       "subclass",
+                       "age",
+                       "sex",
+                       "ancestry")
+
+stopifnot(all(required_metadata %in% colnames(meta_q4)),
+          nrow(meta_q4) == ncol(obj),
+          identical(rownames(meta_q4), colnames(obj)),
+          !anyNA(meta_q4[, required_metadata]),
+          "RNA" %in% SeuratObject::Assays(obj))
+
+#Standardize diagnosis labels
+group_levels <- c("Control", "SCZ", "BD")
+
+meta_q4$group <- factor(as.character(meta_q4$group), levels = group_levels)
+
+#Check that each donor belongs to one diagnosis
+donor_info <- unique(meta_q4[, c("donor_id", "group")])
+stopifnot(!anyDuplicated(donor_info$donor_id))
+
+#Inspect expression layers without converting to dense
+rna_layers <- SeuratObject::Layers(obj[["RNA"]])
+
+input_summary <- data.frame(Characteristic = c("Nuclei",
+                                               "Unique donors",
+                                               "Annotated subclasses",
+                                               "RNA genes",
+                                               "Seurat object size (MB)",
+                                               "Normalized RNA layer available"),
+                            Value = c(ncol(obj),
+                                      nrow(donor_info),
+                                      length(unique(meta_q4$subclass)),
+                                      nrow(obj[["RNA"]]),
+                                      round(as.numeric(object.size(obj)) / 1024^2, 1),
+                                      "data" %in% rna_layers))
+
+knitr::kable(input_summary, caption = "Summary of the preprocessed Seurat input for Q4")
+
+cat("Available RNA layers:", paste(rna_layers, collapse = ", "))
+
+```
+::: {.callout-tip title="Interpretation"}
+The preprocessed Seurat object contains 44,588 nuclei from 224 donors, covering 27 annotated cell subclasses and 34,176 genes.
+The normalized RNA expression layer is available, confirming that the object contains the expression data required for the planned CellChat analysis. No additional preprocessing of the original HBCC dataset is needed at this stage.
+:::
+
+## Donor and cell population representation
+
+Because diagnostic groups contain different numbers of donors, cell population availability is examined before communication inference.
+
+The number of nuclei and the number of contributing donors are reported separately for each diagnostic group.
+
+```{r q4_population_availability}
+
+#Nuclei and unique donors per diagnosis
+nuclei_by_group <- table(factor(meta_q4$group, levels = group_levels))
+donors_by_group <- table(factor(donor_info$group, levels = group_levels))
+group_summary <- data.frame(Diagnosis = group_levels, Donors = as.integer(donors_by_group), Nuclei = as.integer(nuclei_by_group))
+
+knitr::kable(group_summary, caption = "Donor and nucleus representation by diagnostic group")
+
+#Verify the preprocessing subsampling limit
+nuclei_per_donor <- table(meta_q4$donor_id)
+cat("Maximum nuclei per donor:", max(nuclei_per_donor))
+stopifnot(max(nuclei_per_donor) <= 200)
+
+#Number of nuclei per subclass and diagnosis
+nuclei_table <- table(meta_q4$subclass, meta_q4$group)
+
+#Number of distinct donors contributing to each subclass
+donor_subclass <- unique(meta_q4[, c("donor_id", "subclass", "group")])
+
+donor_table <- table(donor_subclass$subclass, donor_subclass$group)
+
+subclass_availability <- data.frame(Subclass = rownames(nuclei_table),
+                                    Nuclei_Control = as.integer(nuclei_table[, "Control"]),
+                                    Nuclei_SCZ = as.integer(nuclei_table[, "SCZ"]),
+                                    Nuclei_BD = as.integer(nuclei_table[, "BD"]),
+                                    Donors_Control = as.integer( donor_table[rownames(nuclei_table), "Control"]),
+                                    Donors_SCZ = as.integer( donor_table[rownames(nuclei_table), "SCZ"]),
+                                    Donors_BD = as.integer( donor_table[rownames(nuclei_table), "BD"]))
+
+rownames(subclass_availability) <- NULL
+
+knitr::kable(subclass_availability, caption = "Nucleus and donor availability per cell subclass and diagnosis")
+
+```
+
+::: {.callout-note title="How to read the input tables"}
+The first table reports the numbers of nuclei and unique donors represented in each diagnostic group.
+
+The second table distinguishes the number of nuclei available for CellChat inference from the number of biological donors contributing to each cell subclass.
+
+A population with many nuclei but very few contributing donors may provide an unstable or donor-dependent communication estimate. A population represented across many donors but with very few nuclei per group may provide limited information on ligand and receptor expression.
+:::
+
+::: {.callout-important title="Decision before CellChat inference"}
+Cell subclass representation varies substantially across diagnostic groups, both in the number of nuclei and the number of contributing donors.
+
+Major populations are well represented across all three conditions. For example, astrocytes contribute 2 975, 1 469 and 1 498 nuclei in Control, SCZ and BD, while oligodendrocytes contribute 7 074, 2 990 and 2 285 nuclei.
+
+Microglia, a population of particular interest following Q1 and Q2, are represented by 1 032 control, 244 SCZ and 352 BD nuclei, contributed by 114, 42 and 44 donors.
+
+In contrast, rare populations such as EN_L5_ET, PVM, Adaptive and SMC show limited nucleus representation in at least one diagnostic group, potentially compromising reliable communication inference.
+
+These results support prioritizing sufficiently represented neuronal and glial populations for the primary CellChat analysis.
+
+Raw nucleus counts are influenced by diagnostic-group size and the preprocessing strategy, they do not serve as direct evidence of disease-related changes in cell abundance.
+
+Population eligibility and donor representation must be assessed before network inference to reduce the influence of sparsely represented subclasses and improve the comparability of communication networks.
+:::
+
+
+
+# Cell population selection and sampling strategy
+
+## Population eligibility
+
+::: {.callout-note title="Principle"}
+CellChat inference requires sufficiently represented populations to estimate ligand–receptor communication from gene expression.
+
+The preprocessed Seurat object contains 44,588 nuclei from 224 donors, but cell subclass representation is unequal across diagnostic groups.
+
+For the initial analysis, a cell subclass is retained if it contains at least **100 nuclei and 20 contributing donors in each diagnostic group**.
+
+These criteria are applied to the Seurat object.
+:::
+
+```{r q4_population_selection}
+#| output: false
+#| message: false
+
+#Apply representation criteria across all diagnoses
+keep_population <- with(subclass_availability,
+                        pmin(Nuclei_Control, Nuclei_SCZ, Nuclei_BD) >= min_nuclei_group & pmin(Donors_Control, Donors_SCZ, Donors_BD) >= min_donors_group)
+
+retained_q4 <- sort(subclass_availability$Subclass[keep_population])
+excluded_q4 <- sort(subclass_availability$Subclass[!keep_population])
+
+```
+
+## Donor-aware nucleus sampling
+
+::: {.callout-note title="Principle"}
+To improve comparability across diagnostic groups and reduce memory requirements, a fixed number of nuclei is selected per retained subclass and condition.
+
+Sampling proceeds in rounds across contributing donors, so that additional nuclei are drawn only after available donors have been represented. This reduces, but does not eliminate, unequal donor contributions.
+
+The same sampling procedure and random seed are used for all three diagnostic groups.
+:::
+
+```{r q4_balanced_sampling}
+#| output: false
+#| message: false
+
+sample_by_donor <- function(d, n_target, seed) {set.seed(seed)
+  #Nucleus identifiers grouped by donor
+  donor_cells <- split(rownames(d), as.character(d$donor_id))
+  #Randomize nuclei within each donor
+  donor_cells <- lapply(donor_cells, sample)
+  selected <- character(0)
+
+  #Sampling across donors
+  for (round_id in seq_len(max(lengths(donor_cells)))) {
+    available <- names(donor_cells)[lengths(donor_cells) >= round_id]
+    available <- sample(available, length(available))
+    selected <- c(selected, vapply(available, function(id) donor_cells[[id]][round_id], character(1)))
+    if (length(selected) >= n_target) break}
+
+  stopifnot(length(selected) >= n_target)
+
+  selected[seq_len(n_target)]}
+
+#Generate a reproducible selection for each condition
+sampled_cells <- list()
+
+for (gr in group_levels) {
+  selected_group <- character(0)
+  for (sc in retained_q4) {
+    d <- meta_q4[meta_q4$group == gr & meta_q4$subclass == sc, , drop = FALSE]
+    seed_value <- seed
+    selected_group <- c(selected_group, sample_by_donor(d, n_target = target_nuclei, seed = seed_value))}
+  sampled_cells[[gr]] <- selected_group}
+
+#Preserve the selected nucleus and donor identities
+sampled_meta <- meta_q4[unlist(sampled_cells, use.names = FALSE), c("donor_id", "group", "subclass"), drop = FALSE]
+
+saveRDS(sampled_meta, file.path(out_dir, "Q4_sampling_manifest.rds"))
+
+```
+
+## Prepare lightweight expression inputs for CellChat
+
+CellChat requires normalized expression values and cell population annotations.
+
+Rather than retaining the complete Seurat object during communication inference, normalized RNA expression is extracted for the selected nuclei and saved separately for each diagnostic group.
+
+```{r q4_prepare_cellchat_inputs}
+#| message: false
+#| warning: false
+
+#Extract normalized RNA layer
+rna_data <- SeuratObject::LayerData(obj, assay = "RNA", layer = "data")
+
+stopifnot(inherits(rna_data, "sparseMatrix"), !anyDuplicated(rownames(rna_data)))
+
+for (gr in group_levels) {
+  cells <- sampled_cells[[gr]]
+  expression <- rna_data[ , cells, drop = FALSE]
+  metadata <- sampled_meta[cells, , drop = FALSE]
+  metadata$labels <- factor(metadata$subclass, levels = retained_q4)
+
+  saveRDS(list(expression = expression, metadata = metadata), file.path(out_dir, paste0("CellChat_input_", gr, ".rds")))
+  rm(expression, metadata)}
+
+rm(rna_data, obj) #free the large Seurat object from memory
+invisible(gc(verbose = FALSE))
+
+```
+
+## Selected populations and sampling summary
+
+```{r q4_sampling_summary}
+#| echo: false
+
+sampling_summary <- data.frame(Characteristic = c("Retained subclasses",
+                                                  "Excluded subclasses",
+                                                  "Nuclei per subclass and diagnosis",
+                                                  "Nuclei per diagnosis",
+                                                  "Total sampled nuclei"),
+                               Value = c(length(retained_q4),
+                                         length(excluded_q4),
+                                         target_nuclei,
+                                         target_nuclei * length(retained_q4),
+                                         sum(lengths(sampled_cells))))
+
+knitr::kable(sampling_summary, caption = "Summary of the donor-aware sampling strategy for CellChat")
+
+```
+
+::: {.callout-note title="How to read the sampling summary"}
+The table reports the numbers of retained cell subclasses and selected nuclei after applying the minimum representation criteria.
+
+Each diagnostic group contributes the same number of nuclei per retained subclass. The sampling procedure prioritizes representation across donors, but does not guarantee identical donor contributions between groups.
+:::
+
+::: {.callout-tip title="Interpretation"}
+After applying the minimum representation criteria, **17 of the 27 annotated cell subclasses** were retained for the initial CellChat analysis.
+
+The donor-aware sampling strategy selected **100 nuclei per subclass and diagnostic group**, resulting in **1 700 nuclei per condition** and **5 100 nuclei overall**.
+
+This balanced subset preserves major neuronal, glial and vascular-associated populations while substantially reducing memory requirements.
+
+Although nucleus counts are equalized across diagnostic groups, differences in donor composition and genetic ancestry remain. Therefore, subsequent communication network comparisons will be considered exploratory.
+:::
+
+
+
+# CellChat communication inference
+
+## Infer communication networks across diagnostic groups
+
+::: {.callout-note title="Principle"}
+CellChat is used here to infer potential ligand-receptor communication networks independently in Control, SCZ and BD samples.
+
+The same 17 cell subclasses, nucleus sampling strategy, ligand-receptor database and inference parameters are used in all three conditions.
+
+The analysis is performed sequentially to minimize memory consumption, and each completed CellChat object is saved.
+
+The primary analysis focuses on signaling pathways involving proteins though secreted signaling, cell–cell contact and extracellular matrix–receptor interactions.
+:::
+
+```{r cellchat_all_groups}
+#| output: false
+#| message: false
+#| warning: false
+#| eval: false
+
+CellChatDB.use <- CellChat::subsetDB(CellChatDB.human)
+
+for (gr in c("Control", "SCZ", "BD")) {
+  output_file <- file.path(out_dir,paste0("CellChat_", gr, ".rds"))
+  if (file.exists(output_file)) next #reuse previous analyses
+  input <- readRDS(file.path(out_dir, paste0("CellChat_input_", gr, ".rds")))
+  stopifnot(identical(colnames(input$expression), rownames(input$metadata)),"labels" %in% names(input$metadata))
+  
+  #Create CellChat object
+  cellchat <- CellChat::createCellChat(object = input$expression, meta = input$metadata, group.by = "labels")
+  cellchat@DB <- CellChatDB.use
+  cellchat <- CellChat::subsetData(cellchat)
+  cellchat <- CellChat::identifyOverExpressedGenes(cellchat)
+  cellchat <- CellChat::identifyOverExpressedInteractions(cellchat)
+  
+  #Infer ligand-receptor communication
+  cellchat <- CellChat::computeCommunProb(cellchat, type = "triMean", nboot = n_permutations, seed.use = seed, population.size = FALSE)
+  cellchat <- CellChat::filterCommunication(cellchat, min.cells = min_cells)
+  
+  #Infer pathway-level communication
+  cellchat <- CellChat::computeCommunProbPathway(cellchat)
+  
+  #Aggregate cell-cell communication network
+  cellchat <- CellChat::aggregateNet(cellchat)
+  
+  saveRDS(cellchat,output_file)
+  rm(input, cellchat) #free memory
+  invisible(gc(verbose = FALSE))
+}
+```
+
+
+## Communication network summary 
+
+The inferred networks are summarized using the number of ligand-receptor links, active sender-receiver pairs and detected signaling pathways.
+
+```{r cellchat_network_summary}
+#| echo: false
+#| message: false
+#| warning: false
+
+network_summary <- list()
+
+for (gr in c("Control", "SCZ", "BD")) {
+  cellchat <- readRDS(file.path(out_dir, paste0("CellChat_", gr, ".rds")))
+  network_summary[[gr]] <- data.frame(Diagnosis = gr,
+                                      Subclasses = length(levels(cellchat@idents)),
+                                      LR_links = sum(cellchat@net$count),
+                                      Active_pairs = sum(cellchat@net$count > 0),
+                                      Signaling_pathways = length(cellchat@netP$pathways))
+  
+  rm(cellchat)
+  invisible(gc(verbose = FALSE))}
+
+network_summary <- do.call(rbind, network_summary)
+rownames(network_summary) <- NULL
+
+knitr::kable(network_summary, caption = "CellChat-inferred communication networks across diagnostic groups")
+
+write.csv(network_summary, file.path(out_dir, "Q4_network_summary.csv"), row.names = FALSE)
+```
+
+
+::: {.callout-note title="How to read the network summary"}
+Each row represents an independently inferred communication network for one diagnostic group.
+
+**LR links** represent the total number of inferred significant ligand–receptor links across sender–receiver pairs.
+
+**Active pairs** represent the number of directed cell-subclass pairs with at least one inferred interaction.
+
+**Signaling pathways** represent the number of pathways detected by CellChat.
+
+These network characteristics are descriptive and do not by themselves establish statistically significant differences between diagnoses.
+:::
+
+::: {.callout-tip title="Interpretation"}
+CellChat inferred communication networks involving **17 cell subclasses** in each diagnostic group.
+
+The total number of inferred ligand–receptor links was relatively similar across conditions, with **23 939 links in controls, 24 138 in SCZ and 23 140 in BD**. SCZ exhibited a slightly higher number of inferred links than controls, whereas BD exhibited fewer.
+
+All three conditions showed **289 active directed sender–receiver pairs out of 289 possible pairs (17 x 17)**, indicating that every cell-subclass pair had at least one inferred interaction, including potential self-signaling.
+
+At the pathway level, **90 signaling pathways** were detected in both controls and SCZ, compared with **87 in BD**.
+
+Overall, these findings suggest broadly preserved network connectivity across diagnoses, with modest differences in the total number of inferred interactions and detected pathways.
+
+But, these global metrics do not indicate which cellular interactions or signaling pathways are altered. Equal numbers of active pairs do not imply identical communication strengths or ligand–receptor composition.
+
+**Further analyses will compare communication patterns, interaction strengths and neuronal–glial signaling across diagnostic groups.**
+:::
+
+
+# Comparison of inferred communication networks
+
+## Extract pairwise communication networks
+
+::: {.callout-note title="Principle"}
+Global network summaries conceal differences between sender-receiver populations.
+
+To investigate these differences, we extract two measures from each CellChat object :
+
+- **Interaction count : ** number of inferred ligand–receptor links between each directed sender–receiver pair.
+- **Interaction strength : ** sum of inferred communication probabilities across those links.
+
+SCZ and BD are compared separately with the control reference network. All comparisons use the same 17 cell subclasses.
+:::
+
+```{r extract_networks}
+
+#| output: false
+#| message: false
+
+diagnoses <- c("Control", "SCZ", "BD")
+networks <- list()
+cell_order <- NULL
+
+for (gr in diagnoses) {
+  cellchat <- readRDS(file.path(out_dir, paste0("CellChat_", gr, ".rds")))
+  count_mat <- cellchat@net$count
+  weight_mat <- cellchat@net$weight
+
+  if (is.null(cell_order)) {cell_order <- rownames(count_mat)}
+  
+  stopifnot(setequal(rownames(count_mat), cell_order),
+            setequal(colnames(count_mat), cell_order),
+            setequal(rownames(weight_mat), cell_order),
+            setequal(colnames(weight_mat), cell_order))
+  
+  networks[[gr]] <- list(count = count_mat[cell_order, cell_order],
+                         weight = weight_mat[cell_order, cell_order])
+  
+  rm(cellchat, count_mat, weight_mat)
+  invisible(gc(verbose = FALSE))}
+
+#One row per sender-receiver pair
+pairwise_network <- expand.grid(Sender = cell_order, Receiver = cell_order, stringsAsFactors = FALSE)
+
+for (gr in diagnoses) {
+  pairwise_network[[paste0("Count_", gr)]] <- as.vector(networks[[gr]]$count)
+  pairwise_network[[paste0("Weight_", gr)]] <- as.vector(networks[[gr]]$weight) }
+
+#Diagnostic differences relative to controls
+for (gr in c("SCZ", "BD")) {
+  pairwise_network[[paste0("Delta_Count_", gr)]] <- pairwise_network[[paste0("Count_", gr)]] - pairwise_network$Count_Control
+  pairwise_network[[paste0("Delta_Weight_", gr)]] <- pairwise_network[[paste0("Weight_", gr)]] - pairwise_network$Weight_Control}
+
+write.csv(pairwise_network, file.path(out_dir, "Q4_pairwise_network_comparison.csv"), row.names = FALSE)
+
+```
+
+## Differential communication heatmaps
+
+We will now visualize differences in interaction counts and communication strengths between each psychiatric condition and controls.
+
+Positive values indicate higher inferred communication in the disease group, whereas negative values indicate lower inferred communication relative to controls.
+
+
+```{r network_heatmaps}
+#| message: false
+#| warning: false
+
+for (gr in c("SCZ", "BD")) {
+  object.list <- list(Control = readRDS(file.path(out_dir, "CellChat_Control.rds")))
+  object.list[[gr]] <- readRDS(file.path(out_dir, paste0("CellChat_", gr, ".rds")))
+
+  #Merge CellChat objects for comparative visualization
+  cellchat_merged <- CellChat::mergeCellChat(object.list, add.names = names(object.list))
+
+  #Differential number of interactions
+  ht_count <- CellChat::netVisual_heatmap(cellchat_merged, comparison = c(1, 2), measure = "count", title.name = paste("Interaction counts : ", gr, "vs Control"))
+
+  #Differential communication strength
+  ht_weight <- CellChat::netVisual_heatmap(cellchat_merged, comparison = c(1, 2), measure = "weight", title.name = paste("Interaction strength : ", gr, "vs Control"))
+
+  #Save figures
+  png(file.path(fig_dir, paste0("Q4_F01_Interaction_counts_", gr, "_vs_Control.png")))
+  ComplexHeatmap::draw(ht_count)
+  dev.off()
+  png(file.path(fig_dir, paste0("Q4_F02_Interaction_strength_", gr, "_vs_Control.png")))
+  ComplexHeatmap::draw(ht_weight)
+  dev.off()
+
+  ComplexHeatmap::draw(ht_count)
+  ComplexHeatmap::draw(ht_weight)
+
+  rm(object.list, cellchat_merged, ht_count, ht_weight)
+  invisible(gc(verbose = FALSE))}
+
+```
+
+
+::: {.callout-note title="How to read Figures Q4-F01 and Q4-F02"}
+Rows represent **sender populations**, while columns represent **receiver populations**. Communication is directional.
+
+- **Red : ** higher inferred interaction counts or communication strength in SCZ or BD relative to controls.
+- **Blue : ** lower inferred interaction counts or communication strength.
+- **White : ** little or no difference between the compared conditions.
+
+Figure Q4-F01 compares the number of inferred ligand–receptor links, whereas Figure Q4-F02 compares their aggregate communication strengths.
+
+These differences are descriptive estimates derived from independently inferred networks. They are not adjusted for donor-level covariates and do not constitute statistically significant disease-associated changes.
+:::
+
+::: {.callout-tip title="Interpretation - Differential interaction counts (Q4-F01)"}
+The differential interaction count heatmaps reveal heterogeneous changes in inferred ligand-receptor connectivity across the 17 cell subclasses.
+
+**In SCZ versus Control**, increased interaction counts are particularly visible for several inhibitory neuronal populations, notably **IN_SST and IN_LAMP5_RELN**, across multiple receiver subclasses. Reduced interaction counts are observed for selected excitatory neuronal populations, including EN_L3_5_IT_2 and EN_L6_CT.
+
+In **BD versus Control**, increased connectivity is also observed for IN_SST and IN_LAMP5_RELN, suggesting partially convergent alterations involving inhibitory neuronal signaling. BD exhibits a more pronounced reduction in interaction counts for several excitatory neuronal populations, particularly EN_L3_5_IT_2.
+
+These findings suggest that SCZ and BD may share alterations involving specific inhibitory neuronal populations while exhibiting distinct patterns of communication across other cellular subclasses.
+
+Differences in inferred interaction counts reflect changes in the number of detected ligand-receptor links, rather than direct evidence of increased or decreased biological signaling activity.
+:::
+
+::: {.callout-tip title="Interpretation - Differential communication strength (Q4-F02)"}
+The communication strength heatmaps complement the interaction count analysis by comparing the summed CellChat-inferred communication probabilities between sender–receiver populations.
+
+In **SCZ versus Control**, increased communication strengths are particularly visible for **IN_LAMP5_RELN and IN_SST**. Several excitatory neuronal subclasses also show positive changes toward some targets, whereas reduced strengths occur in more sender-receiver combinations.
+
+In **BD versus Control**, increased communication strengths are again visible for IN_SST and IN_LAMP5_RELN, notably toward excitatory and inhibitory neuronal populations. But, the distribution of positive and negative changes differs from that observed in SCZ, including reduced signaling strengths for excitatory neuronal and glial-associated interactions.
+
+Overall, these results suggest **partial convergence of SCZ and BD associated communication patterns involving inhibitory interneurons**, alongside diagnosis-dependent differences in the distribution and strength of inferred signaling.
+
+Although astrocytes, oligodendrocytes and OPCs exhibit changes in selected interactions, the visually most prominent differences involve neuronal sender populations.
+
+These findings remain descriptive. Differences in inferred communication probabilities do not establish statistically significant alterations between diagnoses.
+:::
+
+::: {.callout-note title="Biological implications and next steps"}
+Together, Q4-F01 and Q4-F02 indicate that preserved network connectivity can coexist with important variation in inferred interaction counts and communication strengths.
+
+The recurring involvement of **IN_SST and IN_LAMP5_RELN** in both SCZ and BD provides preliminary evidence of partially shared communication patterns, whereas differences among excitatory neuronal and non-neuronal populations suggest more heterogeneous effects.
+
+The next analyses will focus on **neuronal-glial sender–receiver pairs, signaling pathways and individual ligand-receptor interactions** to identify the molecular signals underlying these network-level patterns.
+
+Because the networks were inferred from pooled nuclei rather than independently modeled donors, these observations are exploratory and require further validation.
+:::
+
+
+## Neuronal-glial communication comparison
+
+This analysis focuses on communication between excitatory or inhibitory neurons and major glial populations.
+
+Both neuronal to glial and glial to neuronal signaling directions are considered.
+
+```{r neuron_glia_comparison}
+#| echo: false
+#| message: false
+
+neuronal_cells <- cell_order[grepl("^(EN_|IN_)", cell_order)]
+glial_cells <- intersect(c("Astro", "Micro", "Oligo", "OPC"), cell_order)
+
+neuron_glia <- subset(pairwise_network, (Sender %in% neuronal_cells & Receiver %in% glial_cells) | (Sender %in% glial_cells & Receiver %in% neuronal_cells))
+
+#Rank pairs by their largest absolute difference
+neuron_glia$Max_abs_difference <- pmax(abs(neuron_glia$Delta_Weight_SCZ), abs(neuron_glia$Delta_Weight_BD))
+neuron_glia <- neuron_glia[order(-neuron_glia$Max_abs_difference), ]
+
+write.csv(neuron_glia, file.path(out_dir, "Q4_neuron_glia_comparison.csv"), row.names = FALSE)
+
+top_neuron_glia <- head(neuron_glia[ , c("Sender", "Receiver", "Delta_Weight_SCZ", "Delta_Weight_BD")], 10)
+top_neuron_glia[, 3:4] <- round(top_neuron_glia[, 3:4], 4)
+
+knitr::kable(top_neuron_glia, caption = "Ten neuronal–glial sender–receiver pairs with the largest absolute changes in inferred communication strength", row.names = FALSE)
+
+```
+
+::: {.callout-note title="How to read the neuronal–glial comparison"}
+Positive values indicate stronger inferred communication relative to controls, whereas negative values indicate weaker communication.
+
+The table ranks sender–receiver pairs by the largest absolute difference observed in either diagnostic comparison.
+
+These patterns provide candidates for subsequent ligand–receptor and pathway-level analyses. They should not be interpreted as statistically validated disease-associated interactions.
+:::
+
+::: {.callout-tip title="Interpretation - Neuronal-glial communication"}
+The ten neuronal-glial sender-receiver pairs showing the largest absolute differences in inferred communication strength reveal a prominent involvement of **oligodendrocyte precursor cells (OPCs)**, which participate in eight of the ten interactions.
+
+In **SCZ versus Control**, increased communication strength is particularly pronounced for **IN_SST -> OPC (+1.1154)** and **OPC -> EN_L3_5_IT_2 (+1.0196)**. Several additional inhibitory neuron to OPC interactions also exhibit positive changes, including IN_LAMP5_RELN, IN_ADARB2 and IN_PVALB as sender populations.
+
+Some of these changes are also observed in **BD versus Control**, generally with smaller magnitudes among the selected pairs. Notably, **Oligo -> EN_L3_5_IT_2** shows increased inferred communication in both SCZ (+0.7319) and BD (+0.9963), suggesting a potentially shared signaling pattern.
+
+**EN_L6_IT_1 -> Oligo** exhibits a marked decrease in SCZ (-0.9731), while remaining nearly unchanged in BD (+0.0190), highlighting a possible diagnosis-dependent difference.
+
+Overall, these results suggest that **OPC associated neuronal–glial communication is a prominent feature of the inferred network differences**, with partially overlapping but heterogeneous patterns across SCZ and BD.
+
+The table is restricted to the ten pairs with the largest absolute differences in either diagnosis. These descriptive changes do not establish statistically significant disease-specific alterations. Further ligand–receptor and pathway-level analyses are needed to identify the molecular interactions underlying these patterns.
+:::
+
+
+# Signaling pathways and ligand-receptor interactions
+
+## Molecular characterization of neuronal-glial communication
+
+::: {.callout-note title="Principle"}
+The previous analysis highlighted noticeable changes in inferred communication involving oligodendrocyte lineage cells and neuronal populations.
+
+We now investigate the signaling pathways and ligand–receptor interactions contributing to three selected sender–receiver pairs :
+
+- **IN_SST → OPC : ** inhibitory neuron-to-OPC signaling.
+- **OPC → EN_L3_5_IT_2 : ** OPC-to-excitatory neuron signaling.
+- **Oligo → EN_L3_5_IT_2 : ** oligodendrocyte to excitatory neuron signaling.
+:::
+
+```{r extract_signaling}
+#| output: false
+#| message: false
+
+focus_pairs <- data.frame(Sender = c("IN_SST", "OPC", "Oligo"),
+                          Receiver = c("OPC", "EN_L3_5_IT_2", "EN_L3_5_IT_2"))
+
+diagnoses <- c("Control", "SCZ", "BD")
+
+pair_keys <- paste(focus_pairs$Sender, focus_pairs$Receiver, sep = "|")
+
+lr_results <- list()
+pathway_results <- list()
+
+for (gr in diagnoses) {
+  cellchat <- readRDS(file.path(out_dir, paste0("CellChat_", gr, ".rds")))
+
+  #Extract ligand-receptor interactions
+  lr <- CellChat::subsetCommunication(cellchat,
+                                      slot.name = "net",
+                                      sources.use = unique(focus_pairs$Sender),
+                                      targets.use = unique(focus_pairs$Receiver))
+
+  lr <- lr[paste(lr$source, lr$target, sep = "|") %in% pair_keys, c("source", "target", "ligand", "receptor", "interaction_name", "pathway_name", "prob"), drop = FALSE]
+  lr$Diagnosis <- gr
+  lr_results[[gr]] <- lr
+
+  #Extract signaling pathways
+  pathways <- CellChat::subsetCommunication(cellchat, slot.name = "netP", sources.use = unique(focus_pairs$Sender), targets.use = unique(focus_pairs$Receiver))
+  pathways <- pathways[paste(pathways$source, pathways$target, sep = "|") %in% pair_keys, c("source", "target", "pathway_name", "prob"), drop = FALSE]
+  pathways$Diagnosis <- gr
+  pathway_results[[gr]] <- pathways
+
+  rm(cellchat, lr, pathways)
+  invisible(gc(verbose = FALSE))}
+
+lr_results <- do.call(rbind, lr_results)
+pathway_results <- do.call(rbind, pathway_results)
+
+#Compare pathway probabilities between conditions
+pathway_comparison <- reshape(pathway_results, idvar = c("source", "target", "pathway_name"), timevar = "Diagnosis", direction = "wide")
+
+#Missing inferred pathways are assigned zero probability
+for (gr in diagnoses) {
+  column <- paste0("prob.", gr)
+  if (!column %in% names(pathway_comparison)) {pathway_comparison[[column]] <- 0}
+  pathway_comparison[[column]][is.na(pathway_comparison[[column]])] <- 0}
+
+pathway_comparison$Delta_SCZ <-
+  pathway_comparison$prob.SCZ - pathway_comparison$prob.Control
+
+pathway_comparison$Delta_BD <- pathway_comparison$prob.BD - pathway_comparison$prob.Control
+pathway_comparison$Max_abs_change <- pmax(abs(pathway_comparison$Delta_SCZ), abs(pathway_comparison$Delta_BD))
+pathway_comparison <- pathway_comparison[order(-pathway_comparison$Max_abs_change),]
+
+write.csv(pathway_comparison, file.path(out_dir, "Q4_targeted_pathway_comparison.csv"), row.names = FALSE)
+
+#Compare ligand-receptor probabilities
+lr_comparison <- reshape(lr_results, idvar = c("source", "target", "ligand", "receptor", "interaction_name", "pathway_name"), timevar = "Diagnosis", direction = "wide")
+
+for (gr in diagnoses) {
+  column <- paste0("prob.", gr)
+  if (!column %in% names(lr_comparison)) {lr_comparison[[column]] <- 0}
+  lr_comparison[[column]][is.na(lr_comparison[[column]])] <- 0}
+
+lr_comparison$Delta_SCZ <- lr_comparison$prob.SCZ - lr_comparison$prob.Control
+
+lr_comparison$Delta_BD <- lr_comparison$prob.BD - lr_comparison$prob.Control
+
+lr_comparison$Max_abs_change <- pmax(abs(lr_comparison$Delta_SCZ), abs(lr_comparison$Delta_BD))
+
+lr_comparison <- lr_comparison[order(-lr_comparison$Max_abs_change),]
+
+write.csv(lr_comparison, file.path(out_dir, "Q4_targeted_LR_comparison.csv"), row.names = FALSE)
+```
+
+## Most altered signaling pathways
+
+The pathways are ranked according to the largest absolute difference in inferred communication probability observed in either diagnostic comparison.
+
+```{r pathway_summary}
+#| echo: false
+
+top_pathways <- head(pathway_comparison[ , c("source", "target", "pathway_name", "Delta_SCZ", "Delta_BD")], 10)
+top_pathways[, 4:5] <- round(top_pathways[, 4:5], 4)
+
+rownames(top_pathways) <- NULL
+
+knitr::kable(top_pathways, caption = "Top ten signaling pathways contributing to differences in selected neuronal-glial interactions")
+
+```
+
+::: {.callout-note title="How to read the pathway comparison"}
+Each row represents an inferred signaling pathway within a specific sender–receiver pair.
+
+Positive differences indicate higher inferred pathway-level communication probabilities relative to controls, while negative differences indicate lower probabilities.
+
+Pathways not detected in a condition are assigned a value of zero for descriptive comparison. This represents the absence of a detected interaction under the selected CellChat thresholds, not proof of biological absence.
+
+These rankings are exploratory and do not represent statistically significant between-diagnosis differences.
+:::
+
+::: {.callout-tip title="Interpretation - Signaling pathway comparison"}
+The pathway-level comparison highlights several signaling families contributing to differences in inferred neuronal-glial communication, particularly **NRXN, PTPR, NCAM and ADGRL**.
+
+The strongest positive change is observed for **NRXN signaling from oligodendrocytes to EN_L3_5_IT_2 neurons**, in both SCZ (+0.4276) and BD (+0.7726), with a larger increase in BD.
+
+In contrast, **PTPR signaling from OPCs to EN_L3_5_IT_2 neurons** shows a greater increase in SCZ (+0.4004) than in BD (+0.0761).
+
+Communication from **IN_SST neurons to OPCs** also involves several altered pathways. PTPR and ADGRL signaling exhibit positive changes in both disorders, whereas NEGR signaling decreases in BD (-0.2305) but remains relatively unchanged in SCZ (+0.0189).
+
+Overall, these findings indicate that **partially shared signalling pathways may exhibit different strengths or directions of change between SCZ and BD**. The recurring involvement of NRXN, PTPR and NCAM suggests that cell adhesion and synapse associated signalling may contribute to the inferred communication patterns.
+
+These are descriptive differences in CellChat inferred pathway probabilities. They do not establish statistically significant between diagnosis differences or demonstrate functional alterations in neuronal-glial communication.
+:::
+
+
+## Prioritized ligand-receptor interactions
+
+```{r}
+#| echo: false
+
+top_lr <- head(lr_comparison[ , c("source", "target", "ligand", "receptor", "pathway_name", "Delta_SCZ", "Delta_BD")], 10)
+top_lr[, 6:7] <- round(top_lr[, 6:7], 4)
+
+rownames(top_lr) <- NULL
+
+knitr::kable(top_lr, caption = "Top ten ligand-receptor interactions with the largest absolute changes in inferred communication probability")
+
+```
+
+::: {.callout-note title="How to read the ligand–receptor summary"}
+Ligands are associated with sender populations, whereas receptors are associated with receiver populations.
+
+The displayed differences correspond to CellChat inferred communication probabilities in SCZ or BD relative to controls.
+
+These results identify candidate molecular interactions underlying the selected neuronal glial communication patterns. The ranking is descriptive and does not establish differential expression of the ligand or receptor genes.
+:::
+
+::: {.callout-tip title="Interpretation - Ligand-receptor interactions"}
+The ligand-receptor analysis provides a more detailed molecular characterization of the signaling pathways highlighted above.
+
+Within **Oligo -> EN_L3_5_IT_2 communication**, the **NRXN3-LRRTM4 interaction** exhibits increased inferred communication probabilities in both SCZ (+0.3329) and BD (+0.3454). The NRXN3-NLGN1 interaction shows an additional positive difference in BD (+0.3290), suggesting that distinct ligand-receptor combinations may contribute to the same signaling pathway across diagnoses.
+
+Several interactions involving OPCs show more pronounced changes in SCZ, particularly **LRFN5-PTPRD** and **NCAM1-NCAM2** in communication toward EN_L3_5_IT_2 neurons.
+
+**NEGR1–NEGR1 signaling from IN_SST neurons to OPCs** exhibits a negative difference in BD (-0.2305), contrasting with the small positive difference observed in SCZ (+0.0189).
+
+These results reinforce the involvement of **synapse-associated adhesion molecules and neuronal-glial recognition pathways**, while revealing heterogeneity at the level of individual ligand-receptor interactions.
+
+But, an interaction may contribute differently to the same pathway across diagnoses. The reported probabilities reflect computational predictions from transcriptomic data rather than experimentally confirmed molecular interactions.
+:::
+
+
+## Ligand-receptor communication bubble plots
+
+The following plots visualize prioritized ligand-receptor interactions across selected neuronal and oligodendrocyte-lineage populations.
+
+```{r lr_bubble_plots}
+#| echo: false
+#| message: false
+#| warning: false
+
+# Eight most altered ligand-receptor interactions
+top_lr <- data.frame(interaction_name = head(unique(lr_comparison$interaction_name), 8))
+
+for (gr in c("SCZ", "BD")) {
+  objects <- list(Control = readRDS(file.path(out_dir, "CellChat_Control.rds")))
+  objects[[gr]] <- readRDS(file.path(out_dir, paste0("CellChat_", gr, ".rds")))
+
+  merged <- CellChat::mergeCellChat(objects, add.names = names(objects))
+
+  p <- CellChat::netVisual_bubble(merged,
+                                  sources.use = unique(focus_pairs$Sender),
+                                  targets.use = unique(focus_pairs$Receiver),
+                                  pairLR.use = top_lr,
+                                  comparison = c(1, 2),
+                                  remove.isolate = TRUE,
+                                  angle.x = 45,
+                                  title.name = paste("Ligand-receptor interactions:", gr, "vs Control"))
+
+  save_figure(p, paste0("Q4_F03_LR_", gr, "_vs_Control"), fig_dir)
+
+  print(p)
+
+  rm(objects, merged, p)
+  invisible(gc(verbose = FALSE))}
+
+```
+::: {.callout-note title="How to read Figure Q4-F03"}
+Each bubble represents an inferred ligand–receptor interaction between a sender and a receiver population in a specific diagnostic condition.
+
+Bubble color represents the inferred communication probability, whereas bubble size reflects the within-condition CellChat permutation p-value.
+
+The plots display selected ligand–receptor candidates identified from the largest descriptive changes across the three focal neuronal–glial pairs.
+
+A missing bubble indicates that an interaction was not detected as significant under the chosen inference thresholds. It does not establish the biological absence of that interaction.
+
+The displayed p-values refer to communication inference within conditions, not to statistical comparisons between SCZ, BD and controls.
+:::
+
+::: {.callout-tip title="Interpretation - Neuronal-glial ligand-receptor communication (Q4-F03)"}
+The CellChat bubble plots visualize selected ligand-receptor interactions across Control, SCZ and BD, focusing on communication involving IN_SST neurons, OPCs, oligodendrocytes and EN_L3_5_IT_2 neurons.
+
+Interactions involving **NRXN3-LRRTM4 and NRXN3-NLGN1** display relatively prominent inferred communication probabilities, particularly in oligodendrocyte associated signaling toward excitatory neurons.
+
+Additional interactions involving **LRFN5-PTPRD, NCAM1-NCAM2 and NEGR1-NEGR1** are detected in selected neuronal-glial sender-receiver combinations, supporting the involvement of cell-adhesion and recognition-related signaling.
+
+The plots also reveal some differences between conditions : some interactions are detected across multiple diagnostic groups, whereas others appear only in selected conditions or sender-receiver combinations.
+
+Together with the pathway-level analysis, these results suggest that SCZ and BD may exhibit **partially overlapping but molecularly heterogeneous patterns of inferred neuronal-glial communication**, especially involving OPCs and oligodendrocytes.
+
+Importantly, bubble colors represent inferred communication probabilities, not differences relative to controls. Bubble sizes indicate within-condition permutation p-values rather than statistical significance of diagnostic differences. Differences between the two independently scaled plots should therefore be interpreted cautiously.
+:::
+
+
+# Global signaling pathway comparison
+
+## Shared and distinct signaling pathways across diagnosis
+
+::: {.callout-note title="Principle"}
+To complement the targeted neuronal-glial analysis, we compare signaling pathways across all 17 retained cell subclasses.
+
+For each pathway, the total information flow is calculated by summing its inferred communication probabilities across all directed sender-receiver pairs.
+
+The comparison identifies pathways detected across multiple conditions and highlights differences in their overall inferred communication strengths.
+:::
+
+```{r global_pathway_comparison}
+
+#| output: false
+#| message: false
+
+diagnoses <- c("Control", "SCZ", "BD")
+pathway_flows <- list()
+
+for (gr in diagnoses) {
+  cellchat <- readRDS(file.path(out_dir, paste0("CellChat_", gr, ".rds")))
+  pathways <- cellchat@netP$pathways
+  probabilities <- cellchat@netP$prob
+
+  stopifnot(length(pathways) == dim(probabilities)[3])
+
+  pathway_flows[[gr]] <- setNames(vapply(seq_along(pathways), function(i) sum(probabilities[, , i], na.rm = TRUE), numeric(1)), pathways)
+
+  rm(cellchat)
+  invisible(gc(verbose = FALSE))}
+
+#Combine all pathways detected in at least one group
+all_pathways <- sort(unique(unlist(lapply(pathway_flows, names))))
+global_pathways <- data.frame(Pathway = all_pathways)
+
+for (gr in diagnoses) {
+  global_pathways[[gr]] <- unname(pathway_flows[[gr]][all_pathways])
+  global_pathways[[paste0("Detected_", gr)]] <- all_pathways %in% names(pathway_flows[[gr]])
+  global_pathways[[gr]][is.na(global_pathways[[gr]])] <- 0}
+
+#Changes relative to controls
+global_pathways$Delta_SCZ <- global_pathways$SCZ - global_pathways$Control
+global_pathways$Delta_BD <- global_pathways$BD - global_pathways$Control
+global_pathways$Max_abs_change <- pmax(abs(global_pathways$Delta_SCZ), abs(global_pathways$Delta_BD))
+
+global_pathways$Detected_in <- apply(global_pathways[paste0("Detected_", diagnoses)], 1, function(x) paste(diagnoses[as.logical(x)], collapse = ", "))
+
+global_pathways <- global_pathways[order(-global_pathways$Max_abs_change),]
+
+rownames(global_pathways) <- NULL
+
+write.csv(global_pathways, file.path(out_dir, "Q4_global_pathway_comparison.csv"), row.names = FALSE)
+
+```
+
+## Main differences in pathway information flow
+
+```{r global_pathway_summary}
+#| echo: false
+
+top_pathways_global <- head(global_pathways[ , c("Pathway", "Detected_in", "Delta_SCZ", "Delta_BD")], 10)
+top_pathways_global[, 3:4] <- round(top_pathways_global[, 3:4], 3)
+
+knitr::kable(top_pathways_global, caption = "Top ten signaling pathways with the largest absolute changes in global information flow")
+
+```
+
+::: {.callout-note title="How to read the pathway comparison"}
+The table ranks signaling pathways according to the largest absolute change in total inferred information flow relative to controls.
+
+Positive values represent higher information flow in the disease group, negative values represent lower information flow.
+
+The `Detected_in` column identifies the conditions in which each pathway was inferred. Absence from a condition corresponds to no detected pathway under the CellChat inference criteria, not necessarily biological absence.
+
+These comparisons are descriptive and do not establish statistically significant differences between diagnoses.
+:::
+
+::: {.callout-tip title="Interpretation - Global signaling pathway comparison"}
+The global pathway analysis reveals **partially convergent changes in inferred communication between SCZ and BD**, with all ten highlighted signaling pathways detected across the three diagnostic groups.
+
+The largest increases in information flow involve **ADGRL** (+25.841 in SCZ, +13.410 in BD) and **NRXN** (+23.442 in SCZ, +19.788 in BD). Both pathways are associated with synaptic adhesion and cell-cell recognition, suggesting a prominent contribution of these signaling mechanisms to the inferred network differences.
+
+Several additional pathways, including **PTPR, SLIT, NCAM and NEGR**, exhibit increased information flow in both disorders, generally with larger changes in SCZ. In contrast, **LAMININ** is the only pathway among the ten highlighted showing decreased information flow in both SCZ (-2.574) and BD (-3.015).
+
+This is consistent with the previous neuronal-glial analyses, where NRXN, PTPR and NCAM signaling contributed to altered interactions involving OPCs, oligodendrocytes and neuronal subclasses.
+
+Overall, the findings suggest **shared directions of change in several inferred signaling pathways, alongside diagnosis-dependent differences in their magnitude**. However, global information flow aggregates communication across all cell populations and does not identify the specific sender-receiver pairs responsible for these changes.
+
+These comparisons remain descriptive and do not establish statistically significant differences between diagnostic groups or experimentally validated signaling alterations.
+:::
+
+
+## CellChat - Partial conclusion
+
+The CellChat analysis identified broadly preserved communication network connectivity across Control, SCZ and BD, with all **289 possible directed sender–receiver pairs** represented in each condition.
+
+Nevertheless, the number and strength of inferred ligand-receptor interactions differed across diagnostic groups, suggesting that conserved network connectivity may coexist with different signaling patterns.
+
+**Targeted analyses highlighted the involvement of oligodendrocyte precursor cells and oligodendrocytes**, particularly in their interactions with inhibitory and excitatory neuronal populations.
+
+**At the molecular level, NRXN, ADGRL, PTPR and NCAM** emerged among the most prominent signaling pathways. Global information-flow comparisons revealed increased inferred signaling through several of these pathways in both SCZ and BD, generally with larger changes in SCZ.
+
+These findings suggest partially overlapping communication patterns involving neuronal-glial interactions and synapse associated mechanisms, alongside diagnosis related differences in their inferred strengths.
+
+CellChat primarily evaluates molecular interactions from transcriptomic expression profiles. These results do not establish functional communication differences or account for donor level confounding.
+
+**A complementary NeuronChat analysis was performed to examine neural-specific communication mechanisms, in particular GABAergic and glutamatergic signaling.**
+
+
+# Complementary analysis with NeuronChat
+
+## Neural-specific communication inference
+
+::: {.callout-note title="Principle"}
+NeuronChat complements CellChat by incorporating neural-specific signaling mechanisms, including small molecule neurotransmitters such as GABA and glutamate [4].
+
+This analysis aims to explore whether SCZ and BD exhibit partially shared or distinct patterns of neural-specific communication, particularly in neuronal–glial interactions.
+
+The same balanced nuclei and diagnostic groups are used to facilitate comparison with the primary CellChat analysis.
+:::
+
+```{r neuronchat_inference}
+#| output: false
+#| message: false
+#| halo: false
+#| warning: false
+#| eval: false
+
+for (gr in c("Control", "SCZ", "BD")) {
+  output_file <- file.path(out_dir, paste0("NeuronChat_", gr, ".rds"))
+  if (file.exists(output_file)) next
+  input <- readRDS(file.path(out_dir, paste0("CellChat_input_", gr, ".rds")))
+
+  stopifnot(identical(colnames(input$expression), rownames(input$metadata)))
+
+  #Create NeuronChat object
+  neuronchat <- createNeuron(input$expression, DB = "human", group.by = as.character(input$metadata$labels))
+
+  #Neural-specific communication inference
+  neuronchat <- run_NeuronChat(neuronchat, M = 100)
+
+  saveRDS(neuronchat, output_file)
+
+  rm(input, neuronchat)
+  invisible(gc(verbose = FALSE))}
+
+```
+
+::: {.callout-important title="Interpretation limitations"}
+NeuronChat provides transcriptome-based predictions of neural-specific signaling. These predictions do not directly measure neurotransmitter release, receptor activation or synaptic connectivity.
+
+Single-nucleus RNA sequencing may incompletely capture transcripts involved in neurotransmitter synthesis and transport. Moreover, the use of pooled nuclei from multiple donors prevents donor-level statistical inference.
+
+NeuronChat results will therefore be treated as a complementary exploratory analysis, rather than an independent validation of CellChat findings.
+:::
+
+
+## NeuronChat communication network summary
+
+Neural-specific communication networks were inferred independently for Control, SCZ and BD using the same balanced input data and the human NeuronChat interaction database.
+
+The interaction-level networks are aggregated using the `weight` method to obtain a global communication network for each diagnostic group.
+
+```{r q4_neuronchat_summary}
+#| echo: false
+#| message: false
+#| warning: false
+
+neuronchat_summary <- list()
+
+for (gr in c("Control", "SCZ", "BD")) {
+  neuronchat <- readRDS(file.path(out_dir, paste0("NeuronChat_", gr, ".rds")))
+  
+  net <- net_aggregation(neuronchat@net, method = "weight")
+
+  neuronchat_summary[[gr]] <- data.frame(Diagnosis = gr,
+                                         Subclasses = nrow(net),
+                                         Active_pairs = sum(net > 0),
+                                         Total_weight = sum(net))
+  rm(neuronchat, net)
+  invisible(gc(verbose = FALSE))}
+
+neuronchat_summary <- do.call(rbind, neuronchat_summary)
+rownames(neuronchat_summary) <- NULL
+
+knitr::kable(neuronchat_summary, digits = 3,caption = "Summary of NeuronChat-inferred neural communication networks across diagnostic groups")
+
+```
+
+::: {.callout-note title="How to read the NeuronChat summary"}
+The table summarizes the number of represented subclasses, the number of active directed sender–receiver pairs and the total aggregated communication weight.
+
+These values describe neural-specific communication networks inferred from transcriptomic data. They should not be directly compared numerically with CellChat communication strengths, as the two methods rely on different molecular databases and inference models.
+:::
+
+::: {.callout-tip title="Interpretation - NeuronChat communication networks"}
+NeuronChat inferred neural-specific communication networks involving **17 cell subclasses** in each diagnostic group.
+
+The number of active directed sender-receiver pairs was highly similar across conditions, with **223 in controls, 226 in SCZ and 223 in BD**, suggesting broadly preserved network connectivity.
+
+The total inferred communication weight differed between diagnoses. **SCZ exhibited the highest total weight (217.530)**, compared with controls (174.432), whereas **BD showed a slightly lower total weight (164.944)**.
+
+These findings suggest that changes in the aggregate strength of inferred neural communication may occur without major changes in the number of connected cell populations.
+
+The results also reveal a difference between SCZ and BD, motivating further investigation of the neural signaling mechanisms contributing to these network patterns.
+
+Total network weight does not identify the specific neurotransmitter or sender receiver pairs involved.
+:::
+
+
+## GABAergic and glutamatergic communication
+
+::: {.callout-note title="Principle"}
+To complement the CellChat analysis, NeuronChat-inferred communication networks are examined for GABAergic and glutamatergic signaling.
+
+Interaction-specific networks are aggregated using the `net_aggregation()` function and visualized using `netVisual_circle_neuron()`.
+
+The comparison focuses on the distribution and total inferred strength of neural communication across Control, SCZ and BD.
+:::
+
+```{r neuronchat_neurotransmitters}
+#| output: false
+#| message: false
+
+diagnoses <- c("Control", "SCZ", "BD")
+signals <- c("GABA", "Glutamate")
+
+signal_networks <- list(GABA = list(), Glutamate = list())
+signal_summary <- list()
+
+for (gr in diagnoses) {
+  neuronchat <- readRDS(file.path(out_dir, paste0("NeuronChat_", gr, ".rds")))
+  interaction_names <- names(neuronchat@net)
+  for (sig in signals) {
+    #Select the corresponding neural interactions
+    pattern <- if (sig == "GABA") "^GABA" else "^GLU"
+    selected <- grep(pattern, interaction_names, ignore.case = TRUE)
+
+    if (length(selected) == 0) {stop(paste("No", sig, "interactions found in", gr, "- inspect names(neuronchat@net)"))}
+
+    #NeuronChat network aggregation
+    net <- NeuronChat::net_aggregation(neuronchat@net[selected], method = "weight")
+
+    signal_networks[[sig]][[gr]] <- net
+    signal_summary[[paste(sig, gr)]] <- data.frame(Signal = sig,
+                                                   Diagnosis = gr,
+                                                   Total_weight = sum(net),
+                                                   Active_pairs = sum(net > 0))}
+
+  rm(neuronchat)
+  invisible(gc(verbose = FALSE))}
+
+signal_summary <- do.call(rbind, signal_summary)
+rownames(signal_summary) <- NULL
+
+```
+
+## Neurotransmitter-specific network comparison
+
+```{r neuronchat_signal_summary}
+#| echo: false
+
+knitr::kable(signal_summary, digits = 3, caption = "NeuronChat-inferred GABAergic and glutamatergic communication across diagnostic groups")
+```
+
+
+```{r neuronchat_signal_figures}
+#| echo: false
+#| message: false
+#| warning: false
+
+#Figure generation
+figure_files <- character()
+
+for (sig in signals) {
+  file <- file.path(fig_dir, paste0("Q4_F05_NeuronChat_", sig, "_networks.png"))
+  png(file, width = 21, height = 7, units = "in", res = 200)
+
+  old_par <- par(mfrow = c(1, 3), mar = c(1, 1, 3, 1))
+
+  for (gr in diagnoses) {
+    NeuronChat::netVisual_circle_neuron(signal_networks[[sig]][[gr]])
+    title(main = gr)}
+  
+  par(old_par)
+  dev.off()
+
+  figure_files <- c(figure_files, file)}
+
+knitr::include_graphics(figure_files, dpi = NA)
+
+```
+
+::: {.callout-note title="How to read the NeuronChat figures"}
+The circle plots represent inferred GABAergic and glutamatergic communication networks across the 17 retained cell subclasses.
+
+Nodes correspond to cell populations, while directed edges represent predicted communication between sender and receiver populations.
+
+The accompanying table summarizes the total inferred communication weight and the number of active sender–receiver pairs for each neurotransmitter system.
+
+Differences across diagnoses are descriptive and do not represent statistically significant changes in neurotransmitter release or synaptic activity.
+
+Because the analysis relies on nuclear transcriptomic data, these predictions should be interpreted cautiously and cannot establish functional synaptic connectivity.
+:::
+
+::: {.callout-tip title="Interpretation - Neurotransmitter-specific communication networks (Q4-F04)"}
+The NeuronChat circle plots illustrate the organization of inferred GABAergic and glutamatergic networks across the 17 retained cell subclasses.
+
+**GABAergic networks** exhibit visibly different connectivity patterns between diagnostic groups. Controls show a relatively distributed network involving several inhibitory neuronal populations and multiple receiver subclasses. In SCZ, the network is sparser, with fewer detected connections and a more restricted distribution of outgoing communication. BD has a more extensive network than SCZ, although connectivity remains reduced relative to controls.
+
+These visual observations are consistent with the decrease in active GABAergic sender-receiver pairs identified in the summary.
+
+In contrast, **glutamatergic networks** remain densely connected across all three conditions. The same number of active pairs is detected in Control, SCZ and BD, suggesting conserved inferred connectivity. The higher total communication weight in SCZ indicates that the aggregate strength of these predicted interactions may differ despite similar network topology.
+
+Together, the figures highlight **higher variation in inferred GABAergic connectivity than in glutamatergic connectivity**, while revealing differences in the aggregate strengths of glutamatergic interactions.
+
+These results support the exploration of altered inhibitory and excitatory signaling in psychiatric disorders, but cannot establish changes in functional synaptic transmission.
+:::
+
+## NeuronChat - Partial conclusion
+
+NeuronChat complemented the CellChat analysis by investigating neural communication mechanisms, including small molecule neurotransmitter signaling (GABA and glutamate).
+
+At the global network level, SCZ exhibited a higher total inferred communication weight than controls, whereas BD showed a slightly lower value. The number of active sender-receiver pairs remained relatively stable across conditions.
+
+Neurotransmitter-specific analyses revealed more contrasting patterns.
+
+**GABAergic communication was reduced in both SCZ and BD**, with a noticeable reduction in the number of active sender-receiver pairs in SCZ.
+
+**Glutamatergic communication remained highly connected in all three conditions**, with increased total inferred communication weight in SCZ and relatively similar values between BD and controls.
+
+These findings suggest that the larger global NeuronChat network weight observed in SCZ does not reflect a uniform increase across neurotransmitter systems.
+
+Instead, the results highlighted changes in inferred neural communication, with potentially different contributions from inhibitory and excitatory signaling.
+
+Here, NeuronChat provides complementary molecular evidence consistent with alterations in neural communication patterns, while remaining limited to computational inference from nuclear transcriptomic data.
+
+
+# General discussion
+
+## CellChat and NeuronChat findings
+
+The combined CellChat and NeuronChat analyses provide complementary perspectives on inferred intercellular communication in schizophrenia and bipolar disorder.
+
+CellChat highlighted alterations in protein-mediated communication, particularly involving synapse-associated adhesion pathways and interactions between neuronal and oligodendrocyte lineage populations.
+
+In contrast, NeuronChat revealed differences in neurotransmitter-associated communication, with reduced inferred GABAergic connectivity in both disorders and higher glutamatergic communication weight in SCZ.
+
+The two methods investigated distinct signaling mechanisms, their results collectively highlight the relevance of neuronal communication and its interactions with non-neuronal populations in psychiatric disorders.
+
+These approaches are complementary rather than independent validation methods, as they rely on the same transcriptomic input data.
+
+## Comparison with literature
+
+The reduction in inferred GABAergic connectivity, particularly pronounced in SCZ, is coherent with previous evidence of inhibitory neuronal alterations in the human dorsolateral prefrontal cortex.
+
+Okuda et al. (2024) reported abnormalities in inhibitory neuron-associated transcripts in schizophrenia than in bipolar disorder, including alterations in markers associated with GABAergic neuronal populations [5].
+
+## Comparison with previous studies
+
+The reduction in inferred GABAergic connectivity, particularly pronounced in SCZ, is coherent with previous evidence of inhibitory neuronal alterations in the human dorsolateral prefrontal cortex.
+
+Okuda et al. (2024) reported abnormalities in inhibitory neuron-associated transcripts in schizophrenia than in bipolar disorder, including alterations in markers associated with GABAergic neuronal populations [5].
+
+Consistent with our NeuronChat findings, Dienel et al. (2023) reported reduced expression of somatostatin and parvalbumin (two markers of GABAergic interneurons) in schizophrenia patients, supporting the involvement of inhibitory neuronal alterations in the disorder [6].
+
+These observations provide biological context for our NeuronChat findings.
+
+The BD-associated reduction in GABAergic communication is also coherent with previous studies of inhibitory signaling alterations in mood disorders. Gao et al. (2026) identified dysregulated neuronal communication and GABAergic signaling in post-mortem transcriptomic analyses involving bipolar disorder [7].
+
+Furthermore, the involvement of OPCs and oligodendrocytes in our CellChat results suggests that communication differences may extend beyond neuronal signaling alone.
+
+The identification of NRXN, PTPR, NCAM and ADGRL pathways supports relevance of synapse-associated adhesion and cell-recognition mechanisms. However, our analysis cannot determine whether these inferred interactions correspond to changes in synaptic architecture or function.
+
+Taken together, our findings are compatible with literature describing abnormalities in inhibitory signaling and neuronal molecular organization in psychiatric disorders, while providing an exploratory view of their possible cell subclass specific communication patterns.
+
+## Methodological limitations
+
+Several limitations should be considered when interpreting these results : 
+
+- Both approaches infer molecular communication from RNA expression rather than measuring ligand secretion, receptor activation, neurotransmitter release or synaptic connectivity.
+
+- The analyses were performed on pooled nuclei from multiple donors. So, the resulting network comparisons do not constitute donor-level statistical tests.
+
+- Genetic ancestry, age, clinical factors and post-mortem characteristics may contribute to differences between diagnostic groups. Unlike the Q2 differential expression models, communication inference was not adjusted for these covariates.
+
+- The analysis was restricted to 17 sufficiently represented subclasses, with 100 nuclei selected per subclass and diagnosis. Interactions involving rare populations or sparsely expressed genes may have been missed.
+
+- Single-nucleus transcriptomics may incompletely capture transcripts involved in neuronal processes and synaptic transmission, limiting the interpretation of predicted neural communication.
+
+These considerations highlight the fact that observed network differences should be interpreted as exploratory associations rather than confirmed disease-specific or causal alterations.
+
+
+# Final conclusion
+
+Our results suggest that SCZ and BD exhibit **partially overlapping but heterogeneous patterns of inferred cell-cell communication**.
+
+CellChat identified broadly preserved network connectivity alongside differences in protein-mediated signaling, involving neuronal-glial interactions and synapse-associated pathways such as NRXN, ADGRL, PTPR and NCAM.
+
+NeuronChat revealed complementary differences in neural-specific communication, particularly reduced inferred GABAergic connectivity in both disorders, more pronounced in SCZ, and increased glutamatergic communication weight in SCZ.
+
+Together, these findings support the working hypothesis that SCZ and BD may share certain molecular communication patterns while exhibiting diagnosis-dependent differences in their inferred organization and strength.
+
+However, the results remain exploratory and cannot establish statistically significant, causal or functionally validated alterations in intercellular communication.
+
+Future investigations using donor-aware statistical approaches, independent cohorts and functional or spatial validation will be necessary to determine the biological relevance of these candidate signaling mechanisms.
+
+
+
+
+# References
+
+[1] Fullard, J. F., et al. (2025). Population-scale cross-disorder atlas of the human prefrontal cortex at single-cell resolution. Scientific Data, 12(1), 954. https://doi.org/10.1038/s41597-025-04687-5
+
+[2] Jin, S., et al. (2021). Inference and analysis of cell-cell communication using CellChat. Nature Communications, 12(1), 1088. https://doi.org/10.1038/s41467-021-21246-9
+
+[3] Jin, S., Plikus, M. V., & Nie, Q. (2025). CellChat for systematic analysis of cell–cell communication from single-cell transcriptomics. Nature Protocols, 20(1), 180‑219. https://doi.org/10.1038/s41596-024-01045-4
+
+[4] Zhao, W., Johnston, K. G., Ren, H., Xu, X., & Nie, Q. (2023). Inferring neuron-neuron communications from single-cell transcriptomics through NeuronChat. Nature Communications, 14(1), 1128. https://doi.org/10.1038/s41467-023-36800-w
+
+[5] Okuda, T., et al. (2024). Alterations in inhibitory neuron subtype-selective transcripts in the prefrontal cortex : Comparisons across schizophrenia and mood disorders. Psychological Medicine, 54(14), 3896‑3905. https://doi.org/10.1017/S0033291724002344
+
+[6] Dienel, S. J., Fish, K. N., & Lewis, D. A. (2023). The nature of prefrontal cortical gaba neuron alterations in schizophrenia : Markedly lower somatostatin and parvalbumin gene expression without missing neurons. American Journal of Psychiatry, 180(7), 495‑507. https://doi.org/10.1176/appi.ajp.20220676
+
+[7] Gao, R., et al. (2026). Postmortem brain single-nucleus and bulk gene expression analyses identify shared and distinct abnormalities in bipolar disorder and major depressive disorder. Translational Psychiatry, 16(1), 442. https://doi.org/10.1038/s41398-026-04200-5
+
+
+# Session info
+
+```{r reproducibility}
+
+sessionInfo()
+
+```
+

@@ -1,0 +1,4 @@
+"Subclass","Contrast","Donors","Genes_retained","Genes_tested","Genes_with_padj","DEG_FDR_0.05","DEG_up","DEG_down"
+"VLMC","SCZ_vs_Control",105,24675,24663,10791,56,39,17
+"VLMC","BD_vs_Control",105,24675,24663,24663,0,0,0
+"VLMC","SCZ_vs_BD",105,24675,24663,7922,14,12,2

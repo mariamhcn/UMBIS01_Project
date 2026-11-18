@@ -1,0 +1,4 @@
+"Subclass","Contrast","Donors","Genes_retained","Genes_tested","Genes_with_padj","DEG_FDR_0.05","DEG_up","DEG_down"
+"OPC","SCZ_vs_Control",218,33423,33404,13974,118,82,36
+"OPC","BD_vs_Control",218,33423,33404,18507,517,438,79
+"OPC","SCZ_vs_BD",218,33423,33404,24982,15,1,14

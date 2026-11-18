@@ -1,0 +1,4 @@
+"Subclass","Contrast","Donors","Genes_retained","Genes_tested","Genes_with_padj","DEG_FDR_0.05","DEG_up","DEG_down"
+"Oligo","SCZ_vs_Control",219,33893,33871,22703,145,106,39
+"Oligo","BD_vs_Control",219,33893,33871,18766,149,131,18
+"Oligo","SCZ_vs_BD",219,33893,33871,30585,25,4,21

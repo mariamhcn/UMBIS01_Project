@@ -1,0 +1,4 @@
+"Subclass","Contrast","Donors","Genes_retained","Genes_tested","Genes_with_padj","DEG_FDR_0.05","DEG_up","DEG_down"
+"Astro","SCZ_vs_Control",215,33743,33711,21285,463,286,177
+"Astro","BD_vs_Control",215,33743,33711,22592,1103,893,210
+"Astro","SCZ_vs_BD",215,33743,33711,33711,5,2,3

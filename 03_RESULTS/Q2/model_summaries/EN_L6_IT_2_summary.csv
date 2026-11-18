@@ -1,0 +1,4 @@
+"Subclass","Contrast","Donors","Genes_retained","Genes_tested","Genes_with_padj","DEG_FDR_0.05","DEG_up","DEG_down"
+"EN_L6_IT_2","SCZ_vs_Control",100,31326,31326,8247,76,40,36
+"EN_L6_IT_2","BD_vs_Control",100,31326,31326,14321,96,61,35
+"EN_L6_IT_2","SCZ_vs_BD",100,31326,31326,31326,1,1,0

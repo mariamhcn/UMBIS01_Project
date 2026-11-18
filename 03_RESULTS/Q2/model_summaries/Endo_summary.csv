@@ -1,0 +1,4 @@
+"Subclass","Contrast","Donors","Genes_retained","Genes_tested","Genes_with_padj","DEG_FDR_0.05","DEG_up","DEG_down"
+"Endo","SCZ_vs_Control",189,28635,28631,14753,1116,664,452
+"Endo","BD_vs_Control",189,28635,28631,8092,118,79,39
+"Endo","SCZ_vs_BD",189,28635,28631,10867,108,97,11

@@ -1,0 +1,4 @@
+"Subclass","Contrast","Donors","Genes_retained","Genes_tested","Genes_with_padj","DEG_FDR_0.05","DEG_up","DEG_down"
+"IN_PVALB","SCZ_vs_Control",200,33741,33731,15423,257,139,118
+"IN_PVALB","BD_vs_Control",200,33741,33731,26537,271,218,53
+"IN_PVALB","SCZ_vs_BD",200,33741,33731,23920,15,4,11
