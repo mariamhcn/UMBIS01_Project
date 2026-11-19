@@ -39,14 +39,14 @@ suppressPackageStartupMessages({
   library(knitr)
   library(here)})
 
-source(here::here("02_CODE", "R", "utils_figures.R"))
+source(here::here("02_CODE", "scripts", "utils_figures.R"))
 
 col_q2 <- unname(project_colours$Q2["dark"])
 col_groups <- c(Control = "grey60", col_disease[c("SCZ", "BD")])
 
 theme_set(theme_project(base_size = 11) + theme(plot.title = element_text(hjust = 0.5)))
 
-fig_dir <- here::here("04_FIGURES", "Q2")
+fig_dir <- here::here("04_FIGURES", "Q2_differential_expression")
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 
 ```
@@ -87,7 +87,7 @@ Original gene-level statistics and adjusted p-values are preserved. No additiona
 ```{r load_q2_results}
 
 #Primary Q2 results
-q2_dir <- here::here("03_RESULTS", "Q2")
+q2_dir <- here::here("03_RESULTS", "Q2_differential_expression")
 deg_dir <- file.path(q2_dir, "DEG")
 
 #Consolidated export for Q3 (different directory)
