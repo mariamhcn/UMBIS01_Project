@@ -98,14 +98,16 @@ UMBIS01_Project/
 │   ├── preprocessing/
 │   ├── pseudobulk/
 │   ├── Q1_composition/
-│   ├── Q2/
+│   ├── Q2_differential_expression/
 │   ├── Q3_enrichment/
+│   ├── Q4_cell_communication/
 │   └── Q5_aging/
 ├── 04_FIGURES/
 │   ├── preprocessing/
 │   ├── Q1_composition/
-│   ├── Q2/
+│   ├── Q2_differential_expression/
 │   ├── Q3_enrichment/
+│   ├── Q4_cell_communication/
 │   └── Q5_aging/
 ├── 05_DOCS/                      # Final report and presentation slides
 ├── .gitignore
