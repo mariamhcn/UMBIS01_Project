@@ -48,7 +48,7 @@ suppressPackageStartupMessages({
   library(knitr)
   library(here)})
 
-source(here::here("02_CODE", "R", "utils_figures.R"))
+source(here::here("02_CODE", "scripts", "utils_figures.R"))
 
 col_main <- unname(project_colours$Q2["dark"])
 col_groups <- c(Control = "grey60", col_disease[c("SCZ", "BD")])
@@ -175,7 +175,7 @@ These analyses evaluate the stability of the findings under alternative sample s
 
 ## Expected outputs and downstream integration
 
-The primary DESeq2 results are saved in `03_RESULTS/Q2/`, including complete gene-level tables, significant DEG lists, Wald-statistic rankings and model summaries.
+The primary DESeq2 results are saved in `03_RESULTS/Q2_differential_expression/`, including complete gene-level tables, significant DEG lists, Wald-statistic rankings and model summaries.
 
 A consolidated file, `01_DATA/processed/de_results_all.csv`, is generated for downstream Q3 analyses.
 
@@ -554,7 +554,7 @@ The limited number of significant genes in the direct SCZ–BD comparison does n
 
 ```{r export_astro_results}
 
-q2_deg_dir <- here::here("03_RESULTS", "Q2", "DEG")
+q2_deg_dir <- here::here("03_RESULTS", "Q2_differential_expression", "DEG")
 dir.create(q2_deg_dir, recursive = TRUE)
 
 for (contrast_name in names(results_astro)){
@@ -642,7 +642,7 @@ p_pca <- ggplot(pca_data, aes(x = PC1, y = PC2, colour = group, shape = ancestry
     plot.title.position = "plot",
     legend.position = "right")
 
-fig_dir <- here::here("04_FIGURES", "Q2")
+fig_dir <- here::here("04_FIGURES", "Q2_differential_expression")
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 ggsave(file.path(fig_dir, "Q2_F01_Astro_PCA.png"), plot = p_pca, width = 8, height = 5.5, dpi = 300)
 
@@ -666,7 +666,7 @@ Here, the PCA provides an exploratory overview of donor-level variation.
 
 ```{r astro_dispersion}
 
-fig_dir <- here::here("04_FIGURES", "Q2")
+fig_dir <- here::here("04_FIGURES", "Q2_differential_expression")
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 disp_file <- file.path(fig_dir, "Q2_F02_Astro_Dispersion.png")
 
@@ -718,7 +718,7 @@ contrast_definitions <- list(
   SCZ_vs_BD      = c("group", "SCZ", "BD"))
 
 #Output directories
-q2_dir <- here::here("03_RESULTS", "Q2")
+q2_dir <- here::here("03_RESULTS", "Q2_differential_expression")
 deg_dir <- file.path(q2_dir, "DEG")
 rank_dir <- file.path(q2_dir, "GSEA_rankings")
 summary_dir <- file.path(q2_dir, "model_summaries")
