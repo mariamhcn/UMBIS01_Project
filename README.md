@@ -136,15 +136,15 @@ See the proposed 01_DATA/README.md for additional information on input files and
 ## 6. Reproducibility
 ### Software
 Analyses were performed in R, with RStudio for project management and Quarto for notebook rendering.
-Major packages include : Seurat, SeuratObject, Matrix, speckle, limma, DESeq2, clusterProfiler, enrichplot, msigdbr, CellChat, NeuronChat, ggplot2, dplyr, here and knitr.
-Exact package versions and session information are documented in the notebooks through sessionInfo().
+Major packages include : `Seurat, SeuratObject, Matrix, speckle, limma, DESeq2, clusterProfiler, enrichplot, msigdbr, CellChat, NeuronChat, ggplot2, dplyr, here` and `knitr`.
+Exact package versions and session information are documented in the notebooks through `sessionInfo()`.
 
 ### RStudio project
-The repository contains PsychAD_Project.Rproj, which should be opened in RStudio to work within the project.
-Source-code notebooks are stored in 02_CODE/. Several notebooks source helper functions using paths relative to that directory.
+The repository contains `PsychAD_Project.Rproj`, which should be opened in RStudio to work within the project.
+Source-code notebooks are stored in `02_CODE/`. Several notebooks source helper functions using paths relative to that directory.
 
 ### Package environment with renv
-For more consistent package management, the project can be initialized with renv.
+For more consistent package management, the project can be initialized with `renv`.
 From the project root in RStudio :
 
 ```bash
@@ -167,10 +167,10 @@ Once the lockfile is published, collaborators can restore the recorded R package
 install.packages("renv")
 renv::restore()
 ```
-renv manages R package dependencies but does not provide the scientific datasets, Quarto executable, operating-system libraries or computational resources.
+`renv` manages R package dependencies but does not provide the scientific datasets, Quarto executable, operating-system libraries or computational resources.
 
 ### Reproducing the workflow
-Run notebooks **from their expected working directory**, typically `02_CODE/`, because several source helper scripts with relative paths such as `scripts/utils_figures.R`:
+Run notebooks **from their expected working directory**, typically `02_CODE/`, because several source helper scripts with relative paths such as `scripts/utils_figures.R` :
 
 ```bash
 cd 02_CODE
@@ -188,31 +188,34 @@ quarto render 06_Q5_transcriptomic_aging.qmd --to html
 Analyses use fixed random seeds where appropriate, documented filtering thresholds and covariates, and donor-level inference wherever the methodology permits. Q4 pooled-network comparisons must be interpreted separately from donor-aware statistical tests.
 
 ### Reproducibility considerations
-	•	Donors are the biological units for statistical disease comparisons.
-	•	Raw counts are preserved for count-based analyses.
-	•	Filtering criteria, covariates and significance thresholds are documented.
-	•	Random seeds are specified for stochastic procedures.
-	•	Reusable plotting functions promote consistency across analyses.
-	•	Model outputs and figures are saved in dedicated directories.
-	•	Computationally inferred communication is distinguished from statistically tested gene-expression differences.
-	•	Package versions and session details are recorded in each notebook.
+- Donors are the biological units for statistical disease comparisons.
+- Raw counts are preserved for count-based analyses.
+- Filtering criteria, covariates and significance thresholds are documented.
+- Random seeds are specified for stochastic procedures.
+- Reusable plotting functions promote consistency across analyses.
+- Model outputs and figures are saved in dedicated directories.
+- Computationally inferred communication is distinguished from statistically tested gene-expression differences.
+- Package versions and session details are recorded in each notebook.
 
 ## 7. Project organization
 
-Myriam S. : Donor selection, preprocessing and Q1
-Mariam H. : Q2 differential expression and Q4 cell-cell communication
-Ann-Solène A. : Q3 functional enrichment and Q5 transcriptomic ageing
+- Myriam S. : Donor selection, preprocessing and Q1
+- Mariam H. : Q2 differential expression and Q4 cell-cell communication
+- Ann-Solène A. : Q3 functional enrichment and Q5 transcriptomic ageing
 
 All analyses were discussed and reviewed collaboratively.
 
 ## 8. Main limitations
-The dataset is observational and post-mortem. Differences between diagnostic groups may be affected by genetic ancestry, age, treatment history, cause of death and other unmeasured factors.
-Cell-type proportions do not directly measure cell loss. Gene-expression differences and enriched pathways do not establish causal mechanisms or functional changes.
-CellChat and NeuronChat infer potential signaling networks without functional validation or donor-level statistical adjustment. Ageing-like transcriptional profiles do not demonstrate an increased biological ageing rate.
-Accordingly, findings are interpreted as disease-associated molecular patterns rather than causal or experimentally validated mechanisms.
+
+- The dataset is observational and post-mortem.
+- Differences between diagnostic groups may be affected by genetic ancestry, age, treatment history, cause of death and other unmeasured factors.
+- Cell-type proportions do not directly measure cell loss. Gene-expression differences and enriched pathways do not establish causal mechanisms or functional changes.
+- CellChat and NeuronChat infer potential signaling networks without functional validation or donor-level statistical adjustment.
+- Ageing-like transcriptional profiles do not demonstrate an increased biological ageing rate.
+- Findings are interpreted as disease-associated molecular patterns rather than causal or experimentally validated mechanisms.
 
 ## 9. References
-The following publications and methodological resources are cited in the project notebooks. The list is **deduplicated**; citation numbering within each notebook remains local to that notebook.
+The following publications and methodological resources are cited in the project notebooks. The list is **deduplicated**, citation numbering within each notebook remains local to that notebook.
 
 1. Fullard J. F. et al. (2025). Population-scale cross-disorder atlas of the human prefrontal cortex at single-cell resolution. *Scientific Data*, 12, 954. https://doi.org/10.1038/s41597-025-04687-5
 2. Lee D. et al. (2026). Single-cell atlas of transcriptomic vulnerability across brain disorders. *Nature*, 657, 988–1002. https://doi.org/10.1038/s41586-025-09573-z
