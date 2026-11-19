@@ -191,6 +191,7 @@ The analysis produces :
 ## Setup
 
 ```{r setup}
+#| warning: false
 
 suppressPackageStartupMessages({
   library(Seurat)
@@ -201,7 +202,7 @@ suppressPackageStartupMessages({
   library(knitr)
   library(here)})
 
-source(here::here("02_CODE", "R", "utils_figures.R"))
+source(here::here("02_CODE", "scripts", "utils_figures.R"))
 col_q4 <- unname(project_colours$Q4["dark"])
 col_groups <- c(Control = "grey60", col_disease[c("SCZ", "BD")])
 
@@ -221,7 +222,7 @@ min_cells <- 10
 future::plan("sequential")
 
 out_dir <- here::here("03_RESULTS", "Q4_cell_communication")
-fig_dir <- here::here("04_FIGURES", "Q4")
+fig_dir <- here::here("04_FIGURES", "Q4_cell_communication")
 
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
