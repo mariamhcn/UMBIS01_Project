@@ -2366,7 +2366,7 @@ margin-bottom: 28px;
 <p>CellChat is used to infer protein-mediated ligand–receptor interactions and signaling pathways between neuronal, glial and vascular associated populations.</p>
 <p>Separate communication networks are constructed for Control, SCZ and BD using identical inference parameters.</p>
 <p>The analysis proceeds from global network characteristics to more specific biological mechanisms.</p>
-<p><strong>NeuronChat — Complementary neural-specific analysis</strong></p>
+<p><strong>NeuronChat - Complementary neural-specific analysis</strong></p>
 <p>NeuronChat extends this investigation by incorporating neural-specific signaling mechanisms, particularly neurotransmitter-associated communication [4].</p>
 <p>Separate networks are inferred for the same three diagnostic groups, with a focus on <strong>GABAergic and glutamatergic communication</strong>.</p>
 <p>This complementary approach allows us to investigate whether neurotransmitter-associated communication patterns differ between SCZ, BD and controls.</p>
@@ -2536,53 +2536,34 @@ margin-bottom: 28px;
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(NeuronChat)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(ggplot2)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(knitr)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(here)})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package &#39;Seurat&#39; was built under R version 4.6.1</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package &#39;sp&#39; was built under R version 4.6.1</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package &#39;igraph&#39; was built under R version 4.6.1</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: replacing previous import &#39;data.table::dcast&#39; by &#39;reshape2::dcast&#39;
-when loading &#39;NeuronChat&#39;</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: replacing previous import &#39;data.table::melt&#39; by &#39;reshape2::melt&#39; when
-loading &#39;NeuronChat&#39;</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package &#39;knitr&#39; was built under R version 4.6.1</code></pre>
-</div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;02_CODE&quot;</span>, <span class="st">&quot;R&quot;</span>, <span class="st">&quot;utils_figures.R&quot;</span>))</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>col_q4 <span class="ot">&lt;-</span> <span class="fu">unname</span>(project_colours<span class="sc">$</span>Q4[<span class="st">&quot;dark&quot;</span>])</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>col_groups <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Control =</span> <span class="st">&quot;grey60&quot;</span>, col_disease[<span class="fu">c</span>(<span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)])</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>seed <span class="ot">&lt;-</span> <span class="dv">2026</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Population selection</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>min_nuclei_group <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>min_donors_group <span class="ot">&lt;-</span> <span class="dv">20</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>target_nuclei <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">#CellChat inference parameters</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>n_permutations <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>min_cells <span class="ot">&lt;-</span> <span class="dv">10</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co">#Memory management</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>future<span class="sc">::</span><span class="fu">plan</span>(<span class="st">&quot;sequential&quot;</span>)</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>out_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;03_RESULTS&quot;</span>, <span class="st">&quot;Q4_cell_communication&quot;</span>)</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>fig_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;04_FIGURES&quot;</span>, <span class="st">&quot;Q4&quot;</span>)</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(out_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(fig_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_project</span>(<span class="at">base_size =</span> <span class="dv">11</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>), <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(here)})</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;02_CODE&quot;</span>, <span class="st">&quot;scripts&quot;</span>, <span class="st">&quot;utils_figures.R&quot;</span>))</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>col_q4 <span class="ot">&lt;-</span> <span class="fu">unname</span>(project_colours<span class="sc">$</span>Q4[<span class="st">&quot;dark&quot;</span>])</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>col_groups <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Control =</span> <span class="st">&quot;grey60&quot;</span>, col_disease[<span class="fu">c</span>(<span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)])</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>seed <span class="ot">&lt;-</span> <span class="dv">2026</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(seed)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">#Population selection</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>min_nuclei_group <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>min_donors_group <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>target_nuclei <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">#CellChat inference parameters</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>n_permutations <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>min_cells <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co">#Memory management</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>future<span class="sc">::</span><span class="fu">plan</span>(<span class="st">&quot;sequential&quot;</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>out_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;03_RESULTS&quot;</span>, <span class="st">&quot;Q4_cell_communication&quot;</span>)</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>fig_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;04_FIGURES&quot;</span>, <span class="st">&quot;Q4_cell_communication&quot;</span>)</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(out_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(fig_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_project</span>(<span class="at">base_size =</span> <span class="dv">11</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>), <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="analysis-parameters-and-methodological-choices" class="level2" data-number="1.10">
@@ -2699,17 +2680,17 @@ loading &#39;NeuronChat&#39;</code></pre>
 <h2 data-number="2.1" class="anchored" data-anchor-id="locate-the-preprocessed-seurat-object"><span class="header-section-number">2.1</span> Locate the preprocessed Seurat object</h2>
 <p>The Seurat object generated during preprocessing is reused without re-downloading the original PsychAD dataset. Its presence and size are verified before loading it into memory.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>seurat_file <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;01_DATA&quot;</span>, <span class="st">&quot;processed&quot;</span>, <span class="st">&quot;seurat_object_HBCC_224donors.rds&quot;</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(seurat_file)) {<span class="fu">stop</span>(<span class="st">&quot;Seurat input file not found : &quot;</span>, seurat_file)}</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>input_size_gb <span class="ot">&lt;-</span> <span class="fu">file.info</span>(seurat_file)<span class="sc">$</span>size <span class="sc">/</span> <span class="dv">1024</span><span class="sc">^</span><span class="dv">3</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Seurat input:&quot;</span>, <span class="fu">basename</span>(seurat_file))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>seurat_file <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;01_DATA&quot;</span>, <span class="st">&quot;processed&quot;</span>, <span class="st">&quot;seurat_object_HBCC_224donors.rds&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">file.exists</span>(seurat_file)) {<span class="fu">stop</span>(<span class="st">&quot;Seurat input file not found : &quot;</span>, seurat_file)}</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>input_size_gb <span class="ot">&lt;-</span> <span class="fu">file.info</span>(seurat_file)<span class="sc">$</span>size <span class="sc">/</span> <span class="dv">1024</span><span class="sc">^</span><span class="dv">3</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Seurat input:&quot;</span>, <span class="fu">basename</span>(seurat_file))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Seurat input: seurat_object_HBCC_224donors.rds</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;File size:&quot;</span>, <span class="fu">round</span>(input_size_gb, <span class="dv">2</span>), <span class="st">&quot;GB&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;File size:&quot;</span>, <span class="fu">round</span>(input_size_gb, <span class="dv">2</span>), <span class="st">&quot;GB&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>File size: 1.08 GB</code></pre>
 </div>
@@ -2719,49 +2700,49 @@ loading &#39;NeuronChat&#39;</code></pre>
 <h2 data-number="2.2" class="anchored" data-anchor-id="load-and-validate-the-seurat-object"><span class="header-section-number">2.2</span> Load and validate the Seurat object</h2>
 <p>The object is checked for required donor and cell population metadata. The availability of normalized RNA expression is also verified before CellChat inference.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>obj <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(seurat_file)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>meta_q4 <span class="ot">&lt;-</span> obj[[]]</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>required_metadata <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;donor_id&quot;</span>,</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;group&quot;</span>,</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;subclass&quot;</span>,</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;age&quot;</span>,</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;sex&quot;</span>,</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;ancestry&quot;</span>)</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">all</span>(required_metadata <span class="sc">%in%</span> <span class="fu">colnames</span>(meta_q4)),</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>          <span class="fu">nrow</span>(meta_q4) <span class="sc">==</span> <span class="fu">ncol</span>(obj),</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>          <span class="fu">identical</span>(<span class="fu">rownames</span>(meta_q4), <span class="fu">colnames</span>(obj)),</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>          <span class="sc">!</span><span class="fu">anyNA</span>(meta_q4[, required_metadata]),</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;RNA&quot;</span> <span class="sc">%in%</span> SeuratObject<span class="sc">::</span><span class="fu">Assays</span>(obj))</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="co">#Standardize diagnosis labels</span></span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>group_levels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>meta_q4<span class="sc">$</span>group <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">as.character</span>(meta_q4<span class="sc">$</span>group), <span class="at">levels =</span> group_levels)</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="co">#Check that each donor belongs to one diagnosis</span></span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>donor_info <span class="ot">&lt;-</span> <span class="fu">unique</span>(meta_q4[, <span class="fu">c</span>(<span class="st">&quot;donor_id&quot;</span>, <span class="st">&quot;group&quot;</span>)])</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">anyDuplicated</span>(donor_info<span class="sc">$</span>donor_id))</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="co">#Inspect expression layers without converting to dense</span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>rna_layers <span class="ot">&lt;-</span> SeuratObject<span class="sc">::</span><span class="fu">Layers</span>(obj[[<span class="st">&quot;RNA&quot;</span>]])</span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>input_summary <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Characteristic =</span> <span class="fu">c</span>(<span class="st">&quot;Nuclei&quot;</span>,</span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;Unique donors&quot;</span>,</span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;Annotated subclasses&quot;</span>,</span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;RNA genes&quot;</span>,</span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;Seurat object size (MB)&quot;</span>,</span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;Normalized RNA layer available&quot;</span>),</span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>                            <span class="at">Value =</span> <span class="fu">c</span>(<span class="fu">ncol</span>(obj),</span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">nrow</span>(donor_info),</span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">length</span>(<span class="fu">unique</span>(meta_q4<span class="sc">$</span>subclass)),</span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">nrow</span>(obj[[<span class="st">&quot;RNA&quot;</span>]]),</span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">object.size</span>(obj)) <span class="sc">/</span> <span class="dv">1024</span><span class="sc">^</span><span class="dv">2</span>, <span class="dv">1</span>),</span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">&quot;data&quot;</span> <span class="sc">%in%</span> rna_layers))</span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(input_summary, <span class="at">caption =</span> <span class="st">&quot;Summary of the preprocessed Seurat input for Q4&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>obj <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(seurat_file)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>meta_q4 <span class="ot">&lt;-</span> obj[[]]</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>required_metadata <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;donor_id&quot;</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;group&quot;</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;subclass&quot;</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;age&quot;</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;sex&quot;</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                       <span class="st">&quot;ancestry&quot;</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">all</span>(required_metadata <span class="sc">%in%</span> <span class="fu">colnames</span>(meta_q4)),</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>          <span class="fu">nrow</span>(meta_q4) <span class="sc">==</span> <span class="fu">ncol</span>(obj),</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>          <span class="fu">identical</span>(<span class="fu">rownames</span>(meta_q4), <span class="fu">colnames</span>(obj)),</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>          <span class="sc">!</span><span class="fu">anyNA</span>(meta_q4[, required_metadata]),</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot;RNA&quot;</span> <span class="sc">%in%</span> SeuratObject<span class="sc">::</span><span class="fu">Assays</span>(obj))</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co">#Standardize diagnosis labels</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>group_levels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>meta_q4<span class="sc">$</span>group <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">as.character</span>(meta_q4<span class="sc">$</span>group), <span class="at">levels =</span> group_levels)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="co">#Check that each donor belongs to one diagnosis</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>donor_info <span class="ot">&lt;-</span> <span class="fu">unique</span>(meta_q4[, <span class="fu">c</span>(<span class="st">&quot;donor_id&quot;</span>, <span class="st">&quot;group&quot;</span>)])</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="sc">!</span><span class="fu">anyDuplicated</span>(donor_info<span class="sc">$</span>donor_id))</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="co">#Inspect expression layers without converting to dense</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>rna_layers <span class="ot">&lt;-</span> SeuratObject<span class="sc">::</span><span class="fu">Layers</span>(obj[[<span class="st">&quot;RNA&quot;</span>]])</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>input_summary <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Characteristic =</span> <span class="fu">c</span>(<span class="st">&quot;Nuclei&quot;</span>,</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;Unique donors&quot;</span>,</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;Annotated subclasses&quot;</span>,</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;RNA genes&quot;</span>,</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;Seurat object size (MB)&quot;</span>,</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>                                               <span class="st">&quot;Normalized RNA layer available&quot;</span>),</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>                            <span class="at">Value =</span> <span class="fu">c</span>(<span class="fu">ncol</span>(obj),</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">nrow</span>(donor_info),</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">length</span>(<span class="fu">unique</span>(meta_q4<span class="sc">$</span>subclass)),</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">nrow</span>(obj[[<span class="st">&quot;RNA&quot;</span>]]),</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>                                      <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">object.size</span>(obj)) <span class="sc">/</span> <span class="dv">1024</span><span class="sc">^</span><span class="dv">2</span>, <span class="dv">1</span>),</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">&quot;data&quot;</span> <span class="sc">%in%</span> rna_layers))</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(input_summary, <span class="at">caption =</span> <span class="st">&quot;Summary of the preprocessed Seurat input for Q4&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Summary of the preprocessed Seurat input for Q4</caption>
@@ -2799,7 +2780,7 @@ loading &#39;NeuronChat&#39;</code></pre>
 </tbody>
 </table>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Available RNA layers:&quot;</span>, <span class="fu">paste</span>(rna_layers, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Available RNA layers:&quot;</span>, <span class="fu">paste</span>(rna_layers, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Available RNA layers: counts, data, scale.data</code></pre>
 </div>
@@ -2823,12 +2804,12 @@ loading &#39;NeuronChat&#39;</code></pre>
 <p>Because diagnostic groups contain different numbers of donors, cell population availability is examined before communication inference.</p>
 <p>The number of nuclei and the number of contributing donors are reported separately for each diagnostic group.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Nuclei and unique donors per diagnosis</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>nuclei_by_group <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">factor</span>(meta_q4<span class="sc">$</span>group, <span class="at">levels =</span> group_levels))</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>donors_by_group <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">factor</span>(donor_info<span class="sc">$</span>group, <span class="at">levels =</span> group_levels))</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>group_summary <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Diagnosis =</span> group_levels, <span class="at">Donors =</span> <span class="fu">as.integer</span>(donors_by_group), <span class="at">Nuclei =</span> <span class="fu">as.integer</span>(nuclei_by_group))</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(group_summary, <span class="at">caption =</span> <span class="st">&quot;Donor and nucleus representation by diagnostic group&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Nuclei and unique donors per diagnosis</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>nuclei_by_group <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">factor</span>(meta_q4<span class="sc">$</span>group, <span class="at">levels =</span> group_levels))</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>donors_by_group <span class="ot">&lt;-</span> <span class="fu">table</span>(<span class="fu">factor</span>(donor_info<span class="sc">$</span>group, <span class="at">levels =</span> group_levels))</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>group_summary <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Diagnosis =</span> group_levels, <span class="at">Donors =</span> <span class="fu">as.integer</span>(donors_by_group), <span class="at">Nuclei =</span> <span class="fu">as.integer</span>(nuclei_by_group))</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(group_summary, <span class="at">caption =</span> <span class="st">&quot;Donor and nucleus representation by diagnostic group&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Donor and nucleus representation by diagnostic group</caption>
@@ -2858,33 +2839,33 @@ loading &#39;NeuronChat&#39;</code></pre>
 </tbody>
 </table>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Verify the preprocessing subsampling limit</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>nuclei_per_donor <span class="ot">&lt;-</span> <span class="fu">table</span>(meta_q4<span class="sc">$</span>donor_id)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Maximum nuclei per donor:&quot;</span>, <span class="fu">max</span>(nuclei_per_donor))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Verify the preprocessing subsampling limit</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>nuclei_per_donor <span class="ot">&lt;-</span> <span class="fu">table</span>(meta_q4<span class="sc">$</span>donor_id)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Maximum nuclei per donor:&quot;</span>, <span class="fu">max</span>(nuclei_per_donor))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Maximum nuclei per donor: 200</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">max</span>(nuclei_per_donor) <span class="sc">&lt;=</span> <span class="dv">200</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Number of nuclei per subclass and diagnosis</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>nuclei_table <span class="ot">&lt;-</span> <span class="fu">table</span>(meta_q4<span class="sc">$</span>subclass, meta_q4<span class="sc">$</span>group)</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co">#Number of distinct donors contributing to each subclass</span></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>donor_subclass <span class="ot">&lt;-</span> <span class="fu">unique</span>(meta_q4[, <span class="fu">c</span>(<span class="st">&quot;donor_id&quot;</span>, <span class="st">&quot;subclass&quot;</span>, <span class="st">&quot;group&quot;</span>)])</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>donor_table <span class="ot">&lt;-</span> <span class="fu">table</span>(donor_subclass<span class="sc">$</span>subclass, donor_subclass<span class="sc">$</span>group)</span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>subclass_availability <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Subclass =</span> <span class="fu">rownames</span>(nuclei_table),</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Nuclei_Control =</span> <span class="fu">as.integer</span>(nuclei_table[, <span class="st">&quot;Control&quot;</span>]),</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Nuclei_SCZ =</span> <span class="fu">as.integer</span>(nuclei_table[, <span class="st">&quot;SCZ&quot;</span>]),</span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Nuclei_BD =</span> <span class="fu">as.integer</span>(nuclei_table[, <span class="st">&quot;BD&quot;</span>]),</span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Donors_Control =</span> <span class="fu">as.integer</span>( donor_table[<span class="fu">rownames</span>(nuclei_table), <span class="st">&quot;Control&quot;</span>]),</span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Donors_SCZ =</span> <span class="fu">as.integer</span>( donor_table[<span class="fu">rownames</span>(nuclei_table), <span class="st">&quot;SCZ&quot;</span>]),</span>
-<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Donors_BD =</span> <span class="fu">as.integer</span>( donor_table[<span class="fu">rownames</span>(nuclei_table), <span class="st">&quot;BD&quot;</span>]))</span>
-<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(subclass_availability) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(subclass_availability, <span class="at">caption =</span> <span class="st">&quot;Nucleus and donor availability per cell subclass and diagnosis&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">max</span>(nuclei_per_donor) <span class="sc">&lt;=</span> <span class="dv">200</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Number of nuclei per subclass and diagnosis</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>nuclei_table <span class="ot">&lt;-</span> <span class="fu">table</span>(meta_q4<span class="sc">$</span>subclass, meta_q4<span class="sc">$</span>group)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#Number of distinct donors contributing to each subclass</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>donor_subclass <span class="ot">&lt;-</span> <span class="fu">unique</span>(meta_q4[, <span class="fu">c</span>(<span class="st">&quot;donor_id&quot;</span>, <span class="st">&quot;subclass&quot;</span>, <span class="st">&quot;group&quot;</span>)])</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>donor_table <span class="ot">&lt;-</span> <span class="fu">table</span>(donor_subclass<span class="sc">$</span>subclass, donor_subclass<span class="sc">$</span>group)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>subclass_availability <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Subclass =</span> <span class="fu">rownames</span>(nuclei_table),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Nuclei_Control =</span> <span class="fu">as.integer</span>(nuclei_table[, <span class="st">&quot;Control&quot;</span>]),</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Nuclei_SCZ =</span> <span class="fu">as.integer</span>(nuclei_table[, <span class="st">&quot;SCZ&quot;</span>]),</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Nuclei_BD =</span> <span class="fu">as.integer</span>(nuclei_table[, <span class="st">&quot;BD&quot;</span>]),</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Donors_Control =</span> <span class="fu">as.integer</span>( donor_table[<span class="fu">rownames</span>(nuclei_table), <span class="st">&quot;Control&quot;</span>]),</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Donors_SCZ =</span> <span class="fu">as.integer</span>( donor_table[<span class="fu">rownames</span>(nuclei_table), <span class="st">&quot;SCZ&quot;</span>]),</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">Donors_BD =</span> <span class="fu">as.integer</span>( donor_table[<span class="fu">rownames</span>(nuclei_table), <span class="st">&quot;BD&quot;</span>]))</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(subclass_availability) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(subclass_availability, <span class="at">caption =</span> <span class="st">&quot;Nucleus and donor availability per cell subclass and diagnosis&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Nucleus and donor availability per cell subclass and diagnosis</caption>
@@ -3213,12 +3194,12 @@ loading &#39;NeuronChat&#39;</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Apply representation criteria across all diagnoses</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>keep_population <span class="ot">&lt;-</span> <span class="fu">with</span>(subclass_availability,</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">pmin</span>(Nuclei_Control, Nuclei_SCZ, Nuclei_BD) <span class="sc">&gt;=</span> min_nuclei_group <span class="sc">&amp;</span> <span class="fu">pmin</span>(Donors_Control, Donors_SCZ, Donors_BD) <span class="sc">&gt;=</span> min_donors_group)</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>retained_q4 <span class="ot">&lt;-</span> <span class="fu">sort</span>(subclass_availability<span class="sc">$</span>Subclass[keep_population])</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>excluded_q4 <span class="ot">&lt;-</span> <span class="fu">sort</span>(subclass_availability<span class="sc">$</span>Subclass[<span class="sc">!</span>keep_population])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Apply representation criteria across all diagnoses</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>keep_population <span class="ot">&lt;-</span> <span class="fu">with</span>(subclass_availability,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">pmin</span>(Nuclei_Control, Nuclei_SCZ, Nuclei_BD) <span class="sc">&gt;=</span> min_nuclei_group <span class="sc">&amp;</span> <span class="fu">pmin</span>(Donors_Control, Donors_SCZ, Donors_BD) <span class="sc">&gt;=</span> min_donors_group)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>retained_q4 <span class="ot">&lt;-</span> <span class="fu">sort</span>(subclass_availability<span class="sc">$</span>Subclass[keep_population])</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>excluded_q4 <span class="ot">&lt;-</span> <span class="fu">sort</span>(subclass_availability<span class="sc">$</span>Subclass[<span class="sc">!</span>keep_population])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="donor-aware-nucleus-sampling" class="level2" data-number="3.2">
@@ -3239,39 +3220,39 @@ loading &#39;NeuronChat&#39;</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>sample_by_donor <span class="ot">&lt;-</span> <span class="cf">function</span>(d, n_target, seed) {<span class="fu">set.seed</span>(seed)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Nucleus identifiers grouped by donor</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  donor_cells <span class="ot">&lt;-</span> <span class="fu">split</span>(<span class="fu">rownames</span>(d), <span class="fu">as.character</span>(d<span class="sc">$</span>donor_id))</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Randomize nuclei within each donor</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  donor_cells <span class="ot">&lt;-</span> <span class="fu">lapply</span>(donor_cells, sample)</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  selected <span class="ot">&lt;-</span> <span class="fu">character</span>(<span class="dv">0</span>)</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Sampling across donors</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (round_id <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">max</span>(<span class="fu">lengths</span>(donor_cells)))) {</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    available <span class="ot">&lt;-</span> <span class="fu">names</span>(donor_cells)[<span class="fu">lengths</span>(donor_cells) <span class="sc">&gt;=</span> round_id]</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    available <span class="ot">&lt;-</span> <span class="fu">sample</span>(available, <span class="fu">length</span>(available))</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    selected <span class="ot">&lt;-</span> <span class="fu">c</span>(selected, <span class="fu">vapply</span>(available, <span class="cf">function</span>(id) donor_cells[[id]][round_id], <span class="fu">character</span>(<span class="dv">1</span>)))</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(selected) <span class="sc">&gt;=</span> n_target) <span class="cf">break</span>}</span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">length</span>(selected) <span class="sc">&gt;=</span> n_target)</span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>  selected[<span class="fu">seq_len</span>(n_target)]}</span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="co">#Generate a reproducible selection for each condition</span></span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>sampled_cells <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> group_levels) {</span>
-<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>  selected_group <span class="ot">&lt;-</span> <span class="fu">character</span>(<span class="dv">0</span>)</span>
-<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (sc <span class="cf">in</span> retained_q4) {</span>
-<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">&lt;-</span> meta_q4[meta_q4<span class="sc">$</span>group <span class="sc">==</span> gr <span class="sc">&amp;</span> meta_q4<span class="sc">$</span>subclass <span class="sc">==</span> sc, , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
-<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>    seed_value <span class="ot">&lt;-</span> seed</span>
-<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    selected_group <span class="ot">&lt;-</span> <span class="fu">c</span>(selected_group, <span class="fu">sample_by_donor</span>(d, <span class="at">n_target =</span> target_nuclei, <span class="at">seed =</span> seed_value))}</span>
-<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>  sampled_cells[[gr]] <span class="ot">&lt;-</span> selected_group}</span>
-<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a><span class="co">#Preserve the selected nucleus and donor identities</span></span>
-<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>sampled_meta <span class="ot">&lt;-</span> meta_q4[<span class="fu">unlist</span>(sampled_cells, <span class="at">use.names =</span> <span class="cn">FALSE</span>), <span class="fu">c</span>(<span class="st">&quot;donor_id&quot;</span>, <span class="st">&quot;group&quot;</span>, <span class="st">&quot;subclass&quot;</span>), drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
-<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(sampled_meta, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_sampling_manifest.rds&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>sample_by_donor <span class="ot">&lt;-</span> <span class="cf">function</span>(d, n_target, seed) {<span class="fu">set.seed</span>(seed)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Nucleus identifiers grouped by donor</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  donor_cells <span class="ot">&lt;-</span> <span class="fu">split</span>(<span class="fu">rownames</span>(d), <span class="fu">as.character</span>(d<span class="sc">$</span>donor_id))</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Randomize nuclei within each donor</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  donor_cells <span class="ot">&lt;-</span> <span class="fu">lapply</span>(donor_cells, sample)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  selected <span class="ot">&lt;-</span> <span class="fu">character</span>(<span class="dv">0</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Sampling across donors</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (round_id <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">max</span>(<span class="fu">lengths</span>(donor_cells)))) {</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    available <span class="ot">&lt;-</span> <span class="fu">names</span>(donor_cells)[<span class="fu">lengths</span>(donor_cells) <span class="sc">&gt;=</span> round_id]</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    available <span class="ot">&lt;-</span> <span class="fu">sample</span>(available, <span class="fu">length</span>(available))</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    selected <span class="ot">&lt;-</span> <span class="fu">c</span>(selected, <span class="fu">vapply</span>(available, <span class="cf">function</span>(id) donor_cells[[id]][round_id], <span class="fu">character</span>(<span class="dv">1</span>)))</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(selected) <span class="sc">&gt;=</span> n_target) <span class="cf">break</span>}</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">length</span>(selected) <span class="sc">&gt;=</span> n_target)</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  selected[<span class="fu">seq_len</span>(n_target)]}</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="co">#Generate a reproducible selection for each condition</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>sampled_cells <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> group_levels) {</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>  selected_group <span class="ot">&lt;-</span> <span class="fu">character</span>(<span class="dv">0</span>)</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (sc <span class="cf">in</span> retained_q4) {</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">&lt;-</span> meta_q4[meta_q4<span class="sc">$</span>group <span class="sc">==</span> gr <span class="sc">&amp;</span> meta_q4<span class="sc">$</span>subclass <span class="sc">==</span> sc, , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    seed_value <span class="ot">&lt;-</span> seed</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    selected_group <span class="ot">&lt;-</span> <span class="fu">c</span>(selected_group, <span class="fu">sample_by_donor</span>(d, <span class="at">n_target =</span> target_nuclei, <span class="at">seed =</span> seed_value))}</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>  sampled_cells[[gr]] <span class="ot">&lt;-</span> selected_group}</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="co">#Preserve the selected nucleus and donor identities</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>sampled_meta <span class="ot">&lt;-</span> meta_q4[<span class="fu">unlist</span>(sampled_cells, <span class="at">use.names =</span> <span class="cn">FALSE</span>), <span class="fu">c</span>(<span class="st">&quot;donor_id&quot;</span>, <span class="st">&quot;group&quot;</span>, <span class="st">&quot;subclass&quot;</span>), drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(sampled_meta, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_sampling_manifest.rds&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="prepare-lightweight-expression-inputs-for-cellchat" class="level2" data-number="3.3">
@@ -3279,22 +3260,22 @@ loading &#39;NeuronChat&#39;</code></pre>
 <p>CellChat requires normalized expression values and cell population annotations.</p>
 <p>Rather than retaining the complete Seurat object during communication inference, normalized RNA expression is extracted for the selected nuclei and saved separately for each diagnostic group.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Extract normalized RNA layer</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>rna_data <span class="ot">&lt;-</span> SeuratObject<span class="sc">::</span><span class="fu">LayerData</span>(obj, <span class="at">assay =</span> <span class="st">&quot;RNA&quot;</span>, <span class="at">layer =</span> <span class="st">&quot;data&quot;</span>)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">inherits</span>(rna_data, <span class="st">&quot;sparseMatrix&quot;</span>), <span class="sc">!</span><span class="fu">anyDuplicated</span>(<span class="fu">rownames</span>(rna_data)))</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> group_levels) {</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  cells <span class="ot">&lt;-</span> sampled_cells[[gr]]</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  expression <span class="ot">&lt;-</span> rna_data[ , cells, drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  metadata <span class="ot">&lt;-</span> sampled_meta[cells, , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  metadata<span class="sc">$</span>labels <span class="ot">&lt;-</span> <span class="fu">factor</span>(metadata<span class="sc">$</span>subclass, <span class="at">levels =</span> retained_q4)</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS</span>(<span class="fu">list</span>(<span class="at">expression =</span> expression, <span class="at">metadata =</span> metadata), <span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_input_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(expression, metadata)}</span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(rna_data, obj) <span class="co">#free the large Seurat object from memory</span></span>
-<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Extract normalized RNA layer</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>rna_data <span class="ot">&lt;-</span> SeuratObject<span class="sc">::</span><span class="fu">LayerData</span>(obj, <span class="at">assay =</span> <span class="st">&quot;RNA&quot;</span>, <span class="at">layer =</span> <span class="st">&quot;data&quot;</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">inherits</span>(rna_data, <span class="st">&quot;sparseMatrix&quot;</span>), <span class="sc">!</span><span class="fu">anyDuplicated</span>(<span class="fu">rownames</span>(rna_data)))</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> group_levels) {</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  cells <span class="ot">&lt;-</span> sampled_cells[[gr]]</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  expression <span class="ot">&lt;-</span> rna_data[ , cells, drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  metadata <span class="ot">&lt;-</span> sampled_meta[cells, , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  metadata<span class="sc">$</span>labels <span class="ot">&lt;-</span> <span class="fu">factor</span>(metadata<span class="sc">$</span>subclass, <span class="at">levels =</span> retained_q4)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS</span>(<span class="fu">list</span>(<span class="at">expression =</span> expression, <span class="at">metadata =</span> metadata), <span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_input_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(expression, metadata)}</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(rna_data, obj) <span class="co">#free the large Seurat object from memory</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="selected-populations-and-sampling-summary" class="level2" data-number="3.4">
@@ -3387,35 +3368,35 @@ loading &#39;NeuronChat&#39;</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>CellChatDB.use <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">subsetDB</span>(CellChatDB.human)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)) {</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  output_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(out_dir,<span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>))</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">file.exists</span>(output_file)) <span class="cf">next</span> <span class="co">#reuse previous analyses</span></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  input <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_input_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">identical</span>(<span class="fu">colnames</span>(input<span class="sc">$</span>expression), <span class="fu">rownames</span>(input<span class="sc">$</span>metadata)),<span class="st">&quot;labels&quot;</span> <span class="sc">%in%</span> <span class="fu">names</span>(input<span class="sc">$</span>metadata))</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Create CellChat object</span></span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">createCellChat</span>(<span class="at">object =</span> input<span class="sc">$</span>expression, <span class="at">meta =</span> input<span class="sc">$</span>metadata, <span class="at">group.by =</span> <span class="st">&quot;labels&quot;</span>)</span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  cellchat<span class="sc">@</span>DB <span class="ot">&lt;-</span> CellChatDB.use</span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">subsetData</span>(cellchat)</span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">identifyOverExpressedGenes</span>(cellchat)</span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">identifyOverExpressedInteractions</span>(cellchat)</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Infer ligand-receptor communication</span></span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">computeCommunProb</span>(cellchat, <span class="at">type =</span> <span class="st">&quot;triMean&quot;</span>, <span class="at">nboot =</span> n_permutations, <span class="at">seed.use =</span> seed, <span class="at">population.size =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">filterCommunication</span>(cellchat, <span class="at">min.cells =</span> min_cells)</span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Infer pathway-level communication</span></span>
-<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">computeCommunProbPathway</span>(cellchat)</span>
-<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Aggregate cell-cell communication network</span></span>
-<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">aggregateNet</span>(cellchat)</span>
-<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS</span>(cellchat,output_file)</span>
-<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(input, cellchat) <span class="co">#free memory</span></span>
-<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))</span>
-<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>CellChatDB.use <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">subsetDB</span>(CellChatDB.human)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)) {</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  output_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(out_dir,<span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">file.exists</span>(output_file)) <span class="cf">next</span> <span class="co">#reuse previous analyses</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  input <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_input_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">identical</span>(<span class="fu">colnames</span>(input<span class="sc">$</span>expression), <span class="fu">rownames</span>(input<span class="sc">$</span>metadata)),<span class="st">&quot;labels&quot;</span> <span class="sc">%in%</span> <span class="fu">names</span>(input<span class="sc">$</span>metadata))</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Create CellChat object</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">createCellChat</span>(<span class="at">object =</span> input<span class="sc">$</span>expression, <span class="at">meta =</span> input<span class="sc">$</span>metadata, <span class="at">group.by =</span> <span class="st">&quot;labels&quot;</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  cellchat<span class="sc">@</span>DB <span class="ot">&lt;-</span> CellChatDB.use</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">subsetData</span>(cellchat)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">identifyOverExpressedGenes</span>(cellchat)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">identifyOverExpressedInteractions</span>(cellchat)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Infer ligand-receptor communication</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">computeCommunProb</span>(cellchat, <span class="at">type =</span> <span class="st">&quot;triMean&quot;</span>, <span class="at">nboot =</span> n_permutations, <span class="at">seed.use =</span> seed, <span class="at">population.size =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">filterCommunication</span>(cellchat, <span class="at">min.cells =</span> min_cells)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Infer pathway-level communication</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">computeCommunProbPathway</span>(cellchat)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Aggregate cell-cell communication network</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">aggregateNet</span>(cellchat)</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS</span>(cellchat,output_file)</span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(input, cellchat) <span class="co">#free memory</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="communication-network-summary" class="level2" data-number="4.2">
@@ -3522,44 +3503,44 @@ loading &#39;NeuronChat&#39;</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| output: false</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>diagnoses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>networks <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>cell_order <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  count_mat <span class="ot">&lt;-</span> cellchat<span class="sc">@</span>net<span class="sc">$</span>count</span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  weight_mat <span class="ot">&lt;-</span> cellchat<span class="sc">@</span>net<span class="sc">$</span>weight</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(cell_order)) {cell_order <span class="ot">&lt;-</span> <span class="fu">rownames</span>(count_mat)}</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">setequal</span>(<span class="fu">rownames</span>(count_mat), cell_order),</span>
-<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">setequal</span>(<span class="fu">colnames</span>(count_mat), cell_order),</span>
-<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">setequal</span>(<span class="fu">rownames</span>(weight_mat), cell_order),</span>
-<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>            <span class="fu">setequal</span>(<span class="fu">colnames</span>(weight_mat), cell_order))</span>
-<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>  networks[[gr]] <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">count =</span> count_mat[cell_order, cell_order],</span>
-<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>                         <span class="at">weight =</span> weight_mat[cell_order, cell_order])</span>
-<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(cellchat, count_mat, weight_mat)</span>
-<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span>
-<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a><span class="co">#One row per sender-receiver pair</span></span>
-<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a>pairwise_network <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(<span class="at">Sender =</span> cell_order, <span class="at">Receiver =</span> cell_order, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
-<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>  pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Count_&quot;</span>, gr)]] <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(networks[[gr]]<span class="sc">$</span>count)</span>
-<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a>  pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Weight_&quot;</span>, gr)]] <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(networks[[gr]]<span class="sc">$</span>weight) }</span>
-<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a><span class="co">#Diagnostic differences relative to controls</span></span>
-<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)) {</span>
-<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a>  pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Delta_Count_&quot;</span>, gr)]] <span class="ot">&lt;-</span> pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Count_&quot;</span>, gr)]] <span class="sc">-</span> pairwise_network<span class="sc">$</span>Count_Control</span>
-<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a>  pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Delta_Weight_&quot;</span>, gr)]] <span class="ot">&lt;-</span> pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Weight_&quot;</span>, gr)]] <span class="sc">-</span> pairwise_network<span class="sc">$</span>Weight_Control}</span>
-<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(pairwise_network, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_pairwise_network_comparison.csv&quot;</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| output: false</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>diagnoses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>networks <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>cell_order <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  count_mat <span class="ot">&lt;-</span> cellchat<span class="sc">@</span>net<span class="sc">$</span>count</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  weight_mat <span class="ot">&lt;-</span> cellchat<span class="sc">@</span>net<span class="sc">$</span>weight</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(cell_order)) {cell_order <span class="ot">&lt;-</span> <span class="fu">rownames</span>(count_mat)}</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">setequal</span>(<span class="fu">rownames</span>(count_mat), cell_order),</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">setequal</span>(<span class="fu">colnames</span>(count_mat), cell_order),</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">setequal</span>(<span class="fu">rownames</span>(weight_mat), cell_order),</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>            <span class="fu">setequal</span>(<span class="fu">colnames</span>(weight_mat), cell_order))</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  networks[[gr]] <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">count =</span> count_mat[cell_order, cell_order],</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>                         <span class="at">weight =</span> weight_mat[cell_order, cell_order])</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(cellchat, count_mat, weight_mat)</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a><span class="co">#One row per sender-receiver pair</span></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>pairwise_network <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(<span class="at">Sender =</span> cell_order, <span class="at">Receiver =</span> cell_order, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>  pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Count_&quot;</span>, gr)]] <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(networks[[gr]]<span class="sc">$</span>count)</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>  pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Weight_&quot;</span>, gr)]] <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(networks[[gr]]<span class="sc">$</span>weight) }</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a><span class="co">#Diagnostic differences relative to controls</span></span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)) {</span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>  pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Delta_Count_&quot;</span>, gr)]] <span class="ot">&lt;-</span> pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Count_&quot;</span>, gr)]] <span class="sc">-</span> pairwise_network<span class="sc">$</span>Count_Control</span>
+<span id="cb17-36"><a href="#cb17-36" aria-hidden="true" tabindex="-1"></a>  pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Delta_Weight_&quot;</span>, gr)]] <span class="ot">&lt;-</span> pairwise_network[[<span class="fu">paste0</span>(<span class="st">&quot;Weight_&quot;</span>, gr)]] <span class="sc">-</span> pairwise_network<span class="sc">$</span>Weight_Control}</span>
+<span id="cb17-37"><a href="#cb17-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-38"><a href="#cb17-38" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(pairwise_network, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_pairwise_network_comparison.csv&quot;</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="differential-communication-heatmaps" class="level2" data-number="5.2">
@@ -3567,32 +3548,32 @@ loading &#39;NeuronChat&#39;</code></pre>
 <p>We will now visualize differences in interaction counts and communication strengths between each psychiatric condition and controls.</p>
 <p>Positive values indicate higher inferred communication in the disease group, whereas negative values indicate lower inferred communication relative to controls.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)) {</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  object.list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">Control =</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="st">&quot;CellChat_Control.rds&quot;</span>)))</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  object.list[[gr]] <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Merge CellChat objects for comparative visualization</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  cellchat_merged <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">mergeCellChat</span>(object.list, <span class="at">add.names =</span> <span class="fu">names</span>(object.list))</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Differential number of interactions</span></span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  ht_count <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">netVisual_heatmap</span>(cellchat_merged, <span class="at">comparison =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">measure =</span> <span class="st">&quot;count&quot;</span>, <span class="at">title.name =</span> <span class="fu">paste</span>(<span class="st">&quot;Interaction counts : &quot;</span>, gr, <span class="st">&quot;vs Control&quot;</span>))</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Differential communication strength</span></span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  ht_weight <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">netVisual_heatmap</span>(cellchat_merged, <span class="at">comparison =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">measure =</span> <span class="st">&quot;weight&quot;</span>, <span class="at">title.name =</span> <span class="fu">paste</span>(<span class="st">&quot;Interaction strength : &quot;</span>, gr, <span class="st">&quot;vs Control&quot;</span>))</span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Save figures</span></span>
-<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">png</span>(<span class="fu">file.path</span>(fig_dir, <span class="fu">paste0</span>(<span class="st">&quot;Q4_F01_Interaction_counts_&quot;</span>, gr, <span class="st">&quot;_vs_Control.png&quot;</span>)))</span>
-<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  ComplexHeatmap<span class="sc">::</span><span class="fu">draw</span>(ht_count)</span>
-<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span>
-<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">png</span>(<span class="fu">file.path</span>(fig_dir, <span class="fu">paste0</span>(<span class="st">&quot;Q4_F02_Interaction_strength_&quot;</span>, gr, <span class="st">&quot;_vs_Control.png&quot;</span>)))</span>
-<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  ComplexHeatmap<span class="sc">::</span><span class="fu">draw</span>(ht_weight)</span>
-<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span>
-<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>  ComplexHeatmap<span class="sc">::</span><span class="fu">draw</span>(ht_count)</span>
-<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>  ComplexHeatmap<span class="sc">::</span><span class="fu">draw</span>(ht_weight)</span>
-<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(object.list, cellchat_merged, ht_count, ht_weight)</span>
-<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)) {</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  object.list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">Control =</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="st">&quot;CellChat_Control.rds&quot;</span>)))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  object.list[[gr]] <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Merge CellChat objects for comparative visualization</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  cellchat_merged <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">mergeCellChat</span>(object.list, <span class="at">add.names =</span> <span class="fu">names</span>(object.list))</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Differential number of interactions</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  ht_count <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">netVisual_heatmap</span>(cellchat_merged, <span class="at">comparison =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">measure =</span> <span class="st">&quot;count&quot;</span>, <span class="at">title.name =</span> <span class="fu">paste</span>(<span class="st">&quot;Interaction counts : &quot;</span>, gr, <span class="st">&quot;vs Control&quot;</span>))</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Differential communication strength</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  ht_weight <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">netVisual_heatmap</span>(cellchat_merged, <span class="at">comparison =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">measure =</span> <span class="st">&quot;weight&quot;</span>, <span class="at">title.name =</span> <span class="fu">paste</span>(<span class="st">&quot;Interaction strength : &quot;</span>, gr, <span class="st">&quot;vs Control&quot;</span>))</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Save figures</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">png</span>(<span class="fu">file.path</span>(fig_dir, <span class="fu">paste0</span>(<span class="st">&quot;Q4_F01_Interaction_counts_&quot;</span>, gr, <span class="st">&quot;_vs_Control.png&quot;</span>)))</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>  ComplexHeatmap<span class="sc">::</span><span class="fu">draw</span>(ht_count)</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">png</span>(<span class="fu">file.path</span>(fig_dir, <span class="fu">paste0</span>(<span class="st">&quot;Q4_F02_Interaction_strength_&quot;</span>, gr, <span class="st">&quot;_vs_Control.png&quot;</span>)))</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>  ComplexHeatmap<span class="sc">::</span><span class="fu">draw</span>(ht_weight)</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>  ComplexHeatmap<span class="sc">::</span><span class="fu">draw</span>(ht_count)</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  ComplexHeatmap<span class="sc">::</span><span class="fu">draw</span>(ht_weight)</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(object.list, cellchat_merged, ht_count, ht_weight)</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -3834,76 +3815,76 @@ loading &#39;NeuronChat&#39;</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>focus_pairs <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Sender =</span> <span class="fu">c</span>(<span class="st">&quot;IN_SST&quot;</span>, <span class="st">&quot;OPC&quot;</span>, <span class="st">&quot;Oligo&quot;</span>),</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>                          <span class="at">Receiver =</span> <span class="fu">c</span>(<span class="st">&quot;OPC&quot;</span>, <span class="st">&quot;EN_L3_5_IT_2&quot;</span>, <span class="st">&quot;EN_L3_5_IT_2&quot;</span>))</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>diagnoses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>pair_keys <span class="ot">&lt;-</span> <span class="fu">paste</span>(focus_pairs<span class="sc">$</span>Sender, focus_pairs<span class="sc">$</span>Receiver, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>)</span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>lr_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>pathway_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Extract ligand-receptor interactions</span></span>
-<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>  lr <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">subsetCommunication</span>(cellchat,</span>
-<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">slot.name =</span> <span class="st">&quot;net&quot;</span>,</span>
-<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">sources.use =</span> <span class="fu">unique</span>(focus_pairs<span class="sc">$</span>Sender),</span>
-<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">targets.use =</span> <span class="fu">unique</span>(focus_pairs<span class="sc">$</span>Receiver))</span>
-<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  lr <span class="ot">&lt;-</span> lr[<span class="fu">paste</span>(lr<span class="sc">$</span>source, lr<span class="sc">$</span>target, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>) <span class="sc">%in%</span> pair_keys, <span class="fu">c</span>(<span class="st">&quot;source&quot;</span>, <span class="st">&quot;target&quot;</span>, <span class="st">&quot;ligand&quot;</span>, <span class="st">&quot;receptor&quot;</span>, <span class="st">&quot;interaction_name&quot;</span>, <span class="st">&quot;pathway_name&quot;</span>, <span class="st">&quot;prob&quot;</span>), drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
-<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  lr<span class="sc">$</span>Diagnosis <span class="ot">&lt;-</span> gr</span>
-<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>  lr_results[[gr]] <span class="ot">&lt;-</span> lr</span>
-<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Extract signaling pathways</span></span>
-<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>  pathways <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">subsetCommunication</span>(cellchat, <span class="at">slot.name =</span> <span class="st">&quot;netP&quot;</span>, <span class="at">sources.use =</span> <span class="fu">unique</span>(focus_pairs<span class="sc">$</span>Sender), <span class="at">targets.use =</span> <span class="fu">unique</span>(focus_pairs<span class="sc">$</span>Receiver))</span>
-<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>  pathways <span class="ot">&lt;-</span> pathways[<span class="fu">paste</span>(pathways<span class="sc">$</span>source, pathways<span class="sc">$</span>target, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>) <span class="sc">%in%</span> pair_keys, <span class="fu">c</span>(<span class="st">&quot;source&quot;</span>, <span class="st">&quot;target&quot;</span>, <span class="st">&quot;pathway_name&quot;</span>, <span class="st">&quot;prob&quot;</span>), drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
-<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>  pathways<span class="sc">$</span>Diagnosis <span class="ot">&lt;-</span> gr</span>
-<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>  pathway_results[[gr]] <span class="ot">&lt;-</span> pathways</span>
-<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(cellchat, lr, pathways)</span>
-<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span>
-<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>lr_results <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, lr_results)</span>
-<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a>pathway_results <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, pathway_results)</span>
-<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a><span class="co">#Compare pathway probabilities between conditions</span></span>
-<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>pathway_comparison <span class="ot">&lt;-</span> <span class="fu">reshape</span>(pathway_results, <span class="at">idvar =</span> <span class="fu">c</span>(<span class="st">&quot;source&quot;</span>, <span class="st">&quot;target&quot;</span>, <span class="st">&quot;pathway_name&quot;</span>), <span class="at">timevar =</span> <span class="st">&quot;Diagnosis&quot;</span>, <span class="at">direction =</span> <span class="st">&quot;wide&quot;</span>)</span>
-<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a><span class="co">#Missing inferred pathways are assigned zero probability</span></span>
-<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
-<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a>  column <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;prob.&quot;</span>, gr)</span>
-<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>column <span class="sc">%in%</span> <span class="fu">names</span>(pathway_comparison)) {pathway_comparison[[column]] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
-<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a>  pathway_comparison[[column]][<span class="fu">is.na</span>(pathway_comparison[[column]])] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
-<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>pathway_comparison<span class="sc">$</span>Delta_SCZ <span class="ot">&lt;-</span></span>
-<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a>  pathway_comparison<span class="sc">$</span>prob.SCZ <span class="sc">-</span> pathway_comparison<span class="sc">$</span>prob.Control</span>
-<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>pathway_comparison<span class="sc">$</span>Delta_BD <span class="ot">&lt;-</span> pathway_comparison<span class="sc">$</span>prob.BD <span class="sc">-</span> pathway_comparison<span class="sc">$</span>prob.Control</span>
-<span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a>pathway_comparison<span class="sc">$</span>Max_abs_change <span class="ot">&lt;-</span> <span class="fu">pmax</span>(<span class="fu">abs</span>(pathway_comparison<span class="sc">$</span>Delta_SCZ), <span class="fu">abs</span>(pathway_comparison<span class="sc">$</span>Delta_BD))</span>
-<span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a>pathway_comparison <span class="ot">&lt;-</span> pathway_comparison[<span class="fu">order</span>(<span class="sc">-</span>pathway_comparison<span class="sc">$</span>Max_abs_change),]</span>
-<span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(pathway_comparison, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_targeted_pathway_comparison.csv&quot;</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb26-53"><a href="#cb26-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-54"><a href="#cb26-54" aria-hidden="true" tabindex="-1"></a><span class="co">#Compare ligand-receptor probabilities</span></span>
-<span id="cb26-55"><a href="#cb26-55" aria-hidden="true" tabindex="-1"></a>lr_comparison <span class="ot">&lt;-</span> <span class="fu">reshape</span>(lr_results, <span class="at">idvar =</span> <span class="fu">c</span>(<span class="st">&quot;source&quot;</span>, <span class="st">&quot;target&quot;</span>, <span class="st">&quot;ligand&quot;</span>, <span class="st">&quot;receptor&quot;</span>, <span class="st">&quot;interaction_name&quot;</span>, <span class="st">&quot;pathway_name&quot;</span>), <span class="at">timevar =</span> <span class="st">&quot;Diagnosis&quot;</span>, <span class="at">direction =</span> <span class="st">&quot;wide&quot;</span>)</span>
-<span id="cb26-56"><a href="#cb26-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-57"><a href="#cb26-57" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
-<span id="cb26-58"><a href="#cb26-58" aria-hidden="true" tabindex="-1"></a>  column <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;prob.&quot;</span>, gr)</span>
-<span id="cb26-59"><a href="#cb26-59" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>column <span class="sc">%in%</span> <span class="fu">names</span>(lr_comparison)) {lr_comparison[[column]] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
-<span id="cb26-60"><a href="#cb26-60" aria-hidden="true" tabindex="-1"></a>  lr_comparison[[column]][<span class="fu">is.na</span>(lr_comparison[[column]])] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
-<span id="cb26-61"><a href="#cb26-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-62"><a href="#cb26-62" aria-hidden="true" tabindex="-1"></a>lr_comparison<span class="sc">$</span>Delta_SCZ <span class="ot">&lt;-</span> lr_comparison<span class="sc">$</span>prob.SCZ <span class="sc">-</span> lr_comparison<span class="sc">$</span>prob.Control</span>
-<span id="cb26-63"><a href="#cb26-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-64"><a href="#cb26-64" aria-hidden="true" tabindex="-1"></a>lr_comparison<span class="sc">$</span>Delta_BD <span class="ot">&lt;-</span> lr_comparison<span class="sc">$</span>prob.BD <span class="sc">-</span> lr_comparison<span class="sc">$</span>prob.Control</span>
-<span id="cb26-65"><a href="#cb26-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-66"><a href="#cb26-66" aria-hidden="true" tabindex="-1"></a>lr_comparison<span class="sc">$</span>Max_abs_change <span class="ot">&lt;-</span> <span class="fu">pmax</span>(<span class="fu">abs</span>(lr_comparison<span class="sc">$</span>Delta_SCZ), <span class="fu">abs</span>(lr_comparison<span class="sc">$</span>Delta_BD))</span>
-<span id="cb26-67"><a href="#cb26-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-68"><a href="#cb26-68" aria-hidden="true" tabindex="-1"></a>lr_comparison <span class="ot">&lt;-</span> lr_comparison[<span class="fu">order</span>(<span class="sc">-</span>lr_comparison<span class="sc">$</span>Max_abs_change),]</span>
-<span id="cb26-69"><a href="#cb26-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-70"><a href="#cb26-70" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(lr_comparison, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_targeted_LR_comparison.csv&quot;</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>focus_pairs <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Sender =</span> <span class="fu">c</span>(<span class="st">&quot;IN_SST&quot;</span>, <span class="st">&quot;OPC&quot;</span>, <span class="st">&quot;Oligo&quot;</span>),</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                          <span class="at">Receiver =</span> <span class="fu">c</span>(<span class="st">&quot;OPC&quot;</span>, <span class="st">&quot;EN_L3_5_IT_2&quot;</span>, <span class="st">&quot;EN_L3_5_IT_2&quot;</span>))</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>diagnoses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>pair_keys <span class="ot">&lt;-</span> <span class="fu">paste</span>(focus_pairs<span class="sc">$</span>Sender, focus_pairs<span class="sc">$</span>Receiver, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>lr_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>pathway_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Extract ligand-receptor interactions</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>  lr <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">subsetCommunication</span>(cellchat,</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">slot.name =</span> <span class="st">&quot;net&quot;</span>,</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">sources.use =</span> <span class="fu">unique</span>(focus_pairs<span class="sc">$</span>Sender),</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">targets.use =</span> <span class="fu">unique</span>(focus_pairs<span class="sc">$</span>Receiver))</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>  lr <span class="ot">&lt;-</span> lr[<span class="fu">paste</span>(lr<span class="sc">$</span>source, lr<span class="sc">$</span>target, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>) <span class="sc">%in%</span> pair_keys, <span class="fu">c</span>(<span class="st">&quot;source&quot;</span>, <span class="st">&quot;target&quot;</span>, <span class="st">&quot;ligand&quot;</span>, <span class="st">&quot;receptor&quot;</span>, <span class="st">&quot;interaction_name&quot;</span>, <span class="st">&quot;pathway_name&quot;</span>, <span class="st">&quot;prob&quot;</span>), drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>  lr<span class="sc">$</span>Diagnosis <span class="ot">&lt;-</span> gr</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>  lr_results[[gr]] <span class="ot">&lt;-</span> lr</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Extract signaling pathways</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>  pathways <span class="ot">&lt;-</span> CellChat<span class="sc">::</span><span class="fu">subsetCommunication</span>(cellchat, <span class="at">slot.name =</span> <span class="st">&quot;netP&quot;</span>, <span class="at">sources.use =</span> <span class="fu">unique</span>(focus_pairs<span class="sc">$</span>Sender), <span class="at">targets.use =</span> <span class="fu">unique</span>(focus_pairs<span class="sc">$</span>Receiver))</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>  pathways <span class="ot">&lt;-</span> pathways[<span class="fu">paste</span>(pathways<span class="sc">$</span>source, pathways<span class="sc">$</span>target, <span class="at">sep =</span> <span class="st">&quot;|&quot;</span>) <span class="sc">%in%</span> pair_keys, <span class="fu">c</span>(<span class="st">&quot;source&quot;</span>, <span class="st">&quot;target&quot;</span>, <span class="st">&quot;pathway_name&quot;</span>, <span class="st">&quot;prob&quot;</span>), drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>  pathways<span class="sc">$</span>Diagnosis <span class="ot">&lt;-</span> gr</span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>  pathway_results[[gr]] <span class="ot">&lt;-</span> pathways</span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(cellchat, lr, pathways)</span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>lr_results <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, lr_results)</span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a>pathway_results <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, pathway_results)</span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a><span class="co">#Compare pathway probabilities between conditions</span></span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a>pathway_comparison <span class="ot">&lt;-</span> <span class="fu">reshape</span>(pathway_results, <span class="at">idvar =</span> <span class="fu">c</span>(<span class="st">&quot;source&quot;</span>, <span class="st">&quot;target&quot;</span>, <span class="st">&quot;pathway_name&quot;</span>), <span class="at">timevar =</span> <span class="st">&quot;Diagnosis&quot;</span>, <span class="at">direction =</span> <span class="st">&quot;wide&quot;</span>)</span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a><span class="co">#Missing inferred pathways are assigned zero probability</span></span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a>  column <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;prob.&quot;</span>, gr)</span>
+<span id="cb19-42"><a href="#cb19-42" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>column <span class="sc">%in%</span> <span class="fu">names</span>(pathway_comparison)) {pathway_comparison[[column]] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
+<span id="cb19-43"><a href="#cb19-43" aria-hidden="true" tabindex="-1"></a>  pathway_comparison[[column]][<span class="fu">is.na</span>(pathway_comparison[[column]])] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
+<span id="cb19-44"><a href="#cb19-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-45"><a href="#cb19-45" aria-hidden="true" tabindex="-1"></a>pathway_comparison<span class="sc">$</span>Delta_SCZ <span class="ot">&lt;-</span></span>
+<span id="cb19-46"><a href="#cb19-46" aria-hidden="true" tabindex="-1"></a>  pathway_comparison<span class="sc">$</span>prob.SCZ <span class="sc">-</span> pathway_comparison<span class="sc">$</span>prob.Control</span>
+<span id="cb19-47"><a href="#cb19-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-48"><a href="#cb19-48" aria-hidden="true" tabindex="-1"></a>pathway_comparison<span class="sc">$</span>Delta_BD <span class="ot">&lt;-</span> pathway_comparison<span class="sc">$</span>prob.BD <span class="sc">-</span> pathway_comparison<span class="sc">$</span>prob.Control</span>
+<span id="cb19-49"><a href="#cb19-49" aria-hidden="true" tabindex="-1"></a>pathway_comparison<span class="sc">$</span>Max_abs_change <span class="ot">&lt;-</span> <span class="fu">pmax</span>(<span class="fu">abs</span>(pathway_comparison<span class="sc">$</span>Delta_SCZ), <span class="fu">abs</span>(pathway_comparison<span class="sc">$</span>Delta_BD))</span>
+<span id="cb19-50"><a href="#cb19-50" aria-hidden="true" tabindex="-1"></a>pathway_comparison <span class="ot">&lt;-</span> pathway_comparison[<span class="fu">order</span>(<span class="sc">-</span>pathway_comparison<span class="sc">$</span>Max_abs_change),]</span>
+<span id="cb19-51"><a href="#cb19-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-52"><a href="#cb19-52" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(pathway_comparison, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_targeted_pathway_comparison.csv&quot;</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb19-53"><a href="#cb19-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-54"><a href="#cb19-54" aria-hidden="true" tabindex="-1"></a><span class="co">#Compare ligand-receptor probabilities</span></span>
+<span id="cb19-55"><a href="#cb19-55" aria-hidden="true" tabindex="-1"></a>lr_comparison <span class="ot">&lt;-</span> <span class="fu">reshape</span>(lr_results, <span class="at">idvar =</span> <span class="fu">c</span>(<span class="st">&quot;source&quot;</span>, <span class="st">&quot;target&quot;</span>, <span class="st">&quot;ligand&quot;</span>, <span class="st">&quot;receptor&quot;</span>, <span class="st">&quot;interaction_name&quot;</span>, <span class="st">&quot;pathway_name&quot;</span>), <span class="at">timevar =</span> <span class="st">&quot;Diagnosis&quot;</span>, <span class="at">direction =</span> <span class="st">&quot;wide&quot;</span>)</span>
+<span id="cb19-56"><a href="#cb19-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-57"><a href="#cb19-57" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
+<span id="cb19-58"><a href="#cb19-58" aria-hidden="true" tabindex="-1"></a>  column <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;prob.&quot;</span>, gr)</span>
+<span id="cb19-59"><a href="#cb19-59" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>column <span class="sc">%in%</span> <span class="fu">names</span>(lr_comparison)) {lr_comparison[[column]] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
+<span id="cb19-60"><a href="#cb19-60" aria-hidden="true" tabindex="-1"></a>  lr_comparison[[column]][<span class="fu">is.na</span>(lr_comparison[[column]])] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
+<span id="cb19-61"><a href="#cb19-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-62"><a href="#cb19-62" aria-hidden="true" tabindex="-1"></a>lr_comparison<span class="sc">$</span>Delta_SCZ <span class="ot">&lt;-</span> lr_comparison<span class="sc">$</span>prob.SCZ <span class="sc">-</span> lr_comparison<span class="sc">$</span>prob.Control</span>
+<span id="cb19-63"><a href="#cb19-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-64"><a href="#cb19-64" aria-hidden="true" tabindex="-1"></a>lr_comparison<span class="sc">$</span>Delta_BD <span class="ot">&lt;-</span> lr_comparison<span class="sc">$</span>prob.BD <span class="sc">-</span> lr_comparison<span class="sc">$</span>prob.Control</span>
+<span id="cb19-65"><a href="#cb19-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-66"><a href="#cb19-66" aria-hidden="true" tabindex="-1"></a>lr_comparison<span class="sc">$</span>Max_abs_change <span class="ot">&lt;-</span> <span class="fu">pmax</span>(<span class="fu">abs</span>(lr_comparison<span class="sc">$</span>Delta_SCZ), <span class="fu">abs</span>(lr_comparison<span class="sc">$</span>Delta_BD))</span>
+<span id="cb19-67"><a href="#cb19-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-68"><a href="#cb19-68" aria-hidden="true" tabindex="-1"></a>lr_comparison <span class="ot">&lt;-</span> lr_comparison[<span class="fu">order</span>(<span class="sc">-</span>lr_comparison<span class="sc">$</span>Max_abs_change),]</span>
+<span id="cb19-69"><a href="#cb19-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-70"><a href="#cb19-70" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(lr_comparison, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_targeted_LR_comparison.csv&quot;</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="most-altered-signaling-pathways" class="level2" data-number="6.2">
@@ -4263,45 +4244,45 @@ loading &#39;NeuronChat&#39;</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| output: false</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>diagnoses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>pathway_flows <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  pathways <span class="ot">&lt;-</span> cellchat<span class="sc">@</span>netP<span class="sc">$</span>pathways</span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  probabilities <span class="ot">&lt;-</span> cellchat<span class="sc">@</span>netP<span class="sc">$</span>prob</span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">length</span>(pathways) <span class="sc">==</span> <span class="fu">dim</span>(probabilities)[<span class="dv">3</span>])</span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>  pathway_flows[[gr]] <span class="ot">&lt;-</span> <span class="fu">setNames</span>(<span class="fu">vapply</span>(<span class="fu">seq_along</span>(pathways), <span class="cf">function</span>(i) <span class="fu">sum</span>(probabilities[, , i], <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="fu">numeric</span>(<span class="dv">1</span>)), pathways)</span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(cellchat)</span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a><span class="co">#Combine all pathways detected in at least one group</span></span>
-<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>all_pathways <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(<span class="fu">unlist</span>(<span class="fu">lapply</span>(pathway_flows, names))))</span>
-<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>global_pathways <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Pathway =</span> all_pathways)</span>
-<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
-<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>  global_pathways[[gr]] <span class="ot">&lt;-</span> <span class="fu">unname</span>(pathway_flows[[gr]][all_pathways])</span>
-<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>  global_pathways[[<span class="fu">paste0</span>(<span class="st">&quot;Detected_&quot;</span>, gr)]] <span class="ot">&lt;-</span> all_pathways <span class="sc">%in%</span> <span class="fu">names</span>(pathway_flows[[gr]])</span>
-<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>  global_pathways[[gr]][<span class="fu">is.na</span>(global_pathways[[gr]])] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
-<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a><span class="co">#Changes relative to controls</span></span>
-<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>global_pathways<span class="sc">$</span>Delta_SCZ <span class="ot">&lt;-</span> global_pathways<span class="sc">$</span>SCZ <span class="sc">-</span> global_pathways<span class="sc">$</span>Control</span>
-<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>global_pathways<span class="sc">$</span>Delta_BD <span class="ot">&lt;-</span> global_pathways<span class="sc">$</span>BD <span class="sc">-</span> global_pathways<span class="sc">$</span>Control</span>
-<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>global_pathways<span class="sc">$</span>Max_abs_change <span class="ot">&lt;-</span> <span class="fu">pmax</span>(<span class="fu">abs</span>(global_pathways<span class="sc">$</span>Delta_SCZ), <span class="fu">abs</span>(global_pathways<span class="sc">$</span>Delta_BD))</span>
-<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a>global_pathways<span class="sc">$</span>Detected_in <span class="ot">&lt;-</span> <span class="fu">apply</span>(global_pathways[<span class="fu">paste0</span>(<span class="st">&quot;Detected_&quot;</span>, diagnoses)], <span class="dv">1</span>, <span class="cf">function</span>(x) <span class="fu">paste</span>(diagnoses[<span class="fu">as.logical</span>(x)], <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>))</span>
-<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a>global_pathways <span class="ot">&lt;-</span> global_pathways[<span class="fu">order</span>(<span class="sc">-</span>global_pathways<span class="sc">$</span>Max_abs_change),]</span>
-<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(global_pathways) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb27-38"><a href="#cb27-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-39"><a href="#cb27-39" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(global_pathways, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_global_pathway_comparison.csv&quot;</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| output: false</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>diagnoses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>pathway_flows <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  cellchat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  pathways <span class="ot">&lt;-</span> cellchat<span class="sc">@</span>netP<span class="sc">$</span>pathways</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  probabilities <span class="ot">&lt;-</span> cellchat<span class="sc">@</span>netP<span class="sc">$</span>prob</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">length</span>(pathways) <span class="sc">==</span> <span class="fu">dim</span>(probabilities)[<span class="dv">3</span>])</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  pathway_flows[[gr]] <span class="ot">&lt;-</span> <span class="fu">setNames</span>(<span class="fu">vapply</span>(<span class="fu">seq_along</span>(pathways), <span class="cf">function</span>(i) <span class="fu">sum</span>(probabilities[, , i], <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="fu">numeric</span>(<span class="dv">1</span>)), pathways)</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(cellchat)</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="co">#Combine all pathways detected in at least one group</span></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>all_pathways <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(<span class="fu">unlist</span>(<span class="fu">lapply</span>(pathway_flows, names))))</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>global_pathways <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Pathway =</span> all_pathways)</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>  global_pathways[[gr]] <span class="ot">&lt;-</span> <span class="fu">unname</span>(pathway_flows[[gr]][all_pathways])</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>  global_pathways[[<span class="fu">paste0</span>(<span class="st">&quot;Detected_&quot;</span>, gr)]] <span class="ot">&lt;-</span> all_pathways <span class="sc">%in%</span> <span class="fu">names</span>(pathway_flows[[gr]])</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>  global_pathways[[gr]][<span class="fu">is.na</span>(global_pathways[[gr]])] <span class="ot">&lt;-</span> <span class="dv">0</span>}</span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a><span class="co">#Changes relative to controls</span></span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>global_pathways<span class="sc">$</span>Delta_SCZ <span class="ot">&lt;-</span> global_pathways<span class="sc">$</span>SCZ <span class="sc">-</span> global_pathways<span class="sc">$</span>Control</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>global_pathways<span class="sc">$</span>Delta_BD <span class="ot">&lt;-</span> global_pathways<span class="sc">$</span>BD <span class="sc">-</span> global_pathways<span class="sc">$</span>Control</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>global_pathways<span class="sc">$</span>Max_abs_change <span class="ot">&lt;-</span> <span class="fu">pmax</span>(<span class="fu">abs</span>(global_pathways<span class="sc">$</span>Delta_SCZ), <span class="fu">abs</span>(global_pathways<span class="sc">$</span>Delta_BD))</span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>global_pathways<span class="sc">$</span>Detected_in <span class="ot">&lt;-</span> <span class="fu">apply</span>(global_pathways[<span class="fu">paste0</span>(<span class="st">&quot;Detected_&quot;</span>, diagnoses)], <span class="dv">1</span>, <span class="cf">function</span>(x) <span class="fu">paste</span>(diagnoses[<span class="fu">as.logical</span>(x)], <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>))</span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a>global_pathways <span class="ot">&lt;-</span> global_pathways[<span class="fu">order</span>(<span class="sc">-</span>global_pathways<span class="sc">$</span>Max_abs_change),]</span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(global_pathways) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(global_pathways, <span class="fu">file.path</span>(out_dir, <span class="st">&quot;Q4_global_pathway_comparison.csv&quot;</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="main-differences-in-pathway-information-flow" class="level2" data-number="7.2">
@@ -4449,23 +4430,23 @@ loading &#39;NeuronChat&#39;</code></pre>
 </div>
 </div>
 <div class="cell" data-halo="false">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)) {</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  output_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;NeuronChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>))</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">file.exists</span>(output_file)) <span class="cf">next</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  input <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_input_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">identical</span>(<span class="fu">colnames</span>(input<span class="sc">$</span>expression), <span class="fu">rownames</span>(input<span class="sc">$</span>metadata)))</span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Create NeuronChat object</span></span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  neuronchat <span class="ot">&lt;-</span> <span class="fu">createNeuron</span>(input<span class="sc">$</span>expression, <span class="at">DB =</span> <span class="st">&quot;human&quot;</span>, <span class="at">group.by =</span> <span class="fu">as.character</span>(input<span class="sc">$</span>metadata<span class="sc">$</span>labels))</span>
-<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Neural-specific communication inference</span></span>
-<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  neuronchat <span class="ot">&lt;-</span> <span class="fu">run_NeuronChat</span>(neuronchat, <span class="at">M =</span> <span class="dv">100</span>)</span>
-<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS</span>(neuronchat, output_file)</span>
-<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(input, neuronchat)</span>
-<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)) {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  output_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;NeuronChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>))</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">file.exists</span>(output_file)) <span class="cf">next</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  input <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;CellChat_input_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopifnot</span>(<span class="fu">identical</span>(<span class="fu">colnames</span>(input<span class="sc">$</span>expression), <span class="fu">rownames</span>(input<span class="sc">$</span>metadata)))</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Create NeuronChat object</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  neuronchat <span class="ot">&lt;-</span> <span class="fu">createNeuron</span>(input<span class="sc">$</span>expression, <span class="at">DB =</span> <span class="st">&quot;human&quot;</span>, <span class="at">group.by =</span> <span class="fu">as.character</span>(input<span class="sc">$</span>metadata<span class="sc">$</span>labels))</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Neural-specific communication inference</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  neuronchat <span class="ot">&lt;-</span> <span class="fu">run_NeuronChat</span>(neuronchat, <span class="at">M =</span> <span class="dv">100</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">saveRDS</span>(neuronchat, output_file)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(input, neuronchat)</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-important callout-titled" title="Interpretation limitations">
 <div class="callout-header d-flex align-content-center">
@@ -4573,36 +4554,36 @@ loading &#39;NeuronChat&#39;</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>diagnoses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>signals <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;GABA&quot;</span>, <span class="st">&quot;Glutamate&quot;</span>)</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>signal_networks <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">GABA =</span> <span class="fu">list</span>(), <span class="at">Glutamate =</span> <span class="fu">list</span>())</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>signal_summary <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  neuronchat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;NeuronChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  interaction_names <span class="ot">&lt;-</span> <span class="fu">names</span>(neuronchat<span class="sc">@</span>net)</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (sig <span class="cf">in</span> signals) {</span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Select the corresponding neural interactions</span></span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    pattern <span class="ot">&lt;-</span> <span class="cf">if</span> (sig <span class="sc">==</span> <span class="st">&quot;GABA&quot;</span>) <span class="st">&quot;^GABA&quot;</span> <span class="cf">else</span> <span class="st">&quot;^GLU&quot;</span></span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    selected <span class="ot">&lt;-</span> <span class="fu">grep</span>(pattern, interaction_names, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(selected) <span class="sc">==</span> <span class="dv">0</span>) {<span class="fu">stop</span>(<span class="fu">paste</span>(<span class="st">&quot;No&quot;</span>, sig, <span class="st">&quot;interactions found in&quot;</span>, gr, <span class="st">&quot;- inspect names(neuronchat@net)&quot;</span>))}</span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">#NeuronChat network aggregation</span></span>
-<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>    net <span class="ot">&lt;-</span> NeuronChat<span class="sc">::</span><span class="fu">net_aggregation</span>(neuronchat<span class="sc">@</span>net[selected], <span class="at">method =</span> <span class="st">&quot;weight&quot;</span>)</span>
-<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>    signal_networks[[sig]][[gr]] <span class="ot">&lt;-</span> net</span>
-<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>    signal_summary[[<span class="fu">paste</span>(sig, gr)]] <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Signal =</span> sig,</span>
-<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>                                                   <span class="at">Diagnosis =</span> gr,</span>
-<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>                                                   <span class="at">Total_weight =</span> <span class="fu">sum</span>(net),</span>
-<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>                                                   <span class="at">Active_pairs =</span> <span class="fu">sum</span>(net <span class="sc">&gt;</span> <span class="dv">0</span>))}</span>
-<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(neuronchat)</span>
-<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span>
-<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a>signal_summary <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, signal_summary)</span>
-<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(signal_summary) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>diagnoses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Control&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>signals <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;GABA&quot;</span>, <span class="st">&quot;Glutamate&quot;</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>signal_networks <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">GABA =</span> <span class="fu">list</span>(), <span class="at">Glutamate =</span> <span class="fu">list</span>())</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>signal_summary <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gr <span class="cf">in</span> diagnoses) {</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  neuronchat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(out_dir, <span class="fu">paste0</span>(<span class="st">&quot;NeuronChat_&quot;</span>, gr, <span class="st">&quot;.rds&quot;</span>)))</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  interaction_names <span class="ot">&lt;-</span> <span class="fu">names</span>(neuronchat<span class="sc">@</span>net)</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (sig <span class="cf">in</span> signals) {</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Select the corresponding neural interactions</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    pattern <span class="ot">&lt;-</span> <span class="cf">if</span> (sig <span class="sc">==</span> <span class="st">&quot;GABA&quot;</span>) <span class="st">&quot;^GABA&quot;</span> <span class="cf">else</span> <span class="st">&quot;^GLU&quot;</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>    selected <span class="ot">&lt;-</span> <span class="fu">grep</span>(pattern, interaction_names, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(selected) <span class="sc">==</span> <span class="dv">0</span>) {<span class="fu">stop</span>(<span class="fu">paste</span>(<span class="st">&quot;No&quot;</span>, sig, <span class="st">&quot;interactions found in&quot;</span>, gr, <span class="st">&quot;- inspect names(neuronchat@net)&quot;</span>))}</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">#NeuronChat network aggregation</span></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>    net <span class="ot">&lt;-</span> NeuronChat<span class="sc">::</span><span class="fu">net_aggregation</span>(neuronchat<span class="sc">@</span>net[selected], <span class="at">method =</span> <span class="st">&quot;weight&quot;</span>)</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>    signal_networks[[sig]][[gr]] <span class="ot">&lt;-</span> net</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>    signal_summary[[<span class="fu">paste</span>(sig, gr)]] <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Signal =</span> sig,</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>                                                   <span class="at">Diagnosis =</span> gr,</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>                                                   <span class="at">Total_weight =</span> <span class="fu">sum</span>(net),</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>                                                   <span class="at">Active_pairs =</span> <span class="fu">sum</span>(net <span class="sc">&gt;</span> <span class="dv">0</span>))}</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span>(neuronchat)</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">gc</span>(<span class="at">verbose =</span> <span class="cn">FALSE</span>))}</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>signal_summary <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, signal_summary)</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(signal_summary) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="neurotransmitter-specific-network-comparison" class="level2" data-number="8.4">
@@ -4785,7 +4766,7 @@ loading &#39;NeuronChat&#39;</code></pre>
 <section id="session-info" class="level1" data-number="12">
 <h1 data-number="12"><span class="header-section-number">12</span> Session info</h1>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>R version 4.6.0 (2026-04-24)
 Platform: aarch64-apple-darwin23

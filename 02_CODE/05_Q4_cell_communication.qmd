@@ -101,7 +101,7 @@ Separate communication networks are constructed for Control, SCZ and BD using id
 
 The analysis proceeds from global network characteristics to more specific biological mechanisms.
 
-**NeuronChat — Complementary neural-specific analysis**
+**NeuronChat - Complementary neural-specific analysis**
 
 NeuronChat extends this investigation by incorporating neural-specific signaling mechanisms, particularly neurotransmitter-associated communication [4].
 
@@ -1373,7 +1373,7 @@ knitr::kable(signal_summary, digits = 3, caption = "NeuronChat-inferred GABAergi
 figure_files <- character()
 
 for (sig in signals) {
-  file <- file.path(fig_dir, paste0("Q4_F05_NeuronChat_", sig, "_networks.png"))
+  file <- file.path(fig_dir, paste0("Q4_F04_NeuronChat_", sig, "_networks.png"))
   png(file, width = 21, height = 7, units = "in", res = 200)
 
   old_par <- par(mfrow = c(1, 3), mar = c(1, 1, 3, 1))

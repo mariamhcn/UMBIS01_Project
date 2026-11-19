@@ -2327,7 +2327,7 @@ margin-bottom: 28px; }
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(knitr)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(here)})</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;02_CODE&quot;</span>, <span class="st">&quot;R&quot;</span>, <span class="st">&quot;utils_figures.R&quot;</span>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;02_CODE&quot;</span>, <span class="st">&quot;scripts&quot;</span>, <span class="st">&quot;utils_figures.R&quot;</span>))</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>col_main <span class="ot">&lt;-</span> <span class="fu">unname</span>(project_colours<span class="sc">$</span>Q2[<span class="st">&quot;dark&quot;</span>])</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>col_groups <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Control =</span> <span class="st">&quot;grey60&quot;</span>, col_disease[<span class="fu">c</span>(<span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -2463,7 +2463,7 @@ margin-bottom: 28px; }
 </section>
 <section id="expected-outputs-and-downstream-integration" class="level2" data-number="1.6">
 <h2 data-number="1.6" class="anchored" data-anchor-id="expected-outputs-and-downstream-integration"><span class="header-section-number">1.6</span> Expected outputs and downstream integration</h2>
-<p>The primary DESeq2 results are saved in <code>03_RESULTS/Q2/</code>, including complete gene-level tables, significant DEG lists, Wald-statistic rankings and model summaries.</p>
+<p>The primary DESeq2 results are saved in <code>03_RESULTS/Q2_differential_expression/</code>, including complete gene-level tables, significant DEG lists, Wald-statistic rankings and model summaries.</p>
 <p>A consolidated file, <code>01_DATA/processed/de_results_all.csv</code>, is generated for downstream Q3 analyses.</p>
 <p>The results also provide the foundation for the second Q2 notebook, <code>03_Q2_2_shared_specific_signatures.qmd</code>, which investigates shared and distinct transcriptional signatures between SCZ and BD.</p>
 <p><strong>Q3 - Functional enrichment : </strong> complete gene-level statistics are used to investigate biological pathways through ORA and GSEA.</p>
@@ -3984,11 +3984,11 @@ margin-bottom: 28px; }
 <section id="save-the-complete-pilot-results" class="level2" data-number="6.3">
 <h2 data-number="6.3" class="anchored" data-anchor-id="save-the-complete-pilot-results"><span class="header-section-number">6.3</span> Save the complete pilot results</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>q2_deg_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;03_RESULTS&quot;</span>, <span class="st">&quot;Q2&quot;</span>, <span class="st">&quot;DEG&quot;</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>q2_deg_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;03_RESULTS&quot;</span>, <span class="st">&quot;Q2_differential_expression&quot;</span>, <span class="st">&quot;DEG&quot;</span>)</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(q2_deg_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in dir.create(q2_deg_dir, recursive = TRUE):
-&#39;/Users/Mariam/Desktop/Fac/Transcriptomic/UMBIS01_Project/03_RESULTS/Q2/DEG&#39;
+&#39;/Users/Mariam/Desktop/Fac/Transcriptomic/UMBIS01_Project_clean/03_RESULTS/Q2_differential_expression/DEG&#39;
 already exists</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (contrast_name <span class="cf">in</span> <span class="fu">names</span>(results_astro)){</span>
@@ -4167,7 +4167,7 @@ already exists</code></pre>
 <span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title.position =</span> <span class="st">&quot;plot&quot;</span>,</span>
 <span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;right&quot;</span>)</span>
 <span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>fig_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;04_FIGURES&quot;</span>, <span class="st">&quot;Q2&quot;</span>)</span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a>fig_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;04_FIGURES&quot;</span>, <span class="st">&quot;Q2_differential_expression&quot;</span>)</span>
 <span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(fig_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="fu">file.path</span>(fig_dir, <span class="st">&quot;Q2_F01_Astro_PCA.png&quot;</span>), <span class="at">plot =</span> p_pca, <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="fl">5.5</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
 <span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a></span>
@@ -4213,7 +4213,7 @@ already exists</code></pre>
 <section id="dispersion-estimates" class="level2" data-number="7.4">
 <h2 data-number="7.4" class="anchored" data-anchor-id="dispersion-estimates"><span class="header-section-number">7.4</span> Dispersion estimates</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>fig_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;04_FIGURES&quot;</span>, <span class="st">&quot;Q2&quot;</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>fig_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;04_FIGURES&quot;</span>, <span class="st">&quot;Q2_differential_expression&quot;</span>)</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(fig_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>disp_file <span class="ot">&lt;-</span> <span class="fu">file.path</span>(fig_dir, <span class="st">&quot;Q2_F02_Astro_Dispersion.png&quot;</span>)</span>
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -4294,7 +4294,7 @@ already exists</code></pre>
 <span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">SCZ_vs_BD      =</span> <span class="fu">c</span>(<span class="st">&quot;group&quot;</span>, <span class="st">&quot;SCZ&quot;</span>, <span class="st">&quot;BD&quot;</span>))</span>
 <span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="co">#Output directories</span></span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>q2_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;03_RESULTS&quot;</span>, <span class="st">&quot;Q2&quot;</span>)</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>q2_dir <span class="ot">&lt;-</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;03_RESULTS&quot;</span>, <span class="st">&quot;Q2_differential_expression&quot;</span>)</span>
 <span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>deg_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(q2_dir, <span class="st">&quot;DEG&quot;</span>)</span>
 <span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>rank_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(q2_dir, <span class="st">&quot;GSEA_rankings&quot;</span>)</span>
 <span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>summary_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(q2_dir, <span class="st">&quot;model_summaries&quot;</span>)</span>
