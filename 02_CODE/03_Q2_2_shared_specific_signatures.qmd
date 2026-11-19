@@ -33,6 +33,7 @@ execute:
 </style>
 
 ```{r setup}
+#| warning: false
 
 suppressPackageStartupMessages({
   library(ggplot2)
