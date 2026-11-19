@@ -7,6 +7,7 @@ This project investigates these alterations using publicly available single-nucl
 Main research question : Do schizophrenia and bipolar disorder share cell-type-specific molecular alterations in the human prefrontal cortex, and could these changes be associated with ageing-like transcriptomic profiles and differences in inferred neuronal-glial communication ?
 Five complementary analyses address cellular composition (Q1), differential expression (Q2), functional enrichment (Q3), cell-cell communication (Q4) and transcriptomic ageing (Q5).
 
+
 ## 2. Dataset
 - **Source :** PsychAD Human Prefrontal Cortex Atlas
 - **Cohort :** Human Brain Collection Core (HBCC)
@@ -17,15 +18,18 @@ Five complementary analyses address cellular composition (Q1), differential expr
 The initial HBCC dataset comprises approximately 1.49 million nuclei from 300 donors. **Following predefined clinical, diagnostic and age-related selection criteria, 224 donors aged 20 years or older were retained.**
 
 | Diagnosis | Donors |
-|---|---|---|
-| Control | Schizophrenia (SCZ) | Bipolar disorder (BD) | Total |
-| 121 | 49 | 54 | 224 | 
+|---|---|
+| Control | 121 |
+| Schizophrenia (SCZ) | 49 |
+| Bipolar disorder (BD) | 54 |
+| Total | 224 |
 
 The original PsychAD annotations were preserved, covering 27 cell subclasses.
 Preprocessing generated two complementary files :
 	•	A Seurat object, subsampled to a maximum of 200 nuclei per donor, used for visualization and cell-cell communication inference.
 	•	A pseudobulk count matrix, generated from all available nuclei by aggregating raw counts per donor and cell subclass, used for donor-level statistical analyses.
 The full pseudobulk matrix contains 34 176 genes and 6 048 potential donor-subclass profiles, including empty combinations.
+
 
 ## 3. Analyses and main findings
 
@@ -69,6 +73,7 @@ Results suggest an older-looking transcriptomic profile in several neuronal and 
 For example, the estimated apparent-age shifts included approximately +14 years in SCZ and +13 years in BD for EN_L2_3_IT, and approximately +21 and +22 years, respectively, for OPCs.
 However, no significant increase in the rate of age-related change was detected. The findings therefore support an ageing-like expression shift rather than demonstrated accelerated biological ageing.
 These observations remain subject to the limitations of cross-sectional post-mortem transcriptomics and potential clinical confounding.
+
 
 ## 4. Repository structure
 
