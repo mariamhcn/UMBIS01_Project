@@ -178,7 +178,7 @@ quarto render 06_Q5_transcriptomic_aging.qmd --to html
 
 Some notebooks load helper scripts via relative paths such as `scripts/utils_figures.R`, so their expected execution directory is `02_CODE/`. Other inputs and outputs are resolved relative to the repository root using `here::here()`.
 
-**Large files : ** some `.rds` inputs and intermediate results are deliberately excluded from GitHub. See [`03_RESULTS/README.md`](03_RESULTS/README.md) for regeneration instructions. Q4's CellChat and NeuronChat inference chunks are disabled by default (`#| eval: false`); change them to `#| eval: true` when regenerating the network `.rds` files. Rendering Q4 without those files and without re-enabling inference will fail. The original/processed HBCC inputs must also be available or regenerated first.
+**Large files :** some `.rds` inputs and intermediate results are deliberately excluded from GitHub. See [`03_RESULTS/README.md`](03_RESULTS/README.md) for regeneration instructions. Q4's CellChat and NeuronChat inference chunks are disabled by default (`#| eval: false`); change them to `#| eval: true` when regenerating the network `.rds` files. Rendering Q4 without those files and without re-enabling inference will fail. The original/processed HBCC inputs must also be available or regenerated first.
 
 The analyses use documented filtering criteria, covariates and fixed random seeds where appropriate. Q4's pooled-network comparisons are exploratory predictions, not donor-level significance tests.
 
