@@ -1,246 +1,244 @@
-# UMBIS01 - Single-Nucleus Transcriptomic Analysis of Schizophrenia and Bipolar Disorder on PsychAD cohort
+# UMBIS01 - Single-Nucleus Transcriptomic Analysis of Schizophrenia and Bipolar Disorder using PsychAD cohort
+## Cell-type-specific molecular alterations, functional convergence, intercellular communication and transcriptomic ageing in the human prefrontal cortex
 
-### Exploring cell-type-specific molecular alterations, intercellular communication and aging-associated signatures in the human prefrontal cortex
-
-## 1. Project Overview
-
-Schizophrenia (SCZ) and bipolar disorder (BD) are complex psychiatric disorders that share certain clinical and genetic features. However, the extent to which they exhibit common or distinct molecular alterations across neuronal and glial populations remains an important research question.
-
-This project investigates transcriptomic alterations associated with SCZ and BD using publicly available human brain single-nucleus RNA sequencing (snRNA-seq) data.
-
-Our analysis focuses on the **Human Brain Collection Core (HBCC) cohort** from the **PsychAD atlas**, available through CZ CELLxGENE.
-
-**Main research question:**
-
-*Do schizophrenia and bipolar disorder share cell-type-specific molecular alterations in the human prefrontal cortex, and could these changes reflect accelerated aging-like transcriptomic profiles and affect predicted neuronal–glial signaling networks?*
-
-The project combines differential gene expression, functional enrichment, cell–cell communication inference and aging-related transcriptional signatures.
+## 1. Project overview
+Schizophrenia (SCZ) and bipolar disorder (BD) are complex psychiatric disorders with partially overlapping genetic and molecular features. However, the extent to which they share transcriptional alterations across neuronal and non-neuronal cell populations remains unclear.
+This project investigates these alterations using publicly available single-nucleus RNA sequencing (snRNA-seq) data from the PsychAD atlas, focusing on the Human Brain Collection Core (HBCC) cohort.
+Main research question : Do schizophrenia and bipolar disorder share cell-type-specific molecular alterations in the human prefrontal cortex, and could these changes be associated with ageing-like transcriptomic profiles and differences in inferred neuronal-glial communication ?
+Five complementary analyses address cellular composition (Q1), differential expression (Q2), functional enrichment (Q3), cell-cell communication (Q4) and transcriptomic ageing (Q5).
 
 ## 2. Dataset
+	•	**Source :** PsychAD Human Prefrontal Cortex Atlas
+	•	**Cohort :** Human Brain Collection Core (HBCC)
+	•	**Region :** Dorsolateral prefrontal cortex
+	•	**Technology :** snRNA-seq
+	•	**Data access :** CZ CELLxGENE - PsychAD data collection
+  
+The initial HBCC dataset comprises approximately 1.49 million nuclei from 300 donors. **Following predefined clinical, diagnostic and age-related selection criteria, 224 donors aged 20 years or older were retained.**
 
-**Source:** PsychAD — Human Prefrontal Cortex Single-Cell Atlas
-**Cohort:** HBCC
-**Brain region:** Dorsolateral prefrontal cortex (DLPFC)
-**Technology:** Single-nucleus RNA sequencing (snRNA-seq)
+| Diagnosis | Donors |
+|---|---|---|
+| Control | Schizophrenia (SCZ) | Bipolar disorder (BD) | Total |
+| 121 | 49 | 54 | 224 | 
 
-**Disease groups:**
+The original PsychAD annotations were preserved, covering 27 cell subclasses.
+Preprocessing generated two complementary files :
+	•	A Seurat object, subsampled to a maximum of 200 nuclei per donor, used for visualization and cell-cell communication inference.
+	•	A pseudobulk count matrix, generated from all available nuclei by aggregating raw counts per donor and cell subclass, used for donor-level statistical analyses.
+The full pseudobulk matrix contains 34 176 genes and 6 048 potential donor-subclass profiles, including empty combinations.
 
-- Control donors
-- Schizophrenia (SCZ)
-- Bipolar disorder (BD)
+## 3. Analyses and main findings
 
-The original HBCC cohort comprises approximately 300 donors and 1.4 million nuclei before applying project-specific inclusion criteria.
+| Analysis | Methods | Main findings |
+|---|---|---|
+| **Q1 - Cell composition** | Donor-level proportions, `propeller` / `limma` | Lower **relative microglial proportion** in SCZ and BD, with stronger sensitivity-analysis support in SCZ; a less robust oligodendrocyte signal in BD. No significant direct SCZ-BD composition difference. |
+| **Q2 - Differential expression** | Donor-level pseudobulk, `DESeq2`, three contrasts per subclass | **23 subclasses**, **4,042 eligible pseudobulk profiles**, **69 subclass-contrast comparisons**. `EN_L2_3_IT` in SCZ: 2 455 DEGs; astrocytes in BD: 1 103 DEGs. Shared but heterogeneous signatures; microglia show the strongest global SCZ–BD effect-size concordance (Spearman ρ = 0.535). |
+| **Q3 - Functional enrichment** | ORA and GSEA (`clusterProfiler`); GO, Hallmark, Reactome, SynGO | Convergence on inflammatory and stress-related pathways is strongest in **glial and vascular** populations. **Synaptic programs differ** by disorder and neuronal subclass. Shared pathways involve a partially shared core of contributing genes. |
+| **Q4 - Cell–cell communication** | `CellChat` and `NeuronChat` on 5 100 sampled nuclei from 17 subclasses | Broadly preserved CellChat connectivity, with differences in inferred neuronal-oligodendroglial interactions and NRXN/ADGRL/PTPR/NCAM signaling. NeuronChat predicts **60, 16, and 48 active GABAergic sender–receiver pairs** in Control, SCZ, and BD, respectively. These are descriptive predictions, **not functional measurements or donor-level significance tests**. |
+| **Q5 - Transcriptomic ageing** | Signature scores, donor-level models, age-disease gene concordance | Multiple neuronal and glial populations show **older-looking expression profiles** in SCZ and BD (e.g. `EN_L2_3_IT`: approximately +14 and +13 apparent years). **No evidence of a faster age-related rate of change** was detected; an ageing-like offset is not proof of accelerated biological ageing. |
 
-### Donor Selection
+### Q1 - Cell-type composition
+Cell-type proportions were compared across diagnoses at the donor level, adjusting for age, sex and genetic ancestry.
+Microglia showed a lower relative abundance in both SCZ and BD, with stronger sensitivity-analysis support in SCZ. A lower oligodendrocyte proportion was also detected in BD, although this finding was less robust. No significant composition difference was detected in the direct SCZ-BD comparison.
+These results refer to relative proportions, not absolute cell loss.
 
-Our main analysis focuses on adult donors aged **20 years or older**, with additional clinical and diagnostic exclusion criteria.
+### Q2 - Cell-type-specific differential expression
+Two notebooks address complementary aspects of differential expression.
+	**Q2_1 - Pseudobulk DESeq2**
+After filtering, 4 042 donor-subclass profiles across 23 eligible subclasses were analyzed. DESeq2 models included age, sex, genetic ancestry and diagnosis, with three contrasts per subclass : SCZ versus Control, BD versus Control and SCZ versus BD.
+The analysis identified heterogeneous transcriptional alterations across populations. For example, 2 455 DEGs were detected in EN_L2_3_IT neurons in SCZ versus controls, while 1,103 DEGs were detected in astrocytes in BD versus controls (FDR < 0.05).
+	**Q2_2 - Shared and distinct signatures**
+Cross-disease comparisons identified concordant shared DEGs in excitatory neurons, astrocytes, pericytes and microglia. Microglia showed particularly strong genome-wide effect-size concordance between SCZ and BD (Spearman ρ = 0.535).
+Overall, SCZ and BD exhibit partially overlapping but cell-subclass-dependent transcriptional alterations. Significance in only one disease comparison does not establish disease specificity.
 
-Donors with neurodegenerative conditions or relevant secondary psychiatric/neurological diagnoses are excluded according to the predefined selection strategy. Bipolar-type schizoaffective diagnoses are excluded from the main SCZ–BD comparison to maintain mutually exclusive groups.
+### Q3 - Functional enrichment
+ORA and GSEA were performed using GO Biological Process, Hallmark, Reactome and SynGO gene sets.
+Results indicate that SCZ and BD converge on inflammatory and stress-related pathways, particularly in glial and vascular populations. Shared processes include interferon responses, IL6/STAT3 and TNFA signaling, hypoxia and mTORC1-related pathways.
+Synaptic alterations are more heterogeneous and differ according to diagnostic group and neuronal subclass.
+The results support partial functional convergence, even when the significantly altered genes are not identical between disorders.
 
-Age-threshold sensitivity analyses (≥17 and ≥24 years) are planned to evaluate the robustness of the results.
+### Q4 - Cell-cell communication
+CellChat and NeuronChat were applied to a balanced dataset comprising 17 sufficiently represented subclasses and 5 100 nuclei.
+CellChat identified broadly preserved inferred network connectivity, alongside differences in communication strength involving neurons, OPCs and oligodendrocytes. Prominent pathways included NRXN, ADGRL, PTPR and NCAM.
+NeuronChat highlighted reduced inferred GABAergic connectivity, particularly in SCZ (16 active sender-receiver pairs, compared with 60 in controls and 48 in BD). Glutamatergic networks retained 90 active pairs in each diagnosis, with greater inferred communication weight in SCZ.
+These analyses are exploratory and reflect predicted molecular interactions, not directly measured functional signaling or donor-level statistical differences.
 
-The final donor counts and eligibility criteria will be documented after dataset preprocessing.
+### Q5 - Transcriptomic ageing
+Ageing associated gene signatures and gene level age-disease concordance were evaluated across cellular populations.
+Results suggest an older-looking transcriptomic profile in several neuronal and glial populations in SCZ and BD, including upper-layer excitatory neurons, interneurons and oligodendrocyte-lineage populations.
+For example, the estimated apparent-age shifts included approximately +14 years in SCZ and +13 years in BD for EN_L2_3_IT, and approximately +21 and +22 years, respectively, for OPCs.
+However, no significant increase in the rate of age-related change was detected. The findings therefore support an ageing-like expression shift rather than demonstrated accelerated biological ageing.
+These observations remain subject to the limitations of cross-sectional post-mortem transcriptomics and potential clinical confounding.
 
-**Dataset access:**
-https://cellxgene.cziscience.com/collections/84ce6837-548d-4a1f-919f-0bc0d9a3952f
+## 4. Repository structure
 
-## 3. Scientific Objectives
-
-The project is organized around five complementary research questions.
-
-| Question                       | Objective                                                                                    | Main methods                                   |
-| ------------------------------ | -------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Q1 — Cellular alterations     | Identify neuronal and glial populations showing disease-associated changes                   | Cell-type composition, donor-level proportions |
-| Q2 — Differential expression  | Identify shared and disease-associated transcriptional signatures                            | Pseudobulk, DESeq2                             |
-| Q3 — Functional convergence   | Determine whether distinct gene signatures converge on common biological pathways            | GSEA, ORA, clusterProfiler                     |
-| Q4 — Cell–cell communication | Investigate changes in predicted neuronal–glial signaling networks                          | CellChat v2                                    |
-| Q5 — Transcriptomic aging     | Assess whether disease-associated expression profiles resemble age-related molecular changes | Gene signature scoring, donor-level regression |
-
-Together, these analyses explore disease-associated alterations at the cellular, molecular, functional and intercellular signaling levels.
-
-## 4. Analysis Workflow
-
-### Step 1 — Data Preprocessing and Quality Control
-
-The preprocessing pipeline includes donor selection, quality assessment, metadata validation, normalization and examination of cell-type annotations.
-
-The PsychAD reference annotations are used as the starting point, rather than performing de novo annotation.
-
-Batch effects and integration requirements will be assessed before applying any correction.
-
-A common Seurat object will be generated for downstream analyses while preserving the original raw expression counts.
-
-**Main tools:** Seurat, SeuratObject, zellkonverter, ggplot2.
-
-### Step 2 — Cell-Type Composition (Q1)
-
-Cellular populations will be compared across Control, SCZ and BD groups.
-
-Analyses will focus on donor-level cell-type proportions and the identification of potentially disease-associated populations.
-
-### Step 3 — Differential Gene Expression (Q2)
-
-Raw gene counts will be aggregated by donor and cell type using a **pseudobulk approach**.
-
-Differential expression will be tested using DESeq2, with adjustments for available demographic and technical covariates, including age, sex and post-mortem interval (PMI).
-
-Three comparisons will be considered:
-
-- SCZ vs Control
-- BD vs Control
-- SCZ vs BD
-
-Gene-level effects will be compared to identify concordant, discordant and disease-associated transcriptional signatures.
-
-### Step 4 — Functional Enrichment (Q3)
-
-Differential expression results will be used to investigate enriched biological processes.
-
-**Gene Set Enrichment Analysis (GSEA)** will be the primary approach, complemented by Over-Representation Analysis (ORA).
-
-Gene sets will include Gene Ontology Biological Process, MSigDB Hallmark, Reactome and synapse-related annotations, including SynGO.
-
-The aim is to determine whether SCZ and BD affect similar biological functions, even when their differentially expressed genes differ.
-
-### Step 5 — Cell–Cell Communication (Q4)
-
-CellChat v2 will be used to infer and compare potential intercellular signaling interactions across Control, SCZ and BD groups.
-
-The analysis will focus on predicted ligand–receptor interactions, communication strengths and signaling pathways among neuronal and glial populations.
-
-NeuronChat may be considered as an additional analysis focusing on neurotransmitter-mediated signaling.
-
-These results will be interpreted as computational predictions rather than experimentally validated communications.
-
-### Step 6 — Aging-Associated Transcriptomic Signatures (Q5)
-
-Published gene signatures associated with cellular senescence, inflammation, mitochondrial function, myelination and brain aging will be evaluated across cell populations.
-
-Signature scores will be aggregated at the donor level and examined in relation to chronological age and psychiatric diagnosis.
-
-The goal is to identify **accelerated-aging-like transcriptional profiles**, without claiming to measure biological age directly or establish causal acceleration of aging.
-
-## 5. Repository Structure
+The repository is organized as follows :
 
 ```text
 UMBIS01_Project/
-│
 ├── 01_DATA/
-│   └── Data references, metadata and gene sets
-│
+│   ├── genesets/                 # Functional and ageing gene sets
+│   ├── markers/                  # Marker reference lists
+│   └── processed/                # Lightweight processed data; large files may be absent
 ├── 02_CODE/
-│   └── R scripts and analysis notebooks
-│
+│   ├── scripts/                  # Shared R functions, themes and color palettes
+│   ├── 01_preprocessing.qmd      # Each notebook also has an .html report
+│   ├── 02_Q1_composition.qmd
+│   ├── 03_Q2_1_pseudobulk_DE.qmd
+│   ├── 03_Q2_2_shared_specific_signatures.qmd
+│   ├── 04_Q3_pathway_enrichment.qmd
+│   ├── 05_Q4_cell_communication.qmd
+│   └── 06_Q5_transcriptomic_aging.qmd
 ├── 03_RESULTS/
-│   └── Statistical results and output tables
-│
+│   ├── preprocessing/
+│   ├── pseudobulk/
+│   ├── Q1_composition/
+│   ├── Q2/
+│   ├── Q3_enrichment/
+│   └── Q5_aging/
 ├── 04_FIGURES/
-│   └── Plots and scientific visualizations
-│
-├── 05_DOCS/
-│   └── Methodological notes and documentation
-│
+│   ├── preprocessing/
+│   ├── Q1_composition/
+│   ├── Q2/
+│   ├── Q3_enrichment/
+│   └── Q5_aging/
+├── 05_DOCS/                      # Final report and presentation slides
+├── .gitignore
+├── PsychAD_Project.Rproj
 └── README.md
 ```
 
-The directories will be populated progressively as the analyses are implemented.
+This structure reflects the files and directories visible in the published main branch. Some generated Q4 outputs and other large intermediate files are not included in the repository.
 
-Large raw sequencing datasets and intermediate files may be stored externally when they exceed GitHub storage limits.
+### Directory descriptions
+	•	01_DATA/: input metadata, gene sets, marker lists and processed data.
+	•	02_CODE/: executable Quarto notebooks, corresponding HTML reports and reusable R scripts.
+	•	02_CODE/scripts/: shared helper functions for data processing, statistical analyses and consistent figures, including graphical themes and color palettes.
+	•	03_RESULTS/: statistical tables, analysis summaries and saved intermediate results.
+	•	04_FIGURES/: exported plots, grouped by analysis.
+	•	05_DOCS/: final scientific report and oral presentation slides.
 
-## 6. Software and Reproducibility
 
-The project is primarily developed in **R**, using methods introduced during the single-cell transcriptomics course.
+## 5. Data availability and large files
+Not all input data and intermediate results could be uploaded to GitHub because of their large file sizes.
+In particular, the original HBCC .h5ad dataset, large processed objects (.rds) and some computationally intensive analysis outputs may be absent from the published repository.
+Their absence does not necessarily indicate missing analyses. The corresponding procedures are documented in the Quarto notebooks and supporting R scripts.
+These files can be regenerated by executing the relevant code, provided that the original datasets, required packages, dependencies and sufficient computing resources are available.
+The published HTML notebooks contain recorded analyses, tables, figures and interpretations, allowing results to be inspected without repeating every computational step.
+See the proposed 01_DATA/README.md for additional information on input files and regeneration.
 
-Main planned packages include:
 
-- **Seurat:** single-nucleus data processing and visualization.
-- **DESeq2:** pseudobulk differential expression analysis.
-- **clusterProfiler:** pathway enrichment analysis.
-- **CellChat:** inference of cell–cell communication networks.
-- **ggplot2 / dplyr:** data manipulation and visualization.
+## 6. Reproducibility
+### Software
+Analyses were performed in R, with RStudio for project management and Quarto for notebook rendering.
+Major packages include : Seurat, SeuratObject, Matrix, speckle, limma, DESeq2, clusterProfiler, enrichplot, msigdbr, CellChat, NeuronChat, ggplot2, dplyr, here and knitr.
+Exact package versions and session information are documented in the notebooks through sessionInfo().
 
-Additional packages may be introduced depending on the requirements of each analysis.
+### RStudio project
+The repository contains PsychAD_Project.Rproj, which should be opened in RStudio to work within the project.
+Source-code notebooks are stored in 02_CODE/. Several notebooks source helper functions using paths relative to that directory.
 
-Exact software versions, execution instructions, required datasets and reproducibility information will be documented as the workflow is finalized.
+### Package environment with renv
+For more consistent package management, the project can be initialized with renv.
+From the project root in RStudio :
+install.packages("renv")
+renv::init()
 
-## 7. Project Organization
+After validating the required packages :
+renv::dependencies("02_CODE")
+renv::snapshot()
+renv::status()
 
-The project is conducted collaboratively, with responsibilities distributed across the main analyses.
+The generated renv.lock should be committed alongside the required renv activation and configuration files.
+Once the lockfile is published, collaborators can restore the recorded R package environment using :
+install.packages("renv")
+renv::restore()
+renv manages R package dependencies but does not provide the scientific datasets, Quarto executable, operating-system libraries or computational resources.
 
-| Team member | Responsibilities                                               |
-| ----------- | -------------------------------------------------------------- |
-| Myriam      | Data preprocessing, donor selection and Q1                     |
-| Mariam      | Differential expression (Q2) and cell–cell communication (Q4) |
-| Ann-Solène | Functional enrichment (Q3) and transcriptomic aging (Q5)       |
+### Reproducing the workflow
+Run notebooks **from their expected working directory**, typically `02_CODE/`, because several source helper scripts with relative paths such as `scripts/utils_figures.R`:
 
-All analyses are subject to collaborative review, methodological discussion and cross-validation.
+```bash
+cd 02_CODE
+quarto render 01_preprocessing.qmd --to html
+quarto render 02_Q1_composition.qmd --to html
+quarto render 03_Q2_1_pseudobulk_DE.qmd --to html
+quarto render 03_Q2_2_shared_specific_signatures.qmd --to html
+quarto render 04_Q3_pathway_enrichment.qmd --to html
+quarto render 05_Q4_cell_communication.qmd --to html
+quarto render 06_Q5_transcriptomic_aging.qmd --to html
+```
 
-## 8. Scientific Limitations
+**Before full re-execution**, download the original HBCC data, restore the package environment, verify all gene-set inputs, and check the paths expected by each notebook. Q3 depends on Q2, while Q4 primarily depends on preprocessing. Q5 uses pseudobulk data and Q2 expression results. Q4 may require additional RAM and saved figures/objects to render successfully on memory-limited computers.
 
-Several considerations will guide the interpretation of the results:
+Analyses use fixed random seeds where appropriate, documented filtering thresholds and covariates, and donor-level inference wherever the methodology permits. Q4 pooled-network comparisons must be interpreted separately from donor-aware statistical tests.
 
-- Donors, rather than individual nuclei, must be considered the biological replicates for disease comparisons.
-- Psychiatric diagnoses may be associated with differences in age, treatment exposure and other confounding factors.
-- Post-mortem transcriptomic profiles do not directly establish causal mechanisms.
-- Predicted intercellular communication does not demonstrate functional signaling.
-- Aging-associated gene expression patterns do not necessarily indicate accelerated biological aging.
+### Reproducibility considerations
+	•	Donors are the biological units for statistical disease comparisons.
+	•	Raw counts are preserved for count-based analyses.
+	•	Filtering criteria, covariates and significance thresholds are documented.
+	•	Random seeds are specified for stochastic procedures.
+	•	Reusable plotting functions promote consistency across analyses.
+	•	Model outputs and figures are saved in dedicated directories.
+	•	Computationally inferred communication is distinguished from statistically tested gene-expression differences.
+	•	Package versions and session details are recorded in each notebook.
 
-These limitations will be addressed through statistical adjustment, sensitivity analyses and transparent interpretation.
+## 7. Project organization
+
+Myriam S. : Donor selection, preprocessing and Q1
+Mariam H. : Q2 differential expression and Q4 cell-cell communication
+Ann-Solène A. : Q3 functional enrichment and Q5 transcriptomic ageing
+
+All analyses were discussed and reviewed collaboratively.
+
+## 8. Main limitations
+The dataset is observational and post-mortem. Differences between diagnostic groups may be affected by genetic ancestry, age, treatment history, cause of death and other unmeasured factors.
+Cell-type proportions do not directly measure cell loss. Gene-expression differences and enriched pathways do not establish causal mechanisms or functional changes.
+CellChat and NeuronChat infer potential signaling networks without functional validation or donor-level statistical adjustment. Ageing-like transcriptional profiles do not demonstrate an increased biological ageing rate.
+Accordingly, findings are interpreted as disease-associated molecular patterns rather than causal or experimentally validated mechanisms.
 
 ## 9. References
+The following publications and methodological resources are cited in the project notebooks. The list is **deduplicated**; citation numbering within each notebook remains local to that notebook.
 
-[1] Center for Disease Neurogenomics @ Mount Sinai. (2026). DiseaseNeuroGenomics/psychAD_SciData [Logiciel]. https://github.com/DiseaseNeuroGenomics/psychAD_SciData
-
-[2] Fullard, J. F. et al. PsychAD Consortium, Girdhar, K., … Roussos, P. (2025). Population-scale cross-disorder atlas of the human prefrontal cortex at single-cell resolution. Scientific Data, 12(1), 954. https://doi.org/10.1038/s41597-025-04687-5
-
-[3] Lee, D., Koutrouli, M., Masse, N.Y. et al. Single-cell atlas of transcriptomic vulnerability across brain disorders. Nature 657, 988–1002 (2026). https://doi.org/10.1038/s41586-025-09573-z
-
-[4] Center for Disease Neurogenomics @ Mount Sinai. (2026). Diseaseneurogenomics/psychadxd [Jupyter Notebook]. https://github.com/DiseaseNeuroGenomics/PsychADxD (Édition originale 2024)
-
-[5] Yang, H., Clarence, T., Scott, M.R. et al. Lifespan single-cell transcriptomic atlas of the human prefrontal cortex. Nature 657, 1003–1015 (2026). https://doi.org/10.1038/s41586-026-10271-7
-
-[6] Yu, G. Biomedical Knowledge Mining using GOSemSim and clusterProfiler (official book of clusterProfiler).
-
-[7] Harvard Chan Bioinformatics Core. Functional analysis of pseudobulk DE (HBC Training). https://hbctraining.github.io/Pseudobulk-for-scRNAseq-Quarto/lessons/10_functional_analysis_pseudobulk.html
-
-[8] Wu, T. et al. (2021). clusterProfiler 4.0: a universal enrichment tool for interpreting omics data. The Innovation, 2, 100141. https://doi.org/10.1016/j.xinn.2021.100141
-
-[9] Subramanian, A. et al. (2005). Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide expression profiles. PNAS, 102, 15545–15550. https://doi.org/10.1073/pnas.0506580102
-
-[10] Liberzon, A. et al. (2015). The Molecular Signatures Database hallmark gene set collection. Cell Systems, 1, 417–425. https://doi.org/10.1016/j.cels.2015.12.004
-
-[11] Koopmans, F. et al. (2019). SynGO: an evidence-based, expert-curated knowledge base for the synapse. Neuron, 103, 217–234. https://doi.org/10.1016/j.neuron.2019.05.002
-
-[12] Ruzicka, W. B. et al. (2024). Single-cell multi-cohort dissection of the schizophrenia transcriptome. Science, 384, eadg5136. https://doi.org/10.1126/science.adg5136
-
-[13] Jin S, Plikus MV, Nie Q. CellChat for systematic analysis of cell-cell communication from single-cell transcriptomics. Nat Protoc. 2025 Jan;20(1):180-219. doi: 10.1038/s41596-024-01045-4. Epub 2024 Sep 16. PMID: 39289562.
-
-[14] Zhao, W., Johnston, K. G., Ren, H., Xu, X., & Nie, Q. (2023). Inferring neuron-neuron communications from single-cell transcriptomics through NeuronChat. Nature Communications, 14(1), 1128. https://doi.org/10.1038/s41467-023-36800-w
-
-[15] Wei-BioMath. (2026). Wei-biomath/neuronchat [R]. https://github.com/Wei-BioMath/NeuronChat (Édition originale 2022)
-
-[16] López-Otín, C. et al. (2023). Hallmarks of aging: an expanding universe. Cell, 186, 243–278. https://doi.org/10.1016/j.cell.2022.11.001
-
-[17] Mattson, M. P. & Arumugam, T. V. (2018). Hallmarks of brain aging: adaptive and pathological modification by metabolic states. Cell Metabolism, 27, 1176–1199. https://doi.org/10.1016/j.cmet.2018.05.011
-
-[18] Kaufmann, T. et al. (2019). Common brain disorders are associated with heritable patterns of apparent aging of the brain. Nature Neuroscience, 22, 1617–1623. https://doi.org/10.1038/s41593-019-0471-7
-
-[19] McKinney, B. C. et al. (2017). DNA methylation evidence against the accelerated aging hypothesis of schizophrenia. npj Schizophrenia, 3, 13. https://doi.org/10.1038/s41537-017-0026-4
-
-[20] Fröhlich, A. S. et al. (2024). Single-nucleus transcriptomic profiling of human orbitofrontal cortex reveals convergent effects of aging and psychiatric disease. Nature Neuroscience, 27, 2021–2032. https://doi.org/10.1038/s41593-024-01742-z
-
-[21] Yang, H., Clarence, T., Scott, M. R. et al. (2026). Lifespan single-cell transcriptomic atlas of the human prefrontal cortex. Nature, 657, 1003–1015. https://doi.org/10.1038/s41586-026-10271-7
-
-[22] Saul, D. et al. (2022). A new gene set identifies senescent cells and predicts senescence-associated pathways across tissues. Nature Communications, 13, 4827. https://doi.org/10.1038/s41467-022-32552-1
-
-[23] Galatro, T. F. et al. (2017). Transcriptomic analysis of purified human cortical microglia reveals age-associated changes. Nature Neuroscience, 20, 1162–1171. https://doi.org/10.1038/nn.4597
-
-[24] The Gene Ontology Consortium (2023). The Gene Ontology knowledgebase in 2023. Genetics, 224, iyad031. https://doi.org/10.1093/genetics/iyad031
-
-[25] Hao, Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis. Nature Biotechnology, 42, 293–304. https://doi.org/10.1038/s41587-023-01767-y
-
-[26] Gonzales, M. M. et al. (2023). Senolytic therapy in mild Alzheimer’s disease: a phase 1 feasibility trial. Nature Medicine, 29, 2481–2488. https://doi.org/10.1038/s41591-023-02543-w
-
----
-
-**Project status:** In development — analysis pipelines and results will be added progressively.
+1. Fullard J. F. et al. (2025). Population-scale cross-disorder atlas of the human prefrontal cortex at single-cell resolution. *Scientific Data*, 12, 954. https://doi.org/10.1038/s41597-025-04687-5
+2. Lee D. et al. (2026). Single-cell atlas of transcriptomic vulnerability across brain disorders. *Nature*, 657, 988–1002. https://doi.org/10.1038/s41586-025-09573-z
+3. Lee D. et al. (2024). Single-cell atlas of transcriptomic vulnerability across multiple neurodegenerative and neuropsychiatric diseases. *medRxiv*. https://doi.org/10.1101/2024.10.31.24316513
+4. Girdhar K. et al. PsychAD lifespan atlas of the human prefrontal cortex. *medRxiv*. https://doi.org/10.1101/2024.11.06.24316592
+5. Yang H. et al. (2026). Lifespan single-cell transcriptomic atlas of the human prefrontal cortex. *Nature*, 657, 1003–1015. https://doi.org/10.1038/s41586-026-10271-7
+6. Hao Y. et al. (2024). Dictionary learning for integrative, multimodal and scalable single-cell analysis. *Nature Biotechnology*, 42, 293–304.
+7. Ma S. et al. (2022). Molecular and cellular evolution of the primate dorsolateral prefrontal cortex. *Science*, 377, eabo7257.
+8. Squair J. W. et al. (2021). Confronting false discoveries in single-cell differential expression. *Nature Communications*, 12, 5692. https://doi.org/10.1038/s41467-021-25960-2
+9. Phipson B. et al. (2022). propeller: testing for differences in cell type proportions in single cell data. *Bioinformatics*, 38, 4720–4726.
+10. Ritchie M. E. et al. (2015). limma powers differential expression analyses for RNA-sequencing and microarray studies. *Nucleic Acids Research*, 43, e47.
+11. Love M. I., Huber W. & Anders S. (2014). Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. *Genome Biology*, 15, 550. https://doi.org/10.1186/s13059-014-0550-8
+12. Love M. I. et al. *Analyzing RNA-seq data with DESeq2*. Bioconductor vignette. https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html
+13. Benjamini Y. & Hochberg Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. *Journal of the Royal Statistical Society B*, 57, 289–300.
+14. Gandal M. J. et al. (2018). Shared molecular neuropathology across major psychiatric disorders parallels polygenic overlap. *Science*, 359, 693–697. https://doi.org/10.1126/science.aad6469
+15. Ruzicka W. B. et al. (2024). Single-cell multi-cohort dissection of the schizophrenia transcriptome. *Science*, 384, eadg5136. https://doi.org/10.1126/science.adg5136
+16. Harvard Chan Bioinformatics Core. *Functional analysis of pseudobulk DE*. https://hbctraining.github.io/Pseudobulk-for-scRNAseq-Quarto/lessons/10_functional_analysis_pseudobulk.html
+17. Wu T. et al. (2021). clusterProfiler 4.0: a universal enrichment tool for interpreting omics data. *The Innovation*, 2, 100141.
+18. Subramanian A. et al. (2005). Gene set enrichment analysis: a knowledge-based approach for interpreting genome-wide expression profiles. *PNAS*, 102, 15545–15550.
+19. Zhou Y. et al. (2019). Metascape provides a biologist-oriented resource for the analysis of systems-level datasets. *Nature Communications*, 10, 1523.
+20. Liberzon A. et al. (2015). The Molecular Signatures Database hallmark gene set collection. *Cell Systems*, 1, 417–425.
+21. Koopmans F. et al. (2019). SynGO: an evidence-based, expert-curated knowledge base for the synapse. *Neuron*, 103, 217–234.
+22. Trubetskoy V. et al. (2022). Mapping genomic loci implicates genes and synaptic biology in schizophrenia. *Nature*, 604, 502–508.
+23. Mullins N. et al. (2021). Genome-wide association study of more than 40,000 bipolar disorder cases provides new insights into the underlying biology. *Nature Genetics*, 53, 817–829.
+24. Lanz T. A. et al. (2019). Postmortem transcriptional profiling reveals widespread increase in inflammation in schizophrenia. *Translational Psychiatry*, 9, 151.
+25. Ling E. et al. (2024). A concerted neuron–astrocyte program declines in ageing and schizophrenia. *Nature*, 627, 604–611.
+26. Tomita H. et al. (2004). Effect of agonal and postmortem factors on gene expression profile. *Biological Psychiatry*, 55, 346–352.
+27. Jin S. et al. (2021). Inference and analysis of cell-cell communication using CellChat. *Nature Communications*, 12, 1088. https://doi.org/10.1038/s41467-021-21246-9
+28. Jin S., Plikus M. V. & Nie Q. (2025). CellChat for systematic analysis of cell–cell communication from single-cell transcriptomics. *Nature Protocols*, 20, 180–219. https://doi.org/10.1038/s41596-024-01045-4
+29. Zhao W. et al. (2023). Inferring neuron-neuron communications from single-cell transcriptomics through NeuronChat. *Nature Communications*, 14, 1128. https://doi.org/10.1038/s41467-023-36800-w
+30. Okuda T. et al. (2024). Alterations in inhibitory neuron subtype-selective transcripts in the prefrontal cortex: comparisons across schizophrenia and mood disorders. *Psychological Medicine*, 54, 3896–3905.
+31. Dienel S. J., Fish K. N. & Lewis D. A. (2023). The nature of prefrontal cortical GABA neuron alterations in schizophrenia: markedly lower somatostatin and parvalbumin gene expression without missing neurons. *American Journal of Psychiatry*, 180, 495–507. https://doi.org/10.1176/appi.ajp.20220676
+32. Gao R. et al. (2026). Postmortem brain single-nucleus and bulk gene expression analyses identify shared and distinct abnormalities in bipolar disorder and major depressive disorder. *Translational Psychiatry*, 16, 442.
+33. López-Otín C. et al. (2023). Hallmarks of aging: an expanding universe. *Cell*, 186, 243–278.
+34. Mattson M. P. & Arumugam T. V. (2018). Hallmarks of brain aging: adaptive and pathological modification by metabolic states. *Cell Metabolism*, 27, 1176–1199.
+35. Kaufmann T. et al. (2019). Common brain disorders are associated with heritable patterns of apparent aging of the brain. *Nature Neuroscience*, 22, 1617–1623.
+36. McKinney B. C. et al. (2017). DNA methylation evidence against the accelerated aging hypothesis of schizophrenia. *npj Schizophrenia*, 3, 13.
+37. Fröhlich A. S. et al. (2024). Single-nucleus transcriptomic profiling of human orbitofrontal cortex reveals convergent effects of aging and psychiatric disease. *Nature Neuroscience*, 27, 2021–2032.
+38. Saul D. et al. (2022). A new gene set identifies senescent cells and predicts senescence-associated pathways across tissues. *Nature Communications*, 13, 4827.
+39. Galatro T. F. et al. (2017). Transcriptomic analysis of purified human cortical microglia reveals age-associated changes. *Nature Neuroscience*, 20, 1162–1171.
+40. The Gene Ontology Consortium (2023). The Gene Ontology knowledgebase in 2023. *Genetics*, 224, iyad031.
+41. Ciernik L. et al. (2026). Robust and efficient annotation of cell states through gene signature scoring. *Genome Research*, 36, 630–644.
+42. Fieller E. C. (1954). Some problems in interval estimation. *Journal of the Royal Statistical Society B*, 16, 175–185.
