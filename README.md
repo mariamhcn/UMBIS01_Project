@@ -8,11 +8,11 @@ Main research question : Do schizophrenia and bipolar disorder share cell-type-s
 Five complementary analyses address cellular composition (Q1), differential expression (Q2), functional enrichment (Q3), cell-cell communication (Q4) and transcriptomic ageing (Q5).
 
 ## 2. Dataset
-	•	**Source :** PsychAD Human Prefrontal Cortex Atlas
-	•	**Cohort :** Human Brain Collection Core (HBCC)
-	•	**Region :** Dorsolateral prefrontal cortex
-	•	**Technology :** snRNA-seq
-	•	**Data access :** CZ CELLxGENE - PsychAD data collection
+- **Source :** PsychAD Human Prefrontal Cortex Atlas
+- **Cohort :** Human Brain Collection Core (HBCC)
+- **Region :** Dorsolateral prefrontal cortex
+- **Technology :** snRNA-seq
+- **Data access :** CZ CELLxGENE - PsychAD data collection
   
 The initial HBCC dataset comprises approximately 1.49 million nuclei from 300 donors. **Following predefined clinical, diagnostic and age-related selection criteria, 224 donors aged 20 years or older were retained.**
 
