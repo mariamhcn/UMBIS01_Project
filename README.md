@@ -1,5 +1,5 @@
 # UMBIS01 - Single-Nucleus Transcriptomic Analysis of Schizophrenia and Bipolar Disorder using PsychAD cohort
-## Cell-type-specific molecular alterations, functional convergence, intercellular communication and transcriptomic ageing in the human prefrontal cortex
+**Cell-type-specific molecular alterations, functional convergence, intercellular communication and transcriptomic ageing in the human prefrontal cortex**
 
 ## 1. Project overview
 Schizophrenia (SCZ) and bipolar disorder (BD) are complex psychiatric disorders with partially overlapping genetic and molecular features. However, the extent to which they share transcriptional alterations across neuronal and non-neuronal cell populations remains unclear.
@@ -26,8 +26,8 @@ The initial HBCC dataset comprises approximately 1.49 million nuclei from 300 do
 
 The original PsychAD annotations were preserved, covering 27 cell subclasses.
 Preprocessing generated two complementary files :
-	•	A Seurat object, subsampled to a maximum of 200 nuclei per donor, used for visualization and cell-cell communication inference.
-	•	A pseudobulk count matrix, generated from all available nuclei by aggregating raw counts per donor and cell subclass, used for donor-level statistical analyses.
+- **A Seurat object**, subsampled to a maximum of 200 nuclei per donor, used for visualization and cell-cell communication inference.
+- **A pseudobulk count matrix**, generated from all available nuclei by aggregating raw counts per donor and cell subclass, used for donor-level statistical analyses.
 The full pseudobulk matrix contains 34 176 genes and 6 048 potential donor-subclass profiles, including empty combinations.
 
 
@@ -146,18 +146,27 @@ Source-code notebooks are stored in 02_CODE/. Several notebooks source helper fu
 ### Package environment with renv
 For more consistent package management, the project can be initialized with renv.
 From the project root in RStudio :
+
+```bash
 install.packages("renv")
 renv::init()
+```
 
 After validating the required packages :
+
+```bash
 renv::dependencies("02_CODE")
 renv::snapshot()
 renv::status()
+```
 
 The generated renv.lock should be committed alongside the required renv activation and configuration files.
 Once the lockfile is published, collaborators can restore the recorded R package environment using :
+
+```bash
 install.packages("renv")
 renv::restore()
+```
 renv manages R package dependencies but does not provide the scientific datasets, Quarto executable, operating-system libraries or computational resources.
 
 ### Reproducing the workflow
