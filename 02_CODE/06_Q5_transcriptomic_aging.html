@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Ann-Solène Adelson">
-<meta name="dcterms.date" content="2026-11-18">
+<meta name="dcterms.date" content="2026-11-20">
 
 <title>Q5 – Do schizophrenia and bipolar disorder show an accelerated-ageing-like transcriptomic profile?</title>
 <style>
@@ -2279,7 +2279,7 @@ vertical-align: -.125em;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">November 18, 2026</p>
+      <p class="date">November 20, 2026</p>
     </div>
   </div>
   
@@ -2554,7 +2554,7 @@ Figure 1
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inputs</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>pseudobulk_path <span class="ot">&lt;-</span> <span class="st">&quot;../01_DATA/processed/pseudobulk_HBCC_224donors.rds&quot;</span>     <span class="co"># preprocessing (all nuclei)</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>de_path       <span class="ot">&lt;-</span> <span class="st">&quot;../03_RESULTS/Q2/de_results_all.csv&quot;</span>   <span class="co"># Q2 results, for Part B</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>de_path       <span class="ot">&lt;-</span> <span class="st">&quot;../01_DATA/processed/de_results_all.csv&quot;</span>   <span class="co"># Q2 results, for Part B</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>geneset_dir   <span class="ot">&lt;-</span> <span class="st">&quot;../01_DATA/genesets&quot;</span>   <span class="co"># one CSV per signature (gs_name, gene_symbol), see its README.md</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>signature_files <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Q5_senmayo.csv&quot;</span>, <span class="st">&quot;Q5_inflammatory_response.csv&quot;</span>, <span class="st">&quot;Q5_tnfa_nfkb.csv&quot;</span>,</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                     <span class="st">&quot;Q5_microglia_ageing_galatro.csv&quot;</span>, <span class="st">&quot;Q5_oxphos.csv&quot;</span>, <span class="st">&quot;Q5_myelination.csv&quot;</span>)</span>

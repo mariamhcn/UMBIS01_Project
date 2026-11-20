@@ -175,7 +175,7 @@ stable background estimate.
 ```{r parameters}
 # Inputs
 pseudobulk_path <- "../01_DATA/processed/pseudobulk_HBCC_224donors.rds"     # preprocessing (all nuclei)
-de_path       <- "../03_RESULTS/Q2/de_results_all.csv"   # Q2 results, for Part B
+de_path       <- "../01_DATA/processed/de_results_all.csv"   # Q2 results, for Part B
 geneset_dir   <- "../01_DATA/genesets"   # one CSV per signature (gs_name, gene_symbol), see its README.md
 signature_files <- c("Q5_senmayo.csv", "Q5_inflammatory_response.csv", "Q5_tnfa_nfkb.csv",
                      "Q5_microglia_ageing_galatro.csv", "Q5_oxphos.csv", "Q5_myelination.csv")
